@@ -19,6 +19,7 @@ import {
   calcAgt30,
   getWarmupPlan,
 } from './data/seed';
+import { useWakeLock } from './hooks/useWakeLock';
 import {
   ActiveSession,
   AppTab,
@@ -68,6 +69,11 @@ export default function App() {
   const [isPlayerVisible, setIsPlayerVisible] = useState<boolean>(
     () => Boolean(loadFitnoteData().activeSession)
   );
+
+  const isWakeLockActive = Boolean(
+    isPlayerVisible && data.activeSession && !data.activeSession.isPaused
+  );
+  useWakeLock(isWakeLockActive);
 
   useLayoutEffect(() => {
     const isDark = data.theme === 'dark';
