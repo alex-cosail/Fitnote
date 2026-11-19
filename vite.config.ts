@@ -12,25 +12,37 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['icon.svg'],
-        manifest: {
-          name: 'Fitnote — Workout Log',
-          short_name: 'Fitnote',
-          description: 'Офлайн-блокнот и таймер для функциональных тренировок',
-          theme_color: '#FFFFFF',
-          background_color: '#FFFFFF',
-          display: 'standalone',
-          orientation: 'portrait',
-          start_url: '/',
-          icons: [
-            {
-              src: 'icon.svg',
-              sizes: 'any',
-              type: 'image/svg+xml',
-              purpose: 'any maskable',
-            },
-          ],
-        },
+        includeAssets: ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
+manifest: {
+  name: 'Fitnote — Workout Log',
+  short_name: 'Fitnote',
+  description: 'Офлайн-блокнот и таймер для функциональных тренировок',
+  theme_color: '#FFFFFF',
+  background_color: '#FFFFFF',
+  display: 'standalone',
+  orientation: 'portrait',
+  start_url: '/',
+  icons: [
+    {
+      src: 'icon-192.png',
+      sizes: '192x192',
+      type: 'image/png',
+      purpose: 'any',
+    },
+    {
+      src: 'icon-512.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'any',
+    },
+    {
+      src: 'icon-512.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'maskable',
+    },
+  ],
+},
         workbox: {
           globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
           cleanupOutdatedCaches: true,
