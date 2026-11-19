@@ -34,6 +34,12 @@ import {
 import { soundEngine } from './utils/audio';
 import { loadFitnoteData, saveFitnoteData } from './utils/storage';
 
+const PROTECTED_WORKOUT_IDS = new Set([
+  'workout-a',
+  'workout-b',
+  'workout-c-agt',
+]);
+
 export default function App() {
   const [data, setData] = useState<FitnoteData>(() => {
     const loaded = loadFitnoteData();
@@ -238,6 +244,22 @@ export default function App() {
       ...prev,
       cardioLogs: prev.cardioLogs.filter((c) => c.id !== id),
     }));
+  };
+
+  const handleDeleteWorkout = (id: string) => {
+    if (PROTECTED_WORKOUT_IDS.has(id)) return;
+    setData((prev) => {
+      const remaining = prev.workouts.filter((w) => w.id !== id);
+      const nextSelectedId =
+        prev.selectedWorkoutId === id
+          ? (remaining[0]?.id ?? 'workout-a')
+          : prev.selectedWorkoutId;
+      return {
+        ...prev,
+        workouts: remaining,
+        selectedWorkoutId: nextSelectedId,
+      };
+    });
   };
 
   const handleImportPlan = (payload: {
@@ -459,6 +481,7 @@ export default function App() {
             onSelectWorkout={(id) =>
               setData((prev) => ({ ...prev, selectedWorkoutId: id }))
             }
+            onDeleteWorkout={handleDeleteWorkout}
             onChangeReadiness={(readiness) =>
               setData((prev) => ({
                 ...prev,

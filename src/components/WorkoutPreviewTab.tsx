@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ArrowUp,
   Clock,
   Play,
   RotateCcw,
   ShieldAlert,
+  Trash2,
 } from 'lucide-react';
 import {
   COOLDOWN_STEPS,
@@ -30,12 +31,19 @@ interface WorkoutPreviewTabProps {
   warmupMinutes: number;
   activeSession: ActiveSession | null;
   onSelectWorkout: (id: string) => void;
+  onDeleteWorkout: (id: string) => void;
   onChangeReadiness: (level: ReadinessLevel) => void;
   onChangeWarmupMinutes: (mins: number) => void;
   onStartWorkout: () => void;
   onResumeWorkout: () => void;
   onDiscardActiveSession: () => void;
 }
+
+const PROTECTED_WORKOUT_IDS = new Set([
+  'workout-a',
+  'workout-b',
+  'workout-c-agt',
+]);
 
 export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   workouts,
@@ -45,14 +53,40 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   warmupMinutes,
   activeSession,
   onSelectWorkout,
+  onDeleteWorkout,
   onChangeReadiness,
   onChangeWarmupMinutes,
   onStartWorkout,
   onResumeWorkout,
   onDiscardActiveSession,
 }) => {
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const selectedPlan =
     workouts.find((w) => w.id === selectedWorkoutId) ?? workouts[0];
+
+  const isCustomWorkout = !PROTECTED_WORKOUT_IDS.has(selectedPlan.id);
+
+  // Reset delete confirmation when switching workouts or after 3s timeout
+  useEffect(() => {
+    setConfirmDeleteId(null);
+  }, [selectedPlan.id]);
+
+  useEffect(() => {
+    if (!confirmDeleteId) return;
+    const timer = window.setTimeout(() => setConfirmDeleteId(null), 3000);
+    return () => window.clearTimeout(timer);
+  }, [confirmDeleteId]);
+
+  const handleDeleteClick = () => {
+    if (!isCustomWorkout) return;
+    if (confirmDeleteId === selectedPlan.id) {
+      setConfirmDeleteId(null);
+      onDeleteWorkout(selectedPlan.id);
+    } else {
+      setConfirmDeleteId(selectedPlan.id);
+    }
+  };
 
   const getExercise = (id: string) =>
     exercises.find((ex) => ex.id === id) ?? exercises[0];
@@ -167,12 +201,10 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
         </div>
       )}
 
-      {/* TOP CONTROL HERO BLOCK (Scrolls up out of view in BOTH Portrait & Landscape)
-          - Portrait: Plan row -> Readiness row -> Description card
-          - Landscape: [Left: 3+ Workouts column] | [Center: Highlighted Active Workout + START] | [Right: Состояние + 3 states] */}
-      <div className="flex flex-col gap-3 landscape:grid landscape:h-[calc(100dvh-88px)] landscape:max-h-[365px] landscape:grid-cols-[175px_minmax(0,1fr)_175px] landscape:items-stretch landscape:gap-3 lg:landscape:h-auto lg:landscape:max-h-none lg:grid-cols-[235px_minmax(0,1fr)_225px] lg:gap-5">
-        {/* LEFT COLUMN (Landscape): Vertical stack of workout plans (no "Тренировки" heading) */}
-        <div className="hidden flex-col gap-1.5 overflow-y-auto landscape:flex">
+      {/* TOP CONTROL HERO BLOCK (Constrained to 1 screen height with scrollable left workout list) */}
+      <div className="flex flex-col gap-3 landscape:grid landscape:h-[calc(100dvh-88px)] landscape:max-h-[365px] landscape:grid-cols-[175px_minmax(0,1fr)_175px] landscape:items-stretch landscape:gap-3 lg:h-[calc(100dvh-110px)] lg:max-h-[400px] lg:landscape:h-[calc(100dvh-110px)] lg:landscape:max-h-[400px] lg:grid-cols-[235px_minmax(0,1fr)_225px] lg:gap-5">
+        {/* LEFT COLUMN (Landscape & Desktop): Scrollable stack of workout plans */}
+        <div className="hidden min-h-0 flex-col gap-1.5 overflow-y-auto pr-1 landscape:flex">
           {workouts.map((plan) => {
             const isSelected = plan.id === selectedPlan.id;
             return (
@@ -180,7 +212,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 key={plan.id}
                 type="button"
                 onClick={() => onSelectWorkout(plan.id)}
-                className={`tap-scale flex min-h-[42px] flex-1 flex-col items-start justify-center rounded-2xl border px-3 py-1.5 text-left transition-colors ${
+                className={`tap-scale flex min-h-[54px] shrink-0 flex-col items-start justify-center rounded-2xl border px-3 py-2 text-left transition-colors lg:min-h-[62px] ${
                   isSelected
                     ? 'border-[#111827] bg-[#111827] text-white shadow-sm dark:border-[#F3F4F6] dark:bg-[#F3F4F6] dark:text-[#0B0F17]'
                     : 'border-gray-200 bg-white text-[#111827] hover:border-gray-300 dark:border-[#263248] dark:bg-[#131A26] dark:text-[#F3F4F6] dark:hover:border-[#475569]'
@@ -209,14 +241,14 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                План тренировки
+                План тренировки ({workouts.length})
               </span>
               <span className="font-mono-num text-xs text-gray-500 dark:text-gray-400">
                 Отдых: {selectedPlan.restBetweenExercises}с /{' '}
                 {selectedPlan.restBetweenRounds}с
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+            <div className="grid max-h-[126px] grid-cols-3 gap-1.5 overflow-y-auto pr-0.5 sm:gap-2">
               {workouts.map((plan) => {
                 const isSelected = plan.id === selectedPlan.id;
                 return (
@@ -231,7 +263,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                     }`}
                     title={plan.title}
                   >
-                    <span className="w-full whitespace-normal break-words text-[12px] font-bold leading-tight">
+                    <span className="line-clamp-2 w-full whitespace-normal break-words text-[12px] font-bold leading-tight">
                       {plan.title}
                     </span>
                   </button>
@@ -276,19 +308,44 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
         </div>
 
         {/* CENTER COLUMN (Landscape: Highlighted active workout + START) / DESCRIPTION CARD (Portrait) */}
-        <section className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 dark:border-[#263248] dark:bg-[#131A26] landscape:border-2 landscape:border-[#111827] landscape:bg-gray-50/70 landscape:p-3.5 dark:landscape:border-[#475569] dark:landscape:bg-[#141C2A] lg:landscape:p-5">
+        <section className="flex min-h-0 flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 dark:border-[#263248] dark:bg-[#131A26] landscape:border-2 landscape:border-[#111827] landscape:bg-gray-50/70 landscape:p-3.5 dark:landscape:border-[#475569] dark:landscape:bg-[#141C2A] lg:landscape:p-5">
           <div className="min-w-0">
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
               <h1 className="font-display text-3xl font-bold tracking-tight text-[#111827] dark:text-[#F3F4F6] landscape:text-[clamp(1.5rem,4.5dvh,2.25rem)] lg:text-4xl">
                 {readiness === 'red' ? 'Recovery Mobility' : selectedPlan.title}
               </h1>
 
-              <span className="font-mono-num text-xs font-semibold text-gray-500 dark:text-gray-400">
-                Отдых:{' '}
-                {readiness === 'red' ? 20 : selectedPlan.restBetweenExercises}с
-                /{' '}
-                {readiness === 'red' ? 45 : selectedPlan.restBetweenRounds}с
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono-num text-xs font-semibold text-gray-500 dark:text-gray-400">
+                  Отдых:{' '}
+                  {readiness === 'red' ? 20 : selectedPlan.restBetweenExercises}
+                  с /{' '}
+                  {readiness === 'red' ? 45 : selectedPlan.restBetweenRounds}с
+                </span>
+
+                {isCustomWorkout && readiness !== 'red' && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteClick}
+                    title={
+                      confirmDeleteId === selectedPlan.id
+                        ? 'Нажмите ещё раз для удаления'
+                        : 'Удалить импортированный план'
+                    }
+                    aria-label="Удалить импортированный план"
+                    className={`tap-scale flex h-8 shrink-0 items-center justify-center gap-1 rounded-xl border px-2 text-[11px] font-bold transition-colors ${
+                      confirmDeleteId === selectedPlan.id
+                        ? 'border-[#DC2626] bg-[#DC2626] text-white'
+                        : 'border-gray-200 bg-white text-gray-400 hover:border-[#DC2626]/40 hover:text-[#DC2626] dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-gray-400 dark:hover:border-[#EF4444]/40 dark:hover:text-[#F87171]'
+                    }`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {confirmDeleteId === selectedPlan.id && (
+                      <span>Удалить?</span>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
 
             <p className="font-mono-num mt-1 text-xs font-semibold text-[#DC2626] dark:text-[#F87171] sm:text-sm">
@@ -311,7 +368,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
             )}
           </div>
 
-          {/* START WORKOUT button inside workout description card (scrolls up with content in both Portrait & Landscape) */}
+          {/* START WORKOUT button inside workout description card */}
           <div className="mt-3.5 pt-1 landscape:mt-3">
             <button
               type="button"
@@ -325,7 +382,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
         </section>
 
         {/* RIGHT COLUMN (Landscape): "Состояние" heading + 3 readiness states with descriptions */}
-        <div className="hidden flex-col landscape:flex">
+        <div className="hidden min-h-0 flex-col landscape:flex">
           <span className="mb-1.5 px-0.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
             Состояние
           </span>
@@ -360,9 +417,9 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
         </div>
       </div>
 
-      {/* FULL-WIDTH EXERCISE FLOW BELOW (Frees 100% width in Landscape when scrolling down!) */}
+      {/* FULL-WIDTH EXERCISE FLOW BELOW */}
       <div className="space-y-4">
-        {/* 1) Warm-Up Cards (Unified layout with Main Exercises) */}
+        {/* 1) Warm-Up Cards */}
         <section className="space-y-2.5">
           <div className="flex flex-wrap items-center justify-between gap-2 px-0.5">
             <div>
@@ -397,9 +454,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 key={step.id}
                 className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 dark:border-[#232E42] dark:bg-[#131A26] landscape:flow-root landscape:p-3"
               >
-                {/* Title + Focus (Portrait) + Visual/Duration block */}
                 <div className="landscape:float-left landscape:mr-3.5 landscape:mb-0.5 landscape:w-[46%] landscape:max-w-[50%] lg:landscape:w-[340px]">
-                  {/* Row 1: Index + Step Name */}
                   <div className="flex items-baseline gap-2">
                     <span className="font-mono-num shrink-0 text-sm font-bold text-[#DC2626] dark:text-[#F87171] landscape:text-xs">
                       0{idx + 1}
@@ -409,14 +464,12 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                     </h3>
                   </div>
 
-                  {/* Row 2 (Portrait): Target focus / subtitle */}
                   {step.subtitle && (
                     <p className="mt-1 break-words text-xs text-gray-500 dark:text-gray-400 landscape:hidden">
                       {step.subtitle}
                     </p>
                   )}
 
-                  {/* Row 3 (Portrait) / Under Name (Landscape): Diagram + Duration */}
                   <div className="mt-2.5 flex items-center justify-between gap-3 landscape:mt-1.5 landscape:justify-start landscape:gap-3">
                     <ExerciseSvg
                       svgKey={step.svgKey}
@@ -430,7 +483,6 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                   </div>
                 </div>
 
-                {/* Description: full width below in Portrait, wraps around right & below block in Landscape */}
                 <p className="mt-2.5 border-t border-gray-100 pt-2.5 text-[13px] leading-relaxed text-gray-700 dark:border-[#1E293B] dark:text-gray-300 landscape:mt-0 landscape:border-t-0 landscape:pt-0 landscape:text-xs landscape:leading-snug">
                   {step.cue}
                 </p>
@@ -464,9 +516,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                   key={`${item.exerciseId}-${idx}`}
                   className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 dark:border-[#232E42] dark:bg-[#131A26] landscape:flow-root landscape:p-3"
                 >
-                  {/* Title + Muscles (Portrait) + Visual/Target block */}
                   <div className="landscape:float-left landscape:mr-3.5 landscape:mb-0.5 landscape:w-[46%] landscape:max-w-[50%] lg:landscape:w-[340px]">
-                    {/* Row 1: Index + Exercise Name */}
                     <div className="flex items-baseline gap-2">
                       <span className="font-mono-num shrink-0 text-sm font-bold text-[#DC2626] dark:text-[#F87171] landscape:text-xs">
                         0{idx + 1}
@@ -476,13 +526,11 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                       </h3>
                     </div>
 
-                    {/* Row 2 (Portrait): Muscles list */}
                     <p className="mt-1 break-words text-xs text-gray-500 dark:text-gray-400 landscape:hidden">
                       {ex.target_muscles.map(getMuscleLabel).join(' · ')}
                       {ex.isPaired ? ' · на каждую сторону' : ''}
                     </p>
 
-                    {/* Row 3 (Portrait) / Under Name (Landscape): Diagram + Reps/Time */}
                     <div className="mt-2.5 flex items-center justify-between gap-3 landscape:mt-1.5 landscape:justify-start landscape:gap-3">
                       <ExerciseSvg
                         svgKey={ex.svgKey}
@@ -501,7 +549,6 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                     </div>
                   </div>
 
-                  {/* Description: full width below in Portrait, wraps around right & below block in Landscape */}
                   <p className="mt-2.5 border-t border-gray-100 pt-2.5 text-[13px] leading-relaxed text-gray-700 dark:border-[#1E293B] dark:text-gray-300 landscape:mt-0 landscape:border-t-0 landscape:pt-0 landscape:text-xs landscape:leading-snug">
                     {ex.details ?? ex.cue}
                   </p>
@@ -511,7 +558,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           </div>
         </section>
 
-        {/* 3) Cool-Down Cards (Unified layout with Main Exercises) */}
+        {/* 3) Cool-Down Cards */}
         <section className="space-y-2.5">
           <div className="flex items-center justify-between gap-2 px-0.5">
             <div>
@@ -534,9 +581,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 key={step.id}
                 className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 dark:border-[#232E42] dark:bg-[#131A26] landscape:flow-root landscape:p-3"
               >
-                {/* Title + Focus (Portrait) + Visual/Duration block */}
                 <div className="landscape:float-left landscape:mr-3.5 landscape:mb-0.5 landscape:w-[46%] landscape:max-w-[50%] lg:landscape:w-[340px]">
-                  {/* Row 1: Index + Step Name */}
                   <div className="flex items-baseline gap-2">
                     <span className="font-mono-num shrink-0 text-sm font-bold text-[#DC2626] dark:text-[#F87171] landscape:text-xs">
                       0{idx + 1}
@@ -546,14 +591,12 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                     </h3>
                   </div>
 
-                  {/* Row 2 (Portrait): Target focus / subtitle */}
                   {step.subtitle && (
                     <p className="mt-1 break-words text-xs text-gray-500 dark:text-gray-400 landscape:hidden">
                       {step.subtitle}
                     </p>
                   )}
 
-                  {/* Row 3 (Portrait) / Under Name (Landscape): Diagram + Duration */}
                   <div className="mt-2.5 flex items-center justify-between gap-3 landscape:mt-1.5 landscape:justify-start landscape:gap-3">
                     <ExerciseSvg
                       svgKey={step.svgKey}
@@ -567,7 +610,6 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                   </div>
                 </div>
 
-                {/* Description: full width below in Portrait, wraps around right & below block in Landscape */}
                 <p className="mt-2.5 border-t border-gray-100 pt-2.5 text-[13px] leading-relaxed text-gray-700 dark:border-[#1E293B] dark:text-gray-300 landscape:mt-0 landscape:border-t-0 landscape:pt-0 landscape:text-xs landscape:leading-snug">
                   {step.cue}
                 </p>
