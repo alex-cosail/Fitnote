@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Check,
   ChevronDown,
   ChevronUp,
   Copy,
   Download,
+  FileUp,
   Plus,
   SlidersHorizontal,
   Trash2,
@@ -152,6 +153,7 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
     type: 'ok' | 'err';
     message: string;
   } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // AI Request Builder state
   const [requestScope, setRequestScope] = useState<RequestScope>('week');
@@ -369,17 +371,17 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  const handleImportSubmit = () => {
+  const processJsonImport = (rawJson: string) => {
     setImportStatus(null);
-    if (!importText.trim()) {
+    if (!rawJson.trim()) {
       setImportStatus({
         type: 'err',
-        message: 'Вставьте JSON с планом тренировок или упражнениями.',
+        message: 'Вставьте JSON с планом тренировок или выберите файл.',
       });
       return;
     }
     try {
-      const parsed = JSON.parse(importText);
+      const parsed = JSON.parse(rawJson);
       const workoutsInput: WorkoutPlan[] = Array.isArray(parsed)
         ? parsed
         : Array.isArray(parsed.workouts)
@@ -414,6 +416,26 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
         type: 'err',
         message: 'Ошибка синтаксиса JSON. Проверьте запятые и кавычки.',
       });
+    }
+  };
+
+  const handleImportSubmit = () => {
+    processJsonImport(importText);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const content = await file.text();
+      processJsonImport(content);
+    } catch {
+      setImportStatus({
+        type: 'err',
+        message: 'Не удалось прочитать выбранный файл.',
+      });
+    } finally {
+      e.target.value = '';
     }
   };
 
@@ -906,14 +928,33 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
               </p>
             )}
 
-            <button
-              type="button"
-              onClick={handleImportSubmit}
-              className="tap-scale mt-3 flex min-h-[48px] w-full items-center justify-center gap-1.5 rounded-xl border border-gray-900 bg-white text-xs font-bold text-[#111827] hover:bg-gray-50 dark:border-[#475569] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:hover:bg-[#232F44]"
-            >
-              <Upload className="h-4 w-4" />
-              Импортировать план
-            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+
+            <div className="mt-3 grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={handleImportSubmit}
+                className="tap-scale flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl border border-gray-900 bg-white px-3 text-xs font-bold text-[#111827] hover:bg-gray-50 dark:border-[#475569] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:hover:bg-[#232F44]"
+              >
+                <Upload className="h-4 w-4 shrink-0" />
+                Из текста
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="tap-scale flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl bg-[#111827] px-3 text-xs font-bold text-white hover:bg-gray-800 dark:bg-[#F3F4F6] dark:text-[#0B0F17] dark:hover:bg-gray-200"
+              >
+                <FileUp className="h-4 w-4 shrink-0" />
+                Загрузить .json
+              </button>
+            </div>
           </section>
         </div>
 
