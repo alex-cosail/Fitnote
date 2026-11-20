@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowUp,
   Clock,
+  Minus,
   Play,
+  Plus,
   RotateCcw,
   ShieldAlert,
   Trash2,
@@ -32,6 +34,7 @@ interface WorkoutPreviewTabProps {
   activeSession: ActiveSession | null;
   onSelectWorkout: (id: string) => void;
   onDeleteWorkout: (id: string) => void;
+  onUpdateWorkout: (plan: WorkoutPlan) => void;
   onChangeReadiness: (level: ReadinessLevel) => void;
   onChangeWarmupMinutes: (mins: number) => void;
   onStartWorkout: () => void;
@@ -54,6 +57,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   activeSession,
   onSelectWorkout,
   onDeleteWorkout,
+  onUpdateWorkout,
   onChangeReadiness,
   onChangeWarmupMinutes,
   onStartWorkout,
@@ -160,6 +164,67 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
       activeBg: 'bg-[#FEF2F2] dark:bg-[#450A0A]/60',
     },
   ];
+
+  // Manual tuning of the coach's numbers ("couch tuning"): hidden for the red
+  // mobility block and for AGT plans, where targets come from the Check-Up.
+  const canTune = readiness !== 'red' && !selectedPlan.useAgt30;
+  const MAX_ROUNDS = 20;
+
+  const withOriginal = (plan: WorkoutPlan): WorkoutPlan =>
+    plan.original
+      ? plan
+      : {
+          ...plan,
+          original: {
+            rounds: plan.rounds,
+            items: plan.items.map((it) => ({ ...it })),
+          },
+        };
+
+  const handleChangeRounds = (delta: number) => {
+    const nextRounds = Math.min(
+      MAX_ROUNDS,
+      Math.max(1, selectedPlan.rounds + delta)
+    );
+    if (nextRounds === selectedPlan.rounds) return;
+    onUpdateWorkout({ ...withOriginal(selectedPlan), rounds: nextRounds });
+  };
+
+  const handleChangeTarget = (idx: number, ex: Exercise, direction: 1 | -1) => {
+    const step = ex.metric === 'seconds' ? 5 : 1;
+    const min = ex.metric === 'seconds' ? 5 : 1;
+    const current = selectedPlan.items[idx].target;
+    const nextTarget = Math.max(min, current + direction * step);
+    if (nextTarget === current) return;
+    const base = withOriginal(selectedPlan);
+    onUpdateWorkout({
+      ...base,
+      items: base.items.map((it, i) =>
+        i === idx ? { ...it, target: nextTarget } : it
+      ),
+    });
+  };
+
+  const isTuned = Boolean(
+    selectedPlan.original &&
+      (selectedPlan.original.rounds !== selectedPlan.rounds ||
+        selectedPlan.original.items.some(
+          (it, i) => it.target !== selectedPlan.items[i]?.target
+        ))
+  );
+
+  const handleResetToCoachPlan = () => {
+    if (!selectedPlan.original) return;
+    const { original, ...rest } = selectedPlan;
+    onUpdateWorkout({
+      ...rest,
+      rounds: original.rounds,
+      items: original.items.map((it) => ({ ...it })),
+    });
+  };
+
+  const stepBtnClass =
+    'tap-scale flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[#111827] active:bg-gray-100 disabled:opacity-35 dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:active:bg-[#243044]';
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -493,14 +558,58 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
 
         {/* 2) Main Exercise Cards */}
         <section className="space-y-2.5">
-          <div className="flex items-center justify-between px-0.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-0.5">
             <h2 className="text-sm font-bold text-[#111827] dark:text-[#F3F4F6]">
               {readiness === 'red'
                 ? 'Блок мобильности · 2 круга'
                 : `Основной блок · ${effectiveRounds} ${
                     effectiveRounds === 1 ? 'круг' : 'круга'
                   }`}
+              {readiness === 'yellow' && (
+                <span className="ml-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+                  (по плану {selectedPlan.rounds})
+                </span>
+              )}
             </h2>
+
+            {canTune && (
+              <div className="flex items-center gap-1.5">
+                {isTuned && (
+                  <button
+                    type="button"
+                    onClick={handleResetToCoachPlan}
+                    className="tap-scale flex min-h-[36px] items-center gap-1 rounded-lg px-2 text-xs font-semibold text-[#DC2626] dark:text-[#F87171]"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    План тренера
+                  </button>
+                )}
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                  Круги
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleChangeRounds(-1)}
+                  disabled={selectedPlan.rounds <= 1}
+                  className={stepBtnClass}
+                  aria-label="Убрать круг"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="font-mono-num min-w-[1.75rem] text-center text-base font-bold text-[#111827] dark:text-[#F3F4F6]">
+                  {selectedPlan.rounds}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleChangeRounds(1)}
+                  disabled={selectedPlan.rounds >= MAX_ROUNDS}
+                  className={stepBtnClass}
+                  aria-label="Добавить круг"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-2.5 landscape:gap-2">
@@ -536,14 +645,39 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                         svgKey={ex.svgKey}
                         className="h-16 w-24 shrink-0 landscape:h-11 landscape:w-16"
                       />
-                      <div className="flex items-baseline gap-1.5 text-right landscape:text-left">
-                        <p className="font-mono-num text-2xl font-bold leading-none text-[#111827] dark:text-[#F3F4F6] landscape:text-xl">
-                          {formatMetricTarget(plannedTarget, ex.metric)}
-                        </p>
-                        {ex.isPaired && (
-                          <span className="hidden text-[11px] font-medium text-gray-500 dark:text-gray-400 landscape:inline">
-                            на сторону
-                          </span>
+                      <div className="flex items-center gap-1.5 text-right landscape:text-left">
+                        {canTune && (
+                          <button
+                            type="button"
+                            onClick={() => handleChangeTarget(idx, ex, -1)}
+                            disabled={
+                              item.target <= (ex.metric === 'seconds' ? 5 : 1)
+                            }
+                            className={stepBtnClass}
+                            aria-label={`Уменьшить цель: ${ex.name}`}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                        )}
+                        <div className="flex items-baseline gap-1.5">
+                          <p className="font-mono-num text-2xl font-bold leading-none text-[#111827] dark:text-[#F3F4F6] landscape:text-xl">
+                            {formatMetricTarget(plannedTarget, ex.metric)}
+                          </p>
+                          {ex.isPaired && (
+                            <span className="hidden text-[11px] font-medium text-gray-500 dark:text-gray-400 landscape:inline">
+                              на сторону
+                            </span>
+                          )}
+                        </div>
+                        {canTune && (
+                          <button
+                            type="button"
+                            onClick={() => handleChangeTarget(idx, ex, 1)}
+                            className={stepBtnClass}
+                            aria-label={`Увеличить цель: ${ex.name}`}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
                         )}
                       </div>
                     </div>

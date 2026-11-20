@@ -40,6 +40,80 @@ interface WorkoutPlayerProps {
   onExitSession: () => void;
 }
 
+const HOLD_PREP_SEC = 5;
+const HOLD_FLIP_SEC = 7;
+
+type HoldMode = 'idle' | 'prep' | 'running' | 'flip' | 'paused';
+
+interface HoldState {
+  mode: HoldMode;
+  side: 1 | 2;
+  anchorMs: number; // start of the current prep / flip / running stretch
+  baseSec: number; // running: seconds held before anchorMs (after a pause)
+  countdown: number; // prep / flip: whole seconds left (display)
+  elapsed: number; // running: whole seconds held (display)
+  pausedFrom?: 'prep' | 'running' | 'flip';
+  pausedLeftMs?: number; // prep / flip: time left when paused
+}
+
+const IDLE_HOLD: HoldState = {
+  mode: 'idle',
+  side: 1,
+  anchorMs: 0,
+  baseSec: 0,
+  countdown: HOLD_PREP_SEC,
+  elapsed: 0,
+};
+
+// Compact SVG ring: progress within the current round + round number.
+const RoundProgressRing: React.FC<{
+  progress: number;
+  round: number;
+  totalRounds: number;
+}> = ({ progress, round, totalRounds }) => {
+  const r = 20;
+  const c = 2 * Math.PI * r;
+  const p = Math.min(1, Math.max(0, progress));
+  return (
+    <div
+      className="relative flex h-11 w-11 shrink-0 items-center justify-center"
+      role="img"
+      aria-label={`Круг ${round} из ${totalRounds}, пройдено ${Math.round(p * 100)}%`}
+      title={`Круг ${round} из ${totalRounds}`}
+    >
+      <svg viewBox="0 0 48 48" className="absolute inset-0 h-11 w-11 -rotate-90">
+        <circle
+          cx="24"
+          cy="24"
+          r={r}
+          fill="none"
+          strokeWidth="4"
+          className="stroke-gray-200 dark:stroke-[#263248]"
+        />
+        <circle
+          cx="24"
+          cy="24"
+          r={r}
+          fill="none"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - p)}
+          className="stroke-[#DC2626] transition-all duration-300 dark:stroke-[#EF4444]"
+        />
+      </svg>
+      <div className="relative flex flex-col items-center leading-none">
+        <span className="font-mono-num text-[15px] font-bold text-[#111827] dark:text-[#F3F4F6]">
+          {round}
+        </span>
+        <span className="font-mono-num mt-px text-[8px] font-semibold text-gray-500 dark:text-gray-400">
+          из {totalRounds}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
   session,
   exercises,
@@ -60,139 +134,231 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
   const [finishNote, setFinishNote] = useState('');
   const [pairedLeftValue, setPairedLeftValue] = useState<number | null>(null);
 
-  // Unified hold stopwatch for seconds-based exercises (tap digits: 5s countdown -> start -> tap to stop)
-  const [holdUi, setHoldUi] = useState<{
-    mode: 'idle' | 'countdown' | 'running';
-    startMs: number;
-    countdown: number;
-    elapsed: number;
-    prevValue: number;
-  }>({
-    mode: 'idle',
-    startMs: 0,
-    countdown: 5,
-    elapsed: 0,
-    prevValue: currentItem?.target ?? 10,
-  });
-  const holdRef = useRef(holdUi);
-  const setHold = (next: {
-    mode: 'idle' | 'countdown' | 'running';
-    startMs: number;
-    countdown: number;
-    elapsed: number;
-    prevValue: number;
-  }) => {
+  // Autopilot for seconds-based exercises:
+  // 5s prep -> stopwatch counts up -> stops by itself at the target.
+  // Paired holds: side 1 -> 7s flip buffer -> side 2.
+  // Tap on the digits = pause / resume; double tap = reset to a fresh 5s prep.
+  const [holdUi, setHoldUi] = useState<HoldState>(IDLE_HOLD);
+  const holdRef = useRef<HoldState>(holdUi);
+  const setHold = (next: HoldState) => {
     holdRef.current = next;
     setHoldUi(next);
   };
+  const repsRef = useRef(repsValue);
+  repsRef.current = repsValue;
+  const holdTapTimeoutRef = useRef<number | null>(null);
 
-  // Sync stepper default when moving to a new exercise
-  useEffect(() => {
-    if (currentItem) {
-      setRepsValue(currentItem.target);
-      setRir('1');
-      setPairedLeftValue(null);
-      setHold({
-        mode: 'idle',
-        startMs: 0,
-        countdown: 5,
-        elapsed: 0,
-        prevValue: currentItem.target,
-      });
+  const startPrep = (side: 1 | 2) => {
+    soundEngine.playTick(isMuted);
+    setRepsValue(0);
+    setHold({
+      ...IDLE_HOLD,
+      mode: 'prep',
+      side,
+      anchorMs: Date.now(),
+      countdown: HOLD_PREP_SEC,
+    });
+  };
+
+  const startFlip = () => {
+    setRepsValue(0);
+    setHold({
+      ...IDLE_HOLD,
+      mode: 'flip',
+      side: 2,
+      anchorMs: Date.now(),
+      countdown: HOLD_FLIP_SEC,
+    });
+  };
+
+  // Seconds held right now (live while running, else the stepper value).
+  const getHeldSeconds = () => {
+    const h = holdRef.current;
+    if (h.mode === 'running') {
+      return h.baseSec + Math.floor((Date.now() - h.anchorMs) / 1000);
     }
-  }, [session.currentRound, session.currentItemIndex, currentItem?.exerciseId]);
+    return repsRef.current;
+  };
 
-  // Accurate timestamp-based timer loop (5s countdown -> count-up stopwatch)
+  // Reset the stepper and (for timed exercises) auto-start the 5s prep
+  // whenever a new exercise opens.
   useEffect(() => {
-    if (holdUi.mode === 'idle') return;
-    const id = window.setInterval(() => {
-      const curr = holdRef.current;
-      if (curr.mode === 'idle') return;
-      const now = Date.now();
+    if (!currentItem) return;
+    setRir('1');
+    setPairedLeftValue(null);
+    if (
+      session.phase === 'exercise' &&
+      !session.isRoundFlow &&
+      currentExercise.metric === 'seconds'
+    ) {
+      startPrep(1);
+    } else {
+      setRepsValue(currentItem.target);
+      setHold(IDLE_HOLD);
+    }
+  }, [
+    session.phase,
+    session.currentRound,
+    session.currentItemIndex,
+    currentItem?.exerciseId,
+  ]);
 
-      if (curr.mode === 'countdown') {
-        const rem = Math.max(0, 5 - Math.floor((now - curr.startMs) / 1000));
-        if (rem === curr.countdown) return;
+  useEffect(() => {
+    return () => {
+      if (holdTapTimeoutRef.current !== null) {
+        window.clearTimeout(holdTapTimeoutRef.current);
+      }
+    };
+  }, []);
 
-        if (rem > 0) {
-          soundEngine.playTick(isMuted);
-          setHold({ ...curr, countdown: rem });
-          return;
-        }
+  // Hold timer tick; reads the latest render through a ref so that the
+  // auto-finish always sees fresh session state.
+  const holdTickRef = useRef<() => void>(() => {});
+  holdTickRef.current = () => {
+    const h = holdRef.current;
+    const now = Date.now();
 
-        soundEngine.playGo(isMuted);
-        setRepsValue(0);
-        setHold({
-          ...curr,
-          mode: 'running',
-          startMs: now,
-          countdown: 0,
-          elapsed: 0,
-        });
+    if (h.mode === 'prep' || h.mode === 'flip') {
+      const totalSec = h.mode === 'prep' ? HOLD_PREP_SEC : HOLD_FLIP_SEC;
+      const leftMs = totalSec * 1000 - (now - h.anchorMs);
+      const rem = Math.max(0, Math.ceil(leftMs / 1000));
+      if (rem === h.countdown) return;
+      if (rem > 0) {
+        if (h.mode === 'prep' || rem <= 3) soundEngine.playTick(isMuted);
+        setHold({ ...h, countdown: rem });
         return;
       }
+      soundEngine.playGo(isMuted);
+      setRepsValue(0);
+      setHold({
+        ...h,
+        mode: 'running',
+        anchorMs: now,
+        baseSec: 0,
+        countdown: 0,
+        elapsed: 0,
+      });
+      return;
+    }
 
-      if (curr.mode === 'running') {
-        const nextElapsed = Math.floor((now - curr.startMs) / 1000);
-        if (nextElapsed === curr.elapsed) return;
-
-        setRepsValue(nextElapsed);
-        if (currentItem && nextElapsed === currentItem.target) {
-          soundEngine.playGo(isMuted);
-        }
-        setHold({ ...curr, elapsed: nextElapsed });
+    if (h.mode === 'running' && currentItem) {
+      const elapsed = h.baseSec + Math.floor((now - h.anchorMs) / 1000);
+      if (elapsed === h.elapsed) return;
+      const target = currentItem.target;
+      if (elapsed >= target) {
+        finishHoldAtTarget(target);
+        return;
       }
-    }, 150);
+      if (target - elapsed <= 3) soundEngine.playTick(isMuted);
+      setRepsValue(elapsed);
+      setHold({ ...h, elapsed });
+    }
+  };
+
+  useEffect(() => {
+    if (
+      holdUi.mode !== 'prep' &&
+      holdUi.mode !== 'flip' &&
+      holdUi.mode !== 'running'
+    ) {
+      return;
+    }
+    const id = window.setInterval(() => holdTickRef.current(), 150);
     return () => window.clearInterval(id);
-  }, [holdUi.mode, currentItem, isMuted]);
+  }, [holdUi.mode]);
+
+  // Target reached: side 1 of a paired hold -> flip buffer; otherwise the set
+  // is logged and the player moves on to rest.
+  const finishHoldAtTarget = (value: number) => {
+    const h = holdRef.current;
+    setRepsValue(value);
+    if (currentExercise.isPaired && h.side === 1) {
+      soundEngine.playDone(isMuted);
+      setPairedLeftValue(value);
+      startFlip();
+      return;
+    }
+    completeSet(value);
+  };
+
+  const pauseHold = () => {
+    const h = holdRef.current;
+    const now = Date.now();
+    if (h.mode === 'running') {
+      const elapsed = h.baseSec + Math.floor((now - h.anchorMs) / 1000);
+      setRepsValue(elapsed);
+      setHold({ ...h, mode: 'paused', pausedFrom: 'running', elapsed });
+    } else if (h.mode === 'prep' || h.mode === 'flip') {
+      const totalSec = h.mode === 'prep' ? HOLD_PREP_SEC : HOLD_FLIP_SEC;
+      setHold({
+        ...h,
+        mode: 'paused',
+        pausedFrom: h.mode,
+        pausedLeftMs: Math.max(0, totalSec * 1000 - (now - h.anchorMs)),
+      });
+    }
+  };
+
+  const toggleHoldPause = () => {
+    const h = holdRef.current;
+    const now = Date.now();
+    if (h.mode === 'paused') {
+      if (h.pausedFrom === 'running') {
+        setHold({
+          ...h,
+          mode: 'running',
+          anchorMs: now,
+          baseSec: repsRef.current,
+          elapsed: repsRef.current,
+          pausedFrom: undefined,
+        });
+      } else if (h.pausedFrom) {
+        const totalSec =
+          h.pausedFrom === 'prep' ? HOLD_PREP_SEC : HOLD_FLIP_SEC;
+        setHold({
+          ...h,
+          mode: h.pausedFrom,
+          anchorMs: now - (totalSec * 1000 - (h.pausedLeftMs ?? 0)),
+          pausedFrom: undefined,
+          pausedLeftMs: undefined,
+        });
+      }
+      return;
+    }
+    if (h.mode === 'idle') {
+      startPrep(h.side);
+      return;
+    }
+    pauseHold();
+  };
 
   const handleTapHoldDigits = () => {
     if (currentExercise.metric !== 'seconds') return;
     soundEngine.unlock();
-
-    if (holdRef.current.mode === 'countdown') {
-      setRepsValue(holdRef.current.prevValue);
-      setHold({
-        mode: 'idle',
-        startMs: 0,
-        countdown: 5,
-        elapsed: 0,
-        prevValue: holdRef.current.prevValue,
-      });
+    if (holdTapTimeoutRef.current !== null) {
+      // Double tap: reset the current side to a fresh 5s prep.
+      window.clearTimeout(holdTapTimeoutRef.current);
+      holdTapTimeoutRef.current = null;
+      startPrep(holdRef.current.side);
       return;
     }
-
-    if (holdRef.current.mode === 'running') {
-      const finalSec = holdRef.current.elapsed;
-      setRepsValue(finalSec);
-      setHold({
-        mode: 'idle',
-        startMs: 0,
-        countdown: 5,
-        elapsed: 0,
-        prevValue: finalSec,
-      });
-      return;
-    }
-
-    soundEngine.playTick(isMuted);
-    setHold({
-      mode: 'countdown',
-      startMs: Date.now(),
-      countdown: 5,
-      elapsed: 0,
-      prevValue: repsValue,
-    });
+    holdTapTimeoutRef.current = window.setTimeout(() => {
+      holdTapTimeoutRef.current = null;
+      toggleHoldPause();
+    }, 260);
   };
 
   const handleStepReps = (delta: number) => {
-    if (holdRef.current.mode !== 'idle') {
+    const h = holdRef.current;
+    if (h.mode === 'prep' || h.mode === 'flip' || h.mode === 'running') {
+      pauseHold();
+    }
+    if (holdRef.current.mode === 'paused') {
+      // A manual correction continues from the corrected value on resume.
       setHold({
-        mode: 'idle',
-        startMs: 0,
-        countdown: 5,
-        elapsed: 0,
-        prevValue: repsValue,
+        ...holdRef.current,
+        pausedFrom: 'running',
+        pausedLeftMs: undefined,
       });
     }
     setRepsValue((v) => Math.max(0, v + delta));
@@ -310,6 +476,15 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
   }, [session.phase, session.currentRound]);
 
   const getNextPosition = () => {
+    // Round-flow mode is open-ended: after a round there is always another.
+    if (session.isRoundFlow) {
+      return {
+        nextRound: session.currentRound + 1,
+        nextItemIndex: 0,
+        isNewRound: true,
+        isWorkoutEnd: false,
+      };
+    }
     const isLastItemInRound =
       session.currentItemIndex >= session.items.length - 1;
     if (!isLastItemInRound) {
@@ -352,7 +527,7 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
 
     if (session.phase === 'rest') {
       const nextPos = getNextPosition();
-      if (nextPos.isNewRound) {
+      if (nextPos.isNewRound && !session.isRoundFlow) {
         onUpdateSession({
           ...session,
           currentRound: nextPos.nextRound,
@@ -419,26 +594,40 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
     });
   };
 
+  const startCooldown = (extra: Partial<ActiveSession> = {}) => {
+    onUpdateSession({
+      ...session,
+      ...extra,
+      phase: 'cooldown',
+      preCountdownSec: 5,
+      phaseRemainingSec: session.cooldownMinutes * 60,
+      phaseEndTimestamp: Date.now() + 5000,
+      isPaused: false,
+    });
+  };
+
+  // Manual "Done" / "Save left" button.
   const handleCompleteSet = () => {
     soundEngine.unlock();
-    setHold({
-      mode: 'idle',
-      startMs: 0,
-      countdown: 5,
-      elapsed: 0,
-      prevValue: currentItem.target,
-    });
+    const value =
+      currentExercise.metric === 'seconds' ? getHeldSeconds() : repsValue;
 
     // Paired unilateral exercise: Step 1 (Left, red) -> Step 2 (Right, green)
     if (currentExercise.isPaired && pairedLeftValue === null) {
       soundEngine.playTick(isMuted);
-      setPairedLeftValue(repsValue);
+      setPairedLeftValue(value);
       if (currentExercise.metric === 'seconds') {
-        setRepsValue(currentItem.target);
+        startFlip();
       }
       return;
     }
 
+    completeSet(value);
+  };
+
+  // Logs the set (value = right side for paired exercises) and moves on.
+  const completeSet = (value: number) => {
+    setHold(IDLE_HOLD);
     soundEngine.playDone(isMuted);
 
     const swappedFrom = currentItem.swappedFromId
@@ -450,13 +639,11 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
         ? pairedLeftValue
         : undefined;
     const rightVal =
-      currentExercise.isPaired && pairedLeftValue !== null
-        ? repsValue
-        : undefined;
+      currentExercise.isPaired && pairedLeftValue !== null ? value : undefined;
     const finalActual =
       leftVal !== undefined && rightVal !== undefined
         ? Math.min(leftVal, rightVal)
-        : repsValue;
+        : value;
 
     setPairedLeftValue(null);
 
@@ -467,6 +654,7 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
       swappedFromName: swappedFrom,
       metric: currentExercise.metric,
       target: currentItem.target,
+      plannedTarget: currentItem.plannedTarget ?? currentItem.target,
       actual: finalActual,
       leftActual: leftVal,
       rightActual: rightVal,
@@ -474,20 +662,26 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
       completedAt: new Date().toISOString(),
     };
 
+    // Smart carryover: the next round opens with this round's actual result.
+    // Only inside this session; the saved plan is untouched.
+    const nextItems =
+      finalActual > 0 && finalActual !== currentItem.target
+        ? session.items.map((it, idx) =>
+            idx === session.currentItemIndex
+              ? {
+                  ...it,
+                  target: finalActual,
+                  plannedTarget: it.plannedTarget ?? it.target,
+                }
+              : it
+          )
+        : session.items;
+
     const nextLogs = [...session.logs, newLog];
     const nextPos = getNextPosition();
 
     if (nextPos.isWorkoutEnd) {
-      const cdSec = session.cooldownMinutes * 60;
-      onUpdateSession({
-        ...session,
-        logs: nextLogs,
-        phase: 'cooldown',
-        preCountdownSec: 5,
-        phaseRemainingSec: cdSec,
-        phaseEndTimestamp: Date.now() + 5000,
-        isPaused: false,
-      });
+      startCooldown({ logs: nextLogs, items: nextItems });
       return;
     }
 
@@ -499,9 +693,56 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
       onUpdateSession({
         ...session,
         logs: nextLogs,
+        items: nextItems,
         currentRound: nextPos.nextRound,
         currentItemIndex: nextPos.nextItemIndex,
         phase: nextPos.isNewRound ? 'round_banner' : 'exercise',
+      });
+      return;
+    }
+
+    onUpdateSession({
+      ...session,
+      logs: nextLogs,
+      items: nextItems,
+      phase: 'rest',
+      phaseRemainingSec: restSec,
+      phaseEndTimestamp: Date.now() + restSec * 1000,
+      isPaused: false,
+    });
+  };
+
+  // Round-flow "+1 round": logs every exercise of the round at its target.
+  const handleRoundFlowPlusRound = () => {
+    soundEngine.unlock();
+    soundEngine.playDone(isMuted);
+    const completedAt = new Date().toISOString();
+    const roundLogs: SetLog[] = session.items.map((it) => {
+      const ex = exercises.find((e) => e.id === it.exerciseId);
+      return {
+        round: session.currentRound,
+        exerciseId: it.exerciseId,
+        exerciseName: ex?.name ?? it.exerciseId,
+        metric: ex?.metric ?? 'reps',
+        target: it.target,
+        plannedTarget: it.plannedTarget ?? it.target,
+        actual: it.target,
+        leftActual: ex?.isPaired ? it.target : undefined,
+        rightActual: ex?.isPaired ? it.target : undefined,
+        rir: '2+',
+        completedAt,
+      };
+    });
+    const nextLogs = [...session.logs, ...roundLogs];
+    const restSec = session.restBetweenRounds;
+
+    if (restSec <= 0) {
+      onUpdateSession({
+        ...session,
+        logs: nextLogs,
+        currentRound: session.currentRound + 1,
+        currentItemIndex: 0,
+        phase: 'exercise',
       });
       return;
     }
@@ -516,6 +757,12 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
     });
   };
 
+  const handleRoundFlowFinish = () => {
+    soundEngine.unlock();
+    soundEngine.playGo(isMuted);
+    startCooldown();
+  };
+
   const handleSwapAntagonist = (replacement: Exercise) => {
     const nextItems = session.items.map((it, idx) => {
       if (idx !== session.currentItemIndex) return it;
@@ -526,6 +773,7 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
       return {
         exerciseId: replacement.id,
         target: nextTarget,
+        plannedTarget: nextTarget,
         swappedFromId: it.swappedFromId ?? it.exerciseId,
       };
     });
@@ -537,6 +785,12 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
     });
     setShowAntagonistSheet(false);
   };
+
+  // Round-flow: number of fully logged rounds.
+  const roundFlowCompleted = session.logs.reduce(
+    (max, l) => Math.max(max, l.round),
+    0
+  );
 
   const handleSaveFinish = () => {
     const elapsedSec = Math.max(
@@ -550,7 +804,9 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
       date: new Date().toISOString(),
       workoutTitle: session.workoutTitle,
       readiness: session.readiness,
-      roundsCompleted: session.totalRounds,
+      roundsCompleted: session.isRoundFlow
+        ? roundFlowCompleted
+        : session.totalRounds,
       roundsPlanned: session.totalRounds,
       durationSeconds: elapsedSec,
       sets: session.logs,
@@ -565,8 +821,23 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
   const nextExercise =
     exercises.find((e) => e.id === nextItem?.exerciseId) ?? currentExercise;
 
+  // Progress ring: share of the current round's exercises reached
+  // (during rest `currentItemIndex` still points at the finished exercise);
+  // in round-flow mode, rounds done out of the goal.
+  const ringProgress = session.isRoundFlow
+    ? roundFlowCompleted / Math.max(1, session.totalRounds)
+    : (session.currentItemIndex + 1) / Math.max(1, session.items.length);
+  const ringRound =
+    session.isRoundFlow && session.phase === 'rest'
+      ? roundFlowCompleted
+      : session.currentRound;
+
   // Shared top bar inside player
-  const renderTopBar = (centerLabel: string, showAntagonist = false) => (
+  const renderTopBar = (
+    centerLabel: string,
+    showAntagonist = false,
+    showRing = false
+  ) => (
     <header className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 landscape:h-11 lg:landscape:h-14 dark:border-[#1E293B] dark:bg-[#0F1520]">
       <button
         type="button"
@@ -614,6 +885,13 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
             <Volume2 className="h-4 w-4 text-[#DC2626] dark:text-[#F87171]" />
           )}
         </button>
+        {showRing && (
+          <RoundProgressRing
+            progress={ringProgress}
+            round={ringRound}
+            totalRounds={session.totalRounds}
+          />
+        )}
       </div>
     </header>
   );
@@ -1079,7 +1357,11 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
 
     return (
       <div className="fixed inset-0 z-50 flex h-[100dvh] flex-col overflow-hidden bg-white dark:bg-[#0B0F17]">
-        {renderTopBar(`ОТДЫХ · R${nextPos.nextRound}/${session.totalRounds}`)}
+        {renderTopBar(
+          `ОТДЫХ · R${nextPos.nextRound}/${session.totalRounds}`,
+          false,
+          true
+        )}
 
         <main className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col justify-between overflow-hidden px-4 pt-2 pb-safe sm:px-5 landscape:grid landscape:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] landscape:items-center landscape:gap-4 landscape:py-2">
           {/* Top (Portrait) / Left (Landscape): Clear Next Exercise Diagram + Title */}
@@ -1164,6 +1446,112 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
                 <FastForward className="h-4 w-4" />
               </button>
             </div>
+
+            {session.isRoundFlow && (
+              <button
+                type="button"
+                onClick={handleRoundFlowFinish}
+                className="tap-scale flex min-h-[48px] w-full items-center justify-center gap-1.5 rounded-2xl border border-gray-300 bg-white text-sm font-bold text-[#111827] active:bg-gray-100 dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:active:bg-[#243044]"
+              >
+                Закончить → Заминка
+              </button>
+            )}
+          </div>
+        </main>
+
+        {showExitConfirm && (
+          <ExitConfirmModal
+            onCancel={() => setShowExitConfirm(false)}
+            onConfirm={onExitSession}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // PHASE: ROUND-FLOW "15+" (whole round on one screen, open round counter)
+  if (session.isRoundFlow) {
+    const many = session.items.length > 4;
+    return (
+      <div className="fixed inset-0 z-50 flex h-[100dvh] flex-col overflow-hidden bg-white dark:bg-[#0B0F17]">
+        {renderTopBar(`КРУГ ${session.currentRound}`, false, true)}
+
+        <main className="mx-auto grid min-h-0 w-full max-w-5xl flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)_auto] gap-3 px-4 pt-3 pb-safe landscape:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] landscape:grid-rows-1 landscape:gap-4 landscape:py-3">
+          {/* Top (Portrait) / Left (Landscape): all exercises of the round */}
+          <div
+            className={`grid min-h-0 gap-2 overflow-y-auto ${
+              many ? 'grid-cols-1' : 'grid-cols-2 auto-rows-fr'
+            }`}
+          >
+            {session.items.map((it, idx) => {
+              const ex = exercises.find((e) => e.id === it.exerciseId);
+              if (!ex) return null;
+              return (
+                <div
+                  key={`${it.exerciseId}-${idx}`}
+                  className={`flex min-h-0 min-w-0 rounded-2xl border border-gray-200 bg-gray-50/70 p-2.5 dark:border-[#232E42] dark:bg-[#131A26] ${
+                    many
+                      ? 'items-center gap-3'
+                      : 'flex-col items-center justify-center text-center'
+                  }`}
+                >
+                  <ExerciseSvg
+                    svgKey={ex.svgKey}
+                    className={
+                      many
+                        ? 'h-12 w-16 shrink-0'
+                        : 'h-[clamp(3.5rem,13dvh,7rem)] w-auto max-w-full landscape:h-[clamp(3rem,16dvh,6.5rem)]'
+                    }
+                  />
+                  <div className={many ? 'min-w-0 flex-1' : 'mt-1.5 w-full min-w-0'}>
+                    <p className="break-words text-xs font-bold leading-tight text-[#111827] sm:text-sm dark:text-[#F3F4F6]">
+                      {ex.name}
+                    </p>
+                    <p className="font-mono-num mt-0.5 text-lg font-bold leading-none text-[#DC2626] dark:text-[#F87171]">
+                      {formatMetricTarget(it.target, ex.metric)}
+                      {ex.isPaired && (
+                        <span className="ml-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                          ×2 стороны
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bottom (Portrait) / Right (Landscape): round counter + actions */}
+          <div className="flex min-h-0 flex-col justify-center gap-3 rounded-3xl border border-gray-200 bg-white p-4 dark:border-[#232E42] dark:bg-[#131A26]">
+            <div className="text-center">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                Кругов выполнено
+              </p>
+              <div className="font-mono-num mt-1 text-[4.5rem] font-bold leading-none tracking-tight text-[#111827] sm:text-[5.5rem] landscape:text-[clamp(3.25rem,15dvh,5rem)] dark:text-[#F3F4F6]">
+                {roundFlowCompleted}
+              </div>
+              <p className="font-mono-num mt-1 text-sm font-semibold text-[#DC2626] dark:text-[#F87171]">
+                Цель: {session.totalRounds}+
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleRoundFlowPlusRound}
+              className="tap-scale flex min-h-[64px] w-full items-center justify-center gap-2 rounded-2xl bg-[#DC2626] px-6 text-lg font-bold tracking-wide text-white shadow-sm active:bg-[#B91C1C]"
+            >
+              <Plus className="h-6 w-6" />
+              +1 КРУГ ВЫПОЛНЕН
+            </button>
+
+            <button
+              type="button"
+              onClick={handleRoundFlowFinish}
+              disabled={roundFlowCompleted < 1}
+              className="tap-scale flex min-h-[48px] w-full items-center justify-center gap-1.5 rounded-2xl border border-gray-300 bg-white text-sm font-bold text-[#111827] active:bg-gray-100 disabled:opacity-40 dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:active:bg-[#243044]"
+            >
+              Закончить → Заминка
+            </button>
           </div>
         </main>
 
@@ -1187,6 +1575,7 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
         `Round ${session.currentRound} / ${session.totalRounds} · ${
           session.currentItemIndex + 1
         }/${session.items.length}`,
+        true,
         true
       )}
 
@@ -1258,24 +1647,24 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
                   type="button"
                   onClick={handleTapHoldDigits}
                   aria-label={
-                    holdUi.mode !== 'idle'
-                      ? `Остановить таймер ${currentExercise.name}`
-                      : `Запустить таймер ${currentExercise.name}`
+                    holdUi.mode === 'paused' || holdUi.mode === 'idle'
+                      ? `Запустить таймер ${currentExercise.name}`
+                      : `Остановить таймер ${currentExercise.name}`
                   }
-                  className={`tap-scale font-mono-num flex min-h-[48px] items-center justify-center rounded-xl px-4 text-3xl font-bold leading-none transition-colors sm:min-h-[56px] sm:text-4xl ${
-                    holdUi.mode === 'countdown'
+                  className={`touch-manipulation font-mono-num flex min-h-[48px] items-center justify-center rounded-xl px-4 text-3xl font-bold leading-none transition-colors sm:min-h-[56px] sm:text-4xl ${
+                    holdUi.mode === 'prep' || holdUi.mode === 'flip'
                       ? 'bg-white text-[#DC2626] ring-2 ring-[#DC2626]/30 dark:bg-[#1E293B] dark:text-[#F87171] dark:ring-[#F87171]/40'
                       : holdUi.mode === 'running'
-                        ? holdUi.elapsed >= currentItem.target
-                          ? 'bg-white text-[#16A34A] ring-2 ring-[#16A34A]/30 dark:bg-[#1E293B] dark:text-[#4ADE80] dark:ring-[#4ADE80]/40'
-                          : 'bg-white text-[#DC2626] ring-2 ring-[#DC2626]/30 dark:bg-[#1E293B] dark:text-[#F87171] dark:ring-[#F87171]/40'
-                        : 'text-[#111827] hover:bg-white active:bg-white dark:text-[#F3F4F6] dark:hover:bg-[#1E293B] dark:active:bg-[#1E293B]'
+                        ? 'bg-white text-[#16A34A] ring-2 ring-[#16A34A]/30 dark:bg-[#1E293B] dark:text-[#4ADE80] dark:ring-[#4ADE80]/40'
+                        : holdUi.mode === 'paused'
+                          ? 'bg-white text-[#D97706] ring-2 ring-[#D97706]/30 dark:bg-[#1E293B] dark:text-[#FBBF24] dark:ring-[#FBBF24]/40'
+                          : 'text-[#111827] hover:bg-white active:bg-white dark:text-[#F3F4F6] dark:hover:bg-[#1E293B] dark:active:bg-[#1E293B]'
                   }`}
                 >
-                  {holdUi.mode === 'countdown'
-                    ? formatClock(holdUi.countdown)
-                    : holdUi.mode === 'running'
-                      ? formatClock(holdUi.elapsed)
+                  {holdUi.mode === 'prep' || holdUi.mode === 'flip'
+                    ? holdUi.countdown
+                    : holdUi.mode === 'paused' && holdUi.pausedFrom !== 'running'
+                      ? Math.ceil((holdUi.pausedLeftMs ?? 0) / 1000)
                       : formatClock(repsValue)}
                 </button>
               ) : (
@@ -1294,6 +1683,28 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
               <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
+
+          {currentExercise.metric === 'seconds' && (
+            <p
+              className={`text-center text-xs font-semibold ${
+                holdUi.mode === 'prep' || holdUi.mode === 'flip'
+                  ? 'text-[#DC2626] dark:text-[#F87171]'
+                  : holdUi.mode === 'paused'
+                    ? 'text-[#D97706] dark:text-[#FBBF24]'
+                    : 'text-gray-500 dark:text-gray-400'
+              }`}
+            >
+              {holdUi.mode === 'prep'
+                ? `Займите положение · старт через ${holdUi.countdown}с`
+                : holdUi.mode === 'flip'
+                  ? `Переворот на другую сторону · ${holdUi.countdown}с`
+                  : holdUi.mode === 'running'
+                    ? `Цель ${formatClock(currentItem.target)} · тап — пауза · 2 тапа — заново`
+                    : holdUi.mode === 'paused'
+                      ? 'Пауза · тап — продолжить · 2 тапа — заново'
+                      : `Цель ${formatClock(currentItem.target)} · тап — старт`}
+            </p>
+          )}
 
           {/* RIR Selector */}
           <div className="flex items-center justify-between gap-3">

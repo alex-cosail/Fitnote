@@ -124,6 +124,7 @@ export default function App() {
       ? RED_MOBILITY_EXERCISES.map((item) => ({
           exerciseId: item.exerciseId,
           target: item.target,
+          plannedTarget: item.target,
         }))
       : plan.items.map((item) => {
           const ex = data.exercises.find((e) => e.id === item.exerciseId);
@@ -132,8 +133,11 @@ export default function App() {
           return {
             exerciseId: item.exerciseId,
             target,
+            plannedTarget: target,
           };
         });
+
+    const isRoundFlow = !isRed && (Boolean(plan.useAgt30) || plan.rounds >= 8);
 
     const warmupSec = data.warmupMinutes * 60;
     const initialWarmupSteps = getWarmupPlan(data.warmupMinutes).steps;
@@ -161,6 +165,7 @@ export default function App() {
       restBetweenExercises: isRed ? 20 : plan.restBetweenExercises,
       restBetweenRounds: isRed ? 45 : plan.restBetweenRounds,
       isMobilityOnly: isRed,
+      isRoundFlow,
     };
 
     setData((prev) => ({ ...prev, activeSession: newSession }));
@@ -260,6 +265,15 @@ export default function App() {
         selectedWorkoutId: nextSelectedId,
       };
     });
+  };
+
+  const handleUpdateWorkout = (updatedPlan: WorkoutPlan) => {
+    setData((prev) => ({
+      ...prev,
+      workouts: prev.workouts.map((w) =>
+        w.id === updatedPlan.id ? updatedPlan : w
+      ),
+    }));
   };
 
   const handleImportPlan = (payload: {
@@ -482,6 +496,7 @@ export default function App() {
               setData((prev) => ({ ...prev, selectedWorkoutId: id }))
             }
             onDeleteWorkout={handleDeleteWorkout}
+            onUpdateWorkout={handleUpdateWorkout}
             onChangeReadiness={(readiness) =>
               setData((prev) => ({
                 ...prev,

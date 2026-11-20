@@ -63,6 +63,12 @@ export interface WorkoutPlan {
   restBetweenRounds: number; // seconds
   useAgt30?: boolean;
   items: WorkoutItem[];
+  // Snapshot of the coach's values, taken on the first manual edit on the
+  // Workout screen; used by "reset to coach plan". Absent = never edited.
+  original?: {
+    rounds: number;
+    items: WorkoutItem[];
+  };
 }
 
 export interface MobilityStep {
@@ -82,6 +88,9 @@ export interface SetLog {
   swappedFromName?: string;
   metric: MetricType;
   target: number;
+  // The coach's target before in-session carryover; absent in older logs
+  // (then equal to `target`).
+  plannedTarget?: number;
   actual: number;
   leftActual?: number;
   rightActual?: number;
@@ -116,7 +125,10 @@ export interface ActiveSession {
   isPaused: boolean;
   items: {
     exerciseId: string;
+    // Current target; carries over the actual result from the previous round.
     target: number;
+    // The coach's target at session start (absent in older saved sessions).
+    plannedTarget?: number;
     swappedFromId?: string;
   }[];
   logs: SetLog[];
@@ -124,6 +136,9 @@ export interface ActiveSession {
   restBetweenExercises: number;
   restBetweenRounds: number;
   isMobilityOnly?: boolean;
+  // Open-ended "15+" mode: the whole round on one screen, "+1 round" button,
+  // no round cap; `totalRounds` is only the goal.
+  isRoundFlow?: boolean;
 }
 
 export interface WorkoutLog {
