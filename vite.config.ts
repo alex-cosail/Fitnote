@@ -5,8 +5,17 @@ import path from 'path';
 import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
 
+// App version shown in the UI ("v.3"); bump it in package.json per release
+// and tag the release commit with the same number (e.g. v3).
+const pkg = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf8')
+) as {version: string};
+
 export default defineConfig(() => {
   return {
+    define: {
+      __APP_VERSION__: JSON.stringify(pkg.version),
+    },
     plugins: [
       react(),
       tailwindcss(),

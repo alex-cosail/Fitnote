@@ -33,6 +33,7 @@ import {
 } from './types';
 import { soundEngine } from './utils/audio';
 import { loadFitnoteData, saveFitnoteData } from './utils/storage';
+import { APP_VERSION_LABEL } from './version';
 
 const PROTECTED_WORKOUT_IDS = new Set([
   'workout-a',
@@ -364,9 +365,12 @@ export default function App() {
           <button
             type="button"
             onClick={() => setActiveTab('workout')}
-            className="font-display shrink-0 whitespace-nowrap text-xl font-bold tracking-tight text-[#111827] dark:text-[#F3F4F6] lg:text-2xl"
+            className="font-display flex shrink-0 items-baseline gap-1.5 whitespace-nowrap text-xl font-bold tracking-tight text-[#111827] dark:text-[#F3F4F6] lg:text-2xl"
           >
             Fitnote
+            <span className="font-mono-num text-[10px] font-medium tracking-normal text-gray-400 dark:text-gray-500">
+              {APP_VERSION_LABEL}
+            </span>
           </button>
 
           <nav className="flex items-center gap-4 overflow-x-auto sm:gap-6">
@@ -438,8 +442,11 @@ export default function App() {
 
       {/* Portrait Mobile Brand Strip */}
       <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2.5 dark:border-[#1E293B] landscape:hidden">
-        <span className="font-display text-2xl font-bold tracking-tight text-[#111827] dark:text-[#F3F4F6]">
+        <span className="font-display flex items-baseline gap-1.5 text-2xl font-bold tracking-tight text-[#111827] dark:text-[#F3F4F6]">
           Fitnote
+          <span className="font-mono-num text-[10px] font-medium tracking-normal text-gray-400 dark:text-gray-500">
+            {APP_VERSION_LABEL}
+          </span>
         </span>
         <div className="flex items-center gap-1">
           {activeTab === 'workout' && (
