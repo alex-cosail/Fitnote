@@ -133,6 +133,9 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [finishNote, setFinishNote] = useState('');
   const [pairedLeftValue, setPairedLeftValue] = useState<number | null>(null);
+  // Brief "saved" highlight after a tap on the rep number, then move on.
+  const [repSaveFlash, setRepSaveFlash] = useState(false);
+  const repSaveTimeoutRef = useRef<number | null>(null);
 
   // Autopilot for seconds-based exercises:
   // 5s prep -> stopwatch counts up -> stops by itself at the target.
@@ -207,6 +210,9 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
     return () => {
       if (holdTapTimeoutRef.current !== null) {
         window.clearTimeout(holdTapTimeoutRef.current);
+      }
+      if (repSaveTimeoutRef.current !== null) {
+        window.clearTimeout(repSaveTimeoutRef.current);
       }
     };
   }, []);
@@ -663,9 +669,16 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
     };
 
     // Smart carryover: the next round opens with this round's actual result.
+    // Timed holds only carry upwards, so an early (or accidental) stop does
+    // not cut the coach's target for the remaining rounds.
     // Only inside this session; the saved plan is untouched.
+    const shouldCarry =
+      finalActual > 0 &&
+      (currentExercise.metric === 'seconds'
+        ? finalActual > currentItem.target
+        : finalActual !== currentItem.target);
     const nextItems =
-      finalActual > 0 && finalActual !== currentItem.target
+      shouldCarry
         ? session.items.map((it, idx) =>
             idx === session.currentItemIndex
               ? {
@@ -832,13 +845,69 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
       ? roundFlowCompleted
       : session.currentRound;
 
+  // Tap on the rep number: highlight it briefly, then save the set / side.
+  const handleTapRepNumber = () => {
+    if (repSaveTimeoutRef.current !== null) return;
+    soundEngine.unlock();
+    setRepSaveFlash(true);
+    repSaveTimeoutRef.current = window.setTimeout(() => {
+      repSaveTimeoutRef.current = null;
+      setRepSaveFlash(false);
+      handleCompleteSet();
+    }, 280);
+  };
+
+  // Large exercise picture (fills the free space) + muscles, name and cue.
+  const renderExerciseVisual = (
+    ex: Exercise,
+    label?: string,
+    tone: 'default' | 'rest' = 'default'
+  ) => (
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col items-center text-center landscape:h-full">
+      {label && (
+        <p className="mb-1.5 shrink-0 text-xs font-bold uppercase tracking-wider text-[#0E7490] dark:text-[#67E8F9]">
+          {label}
+        </p>
+      )}
+      <div
+        className={`flex min-h-[7rem] w-full flex-1 items-center justify-center rounded-2xl border p-2 ${
+          tone === 'rest'
+            ? 'border-[#67E8F9] bg-transparent dark:border-[#155E75]'
+            : 'border-gray-200 bg-gray-50/70 dark:border-[#232E42] dark:bg-[#131A26]'
+        }`}
+      >
+        <ExerciseSvg svgKey={ex.svgKey} className="h-full max-h-full w-full" />
+      </div>
+
+      <div className="mt-2 w-full shrink-0 landscape:mt-1.5">
+        <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+          {ex.target_muscles.map(getMuscleLabel).join(' · ')}
+          {ex.isPaired ? ' · парное' : ''}
+        </p>
+        <h2 className="font-display mt-0.5 break-words text-[clamp(1.35rem,3.6dvh,2.15rem)] font-bold leading-tight tracking-tight text-[#111827] landscape:text-[clamp(1.2rem,5.2dvh,2rem)] dark:text-[#F3F4F6]">
+          {ex.name}
+        </h2>
+        <p className="mx-auto mt-0.5 line-clamp-2 max-w-md text-xs leading-snug text-gray-600 landscape:text-[11px] lg:landscape:text-sm dark:text-gray-300">
+          {ex.cue}
+        </p>
+      </div>
+    </div>
+  );
+
   // Shared top bar inside player
   const renderTopBar = (
     centerLabel: string,
     showAntagonist = false,
-    showRing = false
+    showRing = false,
+    tone: 'default' | 'rest' = 'default'
   ) => (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 landscape:h-11 lg:landscape:h-14 dark:border-[#1E293B] dark:bg-[#0F1520]">
+    <header
+      className={`flex h-12 shrink-0 items-center justify-between border-b px-4 landscape:h-11 lg:landscape:h-14 ${
+        tone === 'rest'
+          ? 'border-[#67E8F9] bg-[#BAF0F7] dark:border-[#155E75] dark:bg-[#083A47]'
+          : 'border-gray-200 bg-white dark:border-[#1E293B] dark:bg-[#0F1520]'
+      }`}
+    >
       <button
         type="button"
         onClick={() => setShowExitConfirm(true)}
@@ -872,9 +941,15 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
           type="button"
           onClick={onToggleMute}
           className={`tap-scale flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border transition-colors ${
-            isMuted
-              ? 'border-gray-200 bg-gray-100 text-gray-500 dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-gray-400'
-              : 'border-gray-200 bg-white text-[#111827] dark:border-[#2A3548] dark:bg-[#131A26] dark:text-[#F3F4F6]'
+            tone === 'rest'
+              ? `border-[#67E8F9] bg-transparent dark:border-[#155E75] ${
+                  isMuted
+                    ? 'text-[#0E7490]/70 dark:text-[#67E8F9]/70'
+                    : 'text-[#111827] dark:text-[#F3F4F6]'
+                }`
+              : isMuted
+                ? 'border-gray-200 bg-gray-100 text-gray-500 dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-gray-400'
+                : 'border-gray-200 bg-white text-[#111827] dark:border-[#2A3548] dark:bg-[#131A26] dark:text-[#F3F4F6]'
           }`}
           aria-label={isMuted ? 'Включить звук' : 'Выключить звук'}
           title={isMuted ? 'Звук выкл' : 'Звук вкл'}
@@ -1350,70 +1425,51 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
     );
   }
 
-  // PHASE: REST TIMER (Same 2-part layout as Active Exercise: SVG+Title & Timer+Buttons)
+  // PHASE: REST TIMER — tinted "relax" screen: next exercise picture +
+  // a full-width timer with the buttons below it.
   if (session.phase === 'rest') {
     const isUrgent =
       session.phaseRemainingSec > 0 && session.phaseRemainingSec <= 3;
 
     return (
-      <div className="fixed inset-0 z-50 flex h-[100dvh] flex-col overflow-hidden bg-white dark:bg-[#0B0F17]">
+      <div className="fixed inset-0 z-50 flex h-[100dvh] flex-col overflow-hidden bg-[#BAF0F7] dark:bg-[#083A47]">
         {renderTopBar(
           `ОТДЫХ · R${nextPos.nextRound}/${session.totalRounds}`,
           false,
-          true
+          true,
+          'rest'
         )}
 
-        <main className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col justify-between overflow-hidden px-4 pt-2 pb-safe sm:px-5 landscape:grid landscape:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] landscape:items-center landscape:gap-4 landscape:py-2">
-          {/* Top (Portrait) / Left (Landscape): Clear Next Exercise Diagram + Title */}
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center text-center">
-            <p className="mb-1.5 text-xs font-bold uppercase tracking-wider text-[#DC2626] dark:text-[#F87171]">
-              Далее · Круг {nextPos.nextRound}/{session.totalRounds}
-            </p>
+        <main className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-3 overflow-hidden px-4 pt-3 pb-safe sm:px-5 landscape:grid landscape:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] landscape:gap-4 landscape:py-3">
+          {/* Top (Portrait) / Left (Landscape): next exercise */}
+          {renderExerciseVisual(
+            nextExercise,
+            `Далее · Круг ${nextPos.nextRound}/${session.totalRounds}`,
+            'rest'
+          )}
 
-            <div className="flex w-full max-w-[15rem] items-center justify-center rounded-2xl border border-gray-200 bg-gray-50/70 p-2.5 sm:max-w-xs sm:p-3.5 landscape:max-w-[13rem] landscape:p-2 lg:landscape:max-w-sm lg:landscape:p-4 dark:border-[#232E42] dark:bg-[#131A26]">
-              <ExerciseSvg
-                svgKey={nextExercise.svgKey}
-                className="h-[clamp(5rem,20dvh,9rem)] w-auto max-w-full landscape:h-[clamp(4.75rem,27dvh,9rem)]"
-              />
-            </div>
-
-            <div className="mt-2 w-full landscape:mt-1.5">
-              <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
-                {nextExercise.target_muscles.map(getMuscleLabel).join(' · ')}
-                {nextExercise.isPaired ? ' · парное' : ''}
-              </p>
-
-              <h2 className="font-display mt-0.5 break-words text-[clamp(1.35rem,3.6dvh,2.15rem)] font-bold leading-tight tracking-tight text-[#111827] landscape:text-[clamp(1.2rem,5.2dvh,2rem)] dark:text-[#F3F4F6]">
-                {nextExercise.name}
-              </h2>
-              <p className="mx-auto mt-0.5 line-clamp-2 max-w-md text-xs leading-snug text-gray-600 landscape:text-[11px] lg:landscape:text-sm dark:text-gray-300">
-                {nextExercise.cue}
-              </p>
-            </div>
-          </div>
-
-          {/* Bottom Thumb Zone (Portrait) / Right (Landscape): Countdown Timer + [+15 сек] & [Пропустить] */}
-          <div className="mx-auto flex w-full max-w-md shrink-0 flex-col justify-between gap-3 pt-2 landscape:h-full landscape:justify-center landscape:gap-4 landscape:pt-0">
+          {/* Bottom (Portrait) / Right (Landscape): big timer, buttons below */}
+          <div className="@container flex w-full shrink-0 flex-col justify-center gap-2.5 landscape:h-full">
             <button
               type="button"
               onClick={togglePauseTimer}
-              className={`touch-manipulation flex flex-col items-center justify-center rounded-3xl border px-4 py-4 text-center transition-colors landscape:py-5 ${
+              className={`touch-manipulation flex w-full flex-col items-center justify-center rounded-3xl border px-3 py-3 text-center transition-colors landscape:flex-1 ${
                 session.isPaused || isUrgent
-                  ? 'border-[#DC2626]/30 bg-[#FEF2F2]/70 dark:border-[#EF4444]/40 dark:bg-[#450A0A]/45'
-                  : 'border-gray-200 bg-gray-50/80 active:bg-gray-100 dark:border-[#232E42] dark:bg-[#131A26] dark:active:bg-[#1A2333]'
+                  ? 'border-[#DC2626]/30 bg-[#FEF2F2]/80 dark:border-[#EF4444]/40 dark:bg-[#450A0A]/45'
+                  : 'border-[#67E8F9] bg-transparent active:bg-[#A5EDF5] dark:border-[#155E75] dark:active:bg-[#0B4A58]'
               }`}
             >
               <span
                 className={`text-xs font-bold uppercase tracking-widest ${
                   session.isPaused || isUrgent
                     ? 'text-[#DC2626] dark:text-[#F87171]'
-                    : 'text-gray-500 dark:text-gray-400'
+                    : 'text-[#0E7490] dark:text-[#67E8F9]'
                 }`}
               >
                 {session.isPaused ? 'ПАУЗА ОТДЫХА' : 'ОТДЫХ'}
               </span>
               <div
-                className={`font-mono-num mt-1 text-[4.5rem] font-bold leading-none tracking-tight sm:text-[5.5rem] landscape:text-[clamp(3.25rem,16dvh,5rem)] ${
+                className={`font-mono-num font-bold leading-none tracking-tight text-[min(30cqw,17dvh)] landscape:text-[min(30cqw,36dvh)] ${
                   session.isPaused || isUrgent
                     ? 'text-[#DC2626] dark:text-[#F87171]'
                     : 'text-[#111827] dark:text-[#F3F4F6]'
@@ -1421,7 +1477,7 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
               >
                 {formatClock(session.phaseRemainingSec)}
               </div>
-              <span className="mt-1.5 text-[11px] font-medium text-gray-400 dark:text-gray-500">
+              <span className="mt-1 text-[11px] font-medium text-[#0E7490]/80 dark:text-[#67E8F9]/70">
                 Тап — пауза / продолжить
               </span>
             </button>
@@ -1430,7 +1486,7 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
               <button
                 type="button"
                 onClick={() => handleAddRestSeconds(15)}
-                className="tap-scale flex min-h-[52px] items-center justify-center rounded-2xl border border-gray-300 bg-white text-base font-bold text-[#111827] shadow-sm active:bg-gray-100 landscape:min-h-[48px] lg:landscape:min-h-[56px] dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:active:bg-[#243044]"
+                className="tap-scale flex min-h-[52px] items-center justify-center rounded-2xl border border-[#A5F3FC] bg-white text-base font-bold text-[#111827] shadow-sm active:bg-[#CFFAFE] landscape:min-h-[48px] dark:border-[#155E75]/60 dark:bg-[#0B3A45] dark:text-[#F3F4F6] dark:active:bg-[#0E4652]"
               >
                 +15 сек
               </button>
@@ -1440,7 +1496,7 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
                   lastTickSecondRef.current = null;
                   handleTimerZero();
                 }}
-                className="tap-scale flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl bg-[#111827] text-base font-bold text-white shadow-sm active:bg-black landscape:min-h-[48px] lg:landscape:min-h-[56px] dark:bg-[#F3F4F6] dark:text-[#0B0F17] dark:active:bg-white"
+                className="tap-scale flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl bg-[#111827] text-base font-bold text-white shadow-sm active:bg-black landscape:min-h-[48px] dark:bg-[#F3F4F6] dark:text-[#0B0F17] dark:active:bg-white"
               >
                 Пропустить
                 <FastForward className="h-4 w-4" />
@@ -1451,7 +1507,7 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
               <button
                 type="button"
                 onClick={handleRoundFlowFinish}
-                className="tap-scale flex min-h-[48px] w-full items-center justify-center gap-1.5 rounded-2xl border border-gray-300 bg-white text-sm font-bold text-[#111827] active:bg-gray-100 dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:active:bg-[#243044]"
+                className="tap-scale flex min-h-[48px] w-full items-center justify-center gap-1.5 rounded-2xl border border-[#A5F3FC] bg-white text-sm font-bold text-[#111827] active:bg-[#CFFAFE] dark:border-[#155E75]/60 dark:bg-[#0B3A45] dark:text-[#F3F4F6] dark:active:bg-[#0E4652]"
               >
                 Закончить → Заминка
               </button>
@@ -1568,6 +1624,51 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
   // PHASE: ACTIVE EXERCISE
   const isPairedSecondStep =
     Boolean(currentExercise.isPaired) && pairedLeftValue !== null;
+  const isTimed = currentExercise.metric === 'seconds';
+
+  const sideColorText = currentExercise.isPaired
+    ? isPairedSecondStep
+      ? 'text-[#16A34A] dark:text-[#4ADE80]'
+      : 'text-[#DC2626] dark:text-[#F87171]'
+    : 'text-[#111827] dark:text-[#F3F4F6]';
+
+  // Timed exercise display: countdown (prep / flip) or seconds held.
+  const holdDigits =
+    holdUi.mode === 'prep' || holdUi.mode === 'flip'
+      ? formatClock(holdUi.countdown)
+      : holdUi.mode === 'paused' && holdUi.pausedFrom !== 'running'
+        ? formatClock(Math.ceil((holdUi.pausedLeftMs ?? 0) / 1000))
+        : formatClock(repsValue);
+
+  const holdTone =
+    holdUi.mode === 'prep' || holdUi.mode === 'flip'
+      ? {
+          box: 'border-[#DC2626]/30 bg-[#FEF2F2]/80 dark:border-[#EF4444]/40 dark:bg-[#450A0A]/45',
+          text: 'text-[#DC2626] dark:text-[#F87171]',
+        }
+      : holdUi.mode === 'paused'
+        ? {
+            box: 'border-[#D97706]/30 bg-[#FFFBEB] dark:border-[#FBBF24]/40 dark:bg-[#451A03]/50',
+            text: 'text-[#D97706] dark:text-[#FBBF24]',
+          }
+        : {
+            box: 'border-gray-200 bg-gray-50 dark:border-[#232E42] dark:bg-[#131A26]',
+            text: 'text-[#111827] dark:text-[#F3F4F6]',
+          };
+
+  const holdCaption =
+    holdUi.mode === 'prep'
+      ? `Займите положение · старт через ${holdUi.countdown}с`
+      : holdUi.mode === 'flip'
+        ? `Переворот на другую сторону · ${holdUi.countdown}с`
+        : holdUi.mode === 'running'
+          ? `Цель ${formatClock(currentItem.target)} · тап — пауза · 2 тапа — заново`
+          : holdUi.mode === 'paused'
+            ? 'Пауза · тап — продолжить · 2 тапа — заново'
+            : `Цель ${formatClock(currentItem.target)} · тап — старт`;
+
+  const stepColClass =
+    'tap-scale flex h-full items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 text-[#111827] active:bg-gray-200 dark:border-[#232E42] dark:bg-[#131A26] dark:text-[#F3F4F6] dark:active:bg-[#1E293B]';
 
   return (
     <div className="fixed inset-0 z-50 flex h-[100dvh] flex-col overflow-hidden bg-white dark:bg-[#0B0F17]">
@@ -1579,176 +1680,143 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
         true
       )}
 
-      <main className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col justify-between overflow-hidden px-4 pt-2 pb-safe sm:px-5 landscape:grid landscape:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] landscape:items-center landscape:gap-4 landscape:py-2">
-        {/* Top (Portrait) / Left (Landscape): SVG Cue + Title + Technique + Hold Stopwatch */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center text-center">
-          <div className="flex w-full max-w-[15rem] items-center justify-center rounded-2xl border border-gray-200 bg-gray-50/70 p-2.5 sm:max-w-xs sm:p-3.5 landscape:max-w-[13rem] landscape:p-2 lg:landscape:max-w-sm lg:landscape:p-4 dark:border-[#232E42] dark:bg-[#131A26]">
-            <ExerciseSvg
-              svgKey={currentExercise.svgKey}
-              className="h-[clamp(5rem,20dvh,9rem)] w-auto max-w-full landscape:h-[clamp(4.75rem,27dvh,9rem)]"
-            />
-          </div>
+      <main className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-3 overflow-hidden px-4 pt-3 pb-safe sm:px-5 landscape:grid landscape:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] landscape:gap-4 landscape:py-3">
+        {/* Top (Portrait) / Left (Landscape): large picture + name + cue */}
+        {renderExerciseVisual(currentExercise)}
 
-          <div className="mt-2 w-full landscape:mt-1.5">
-            <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
-              {currentExercise.target_muscles.map(getMuscleLabel).join(' · ')}
-              {currentExercise.isPaired ? ' · парное' : ''}
-            </p>
-
-            <h2 className="font-display mt-0.5 break-words text-[clamp(1.35rem,3.6dvh,2.15rem)] font-bold leading-tight tracking-tight text-[#111827] landscape:text-[clamp(1.2rem,5.2dvh,2rem)] dark:text-[#F3F4F6]">
-              {currentExercise.name}
-            </h2>
-            <p className="mx-auto mt-0.5 line-clamp-2 max-w-md text-xs leading-snug text-gray-600 landscape:text-[11px] lg:landscape:text-sm dark:text-gray-300">
-              {currentExercise.cue}
-            </p>
-          </div>
-        </div>
-
-        {/* Bottom Thumb Zone (Portrait) / Right (Landscape): Stepper + RIR + Save CTA */}
-        <div className="mx-auto w-full max-w-md shrink-0 space-y-2 pt-2 landscape:space-y-2 landscape:pt-0">
-          {currentExercise.isPaired && (
-            <div className="flex items-center justify-between px-1 text-xs font-semibold">
-              <span
-                className={
-                  isPairedSecondStep
-                    ? 'text-[#16A34A] dark:text-[#4ADE80]'
-                    : 'text-[#DC2626] dark:text-[#F87171]'
-                }
+        {/* Bottom (Portrait) / Right (Landscape): controls */}
+        {isTimed ? (
+          <div className="@container flex w-full shrink-0 flex-col justify-center gap-2.5 landscape:h-full">
+            {/* Big hold timer: tap = pause / resume, double tap = reset */}
+            <button
+              type="button"
+              onClick={handleTapHoldDigits}
+              aria-label={
+                holdUi.mode === 'paused' || holdUi.mode === 'idle'
+                  ? `Запустить таймер ${currentExercise.name}`
+                  : `Остановить таймер ${currentExercise.name}`
+              }
+              className={`touch-manipulation flex w-full flex-col items-center justify-center rounded-3xl border px-3 py-3 text-center transition-colors landscape:flex-1 ${holdTone.box}`}
+            >
+              <div
+                className={`font-mono-num font-bold leading-none tracking-tight text-[min(30cqw,17dvh)] landscape:text-[min(30cqw,36dvh)] ${holdTone.text}`}
               >
-                {isPairedSecondStep
-                  ? 'Подход 2/2 · Правая сторона'
-                  : 'Подход 1/2 · Левая сторона'}
-              </span>
-              {isPairedSecondStep && pairedLeftValue !== null && (
-                <span className="font-mono-num text-gray-500 dark:text-gray-400">
-                  Левая:{' '}
-                  {currentExercise.metric === 'seconds'
-                    ? formatClock(pairedLeftValue)
-                    : pairedLeftValue}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Large Rep / Seconds Stepper (for seconds: tap digits for 5s countdown -> start -> tap to stop) */}
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-1.5 sm:p-2 dark:border-[#232E42] dark:bg-[#131A26]">
-            <button
-              type="button"
-              onClick={() => handleStepReps(-1)}
-              className="tap-scale flex h-12 w-14 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#111827] shadow-sm active:bg-gray-100 sm:h-14 sm:w-16 dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:active:bg-[#243044]"
-              aria-label="Уменьшить"
-            >
-              <Minus className="h-5 w-5 sm:h-6 sm:w-6" />
+                {holdDigits}
+              </div>
             </button>
 
-            <div className="flex flex-1 items-center justify-center text-center">
-              {currentExercise.metric === 'seconds' ? (
-                <button
-                  type="button"
-                  onClick={handleTapHoldDigits}
-                  aria-label={
-                    holdUi.mode === 'paused' || holdUi.mode === 'idle'
-                      ? `Запустить таймер ${currentExercise.name}`
-                      : `Остановить таймер ${currentExercise.name}`
-                  }
-                  className={`touch-manipulation font-mono-num flex min-h-[48px] items-center justify-center rounded-xl px-4 text-3xl font-bold leading-none transition-colors sm:min-h-[56px] sm:text-4xl ${
-                    holdUi.mode === 'prep' || holdUi.mode === 'flip'
-                      ? 'bg-white text-[#DC2626] ring-2 ring-[#DC2626]/30 dark:bg-[#1E293B] dark:text-[#F87171] dark:ring-[#F87171]/40'
-                      : holdUi.mode === 'running'
-                        ? 'bg-white text-[#16A34A] ring-2 ring-[#16A34A]/30 dark:bg-[#1E293B] dark:text-[#4ADE80] dark:ring-[#4ADE80]/40'
-                        : holdUi.mode === 'paused'
-                          ? 'bg-white text-[#D97706] ring-2 ring-[#D97706]/30 dark:bg-[#1E293B] dark:text-[#FBBF24] dark:ring-[#FBBF24]/40'
-                          : 'text-[#111827] hover:bg-white active:bg-white dark:text-[#F3F4F6] dark:hover:bg-[#1E293B] dark:active:bg-[#1E293B]'
-                  }`}
-                >
-                  {holdUi.mode === 'prep' || holdUi.mode === 'flip'
-                    ? holdUi.countdown
-                    : holdUi.mode === 'paused' && holdUi.pausedFrom !== 'running'
-                      ? Math.ceil((holdUi.pausedLeftMs ?? 0) / 1000)
-                      : formatClock(repsValue)}
-                </button>
-              ) : (
-                <div className="font-mono-num text-3xl font-bold leading-none text-[#111827] sm:text-4xl dark:text-[#F3F4F6]">
-                  {repsValue}
-                </div>
-              )}
-            </div>
+            <p className={`text-center text-xs font-semibold ${holdTone.text}`}>
+              {holdCaption}
+            </p>
 
             <button
               type="button"
-              onClick={() => handleStepReps(1)}
-              className="tap-scale flex h-12 w-14 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#111827] shadow-sm active:bg-gray-100 sm:h-14 sm:w-16 dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:active:bg-[#243044]"
-              aria-label="Увеличить"
-            >
-              <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
-            </button>
-          </div>
-
-          {currentExercise.metric === 'seconds' && (
-            <p
-              className={`text-center text-xs font-semibold ${
-                holdUi.mode === 'prep' || holdUi.mode === 'flip'
-                  ? 'text-[#DC2626] dark:text-[#F87171]'
-                  : holdUi.mode === 'paused'
-                    ? 'text-[#D97706] dark:text-[#FBBF24]'
-                    : 'text-gray-500 dark:text-gray-400'
+              onClick={handleCompleteSet}
+              className={`tap-scale flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl px-6 text-base font-bold tracking-wide text-white shadow-sm transition-colors landscape:min-h-[48px] ${
+                currentExercise.isPaired
+                  ? isPairedSecondStep
+                    ? 'bg-[#16A34A] active:bg-[#15803D]'
+                    : 'bg-[#DC2626] active:bg-[#B91C1C]'
+                  : 'bg-[#2563EB] active:bg-[#1E40AF]'
               }`}
             >
-              {holdUi.mode === 'prep'
-                ? `Займите положение · старт через ${holdUi.countdown}с`
-                : holdUi.mode === 'flip'
-                  ? `Переворот на другую сторону · ${holdUi.countdown}с`
-                  : holdUi.mode === 'running'
-                    ? `Цель ${formatClock(currentItem.target)} · тап — пауза · 2 тапа — заново`
-                    : holdUi.mode === 'paused'
-                      ? 'Пауза · тап — продолжить · 2 тапа — заново'
-                      : `Цель ${formatClock(currentItem.target)} · тап — старт`}
-            </p>
-          )}
+              <Check className="h-5 w-5" />
+              {currentExercise.isPaired
+                ? isPairedSecondStep
+                  ? 'Правая сторона'
+                  : 'Левая сторона'
+                : 'Готово'}
+            </button>
+          </div>
+        ) : (
+          <div className="mx-auto flex w-full max-w-lg shrink-0 flex-col justify-center gap-2.5 landscape:h-full">
+            {currentExercise.isPaired && (
+              <div className="flex items-center justify-between px-1 text-xs font-semibold">
+                <span className={sideColorText}>
+                  {isPairedSecondStep
+                    ? 'Подход 2/2 · Правая сторона'
+                    : 'Подход 1/2 · Левая сторона'}
+                </span>
+                {isPairedSecondStep && pairedLeftValue !== null && (
+                  <span className="font-mono-num text-gray-500 dark:text-gray-400">
+                    Левая: {pairedLeftValue}
+                  </span>
+                )}
+              </div>
+            )}
 
-          {/* RIR Selector */}
-          <div className="flex items-center justify-between gap-3">
-            <span className="shrink-0 text-xs font-semibold text-gray-500 dark:text-gray-400">
-              Запас сил (RIR)
-            </span>
-            <div className="grid flex-1 grid-cols-3 gap-1.5 rounded-xl bg-gray-100 p-1 dark:bg-[#131A26]">
-              {(['2+', '1', '0'] as RirValue[]).map((val) => (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => setRir(val)}
-                  className={`tap-scale font-mono-num min-h-[38px] rounded-lg text-sm font-bold transition-colors sm:min-h-[42px] ${
-                    rir === val
-                      ? 'bg-white text-[#111827] shadow-sm dark:bg-[#2C3A52] dark:text-white'
-                      : 'text-gray-600 hover:text-[#111827] dark:text-gray-400 dark:hover:text-white'
+            {/* RIR Selector (chosen before tapping the number) */}
+            <div className="flex items-center justify-between gap-3">
+              <span className="shrink-0 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                Запас сил (RIR)
+              </span>
+              <div className="grid flex-1 grid-cols-3 gap-1.5 rounded-xl bg-gray-100 p-1 dark:bg-[#131A26]">
+                {(['2+', '1', '0'] as RirValue[]).map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setRir(val)}
+                    className={`tap-scale font-mono-num min-h-[40px] rounded-lg text-sm font-bold transition-colors ${
+                      rir === val
+                        ? 'bg-white text-[#111827] shadow-sm dark:bg-[#2C3A52] dark:text-white'
+                        : 'text-gray-600 hover:text-[#111827] dark:text-gray-400 dark:hover:text-white'
+                    }`}
+                  >
+                    {val}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Three equal-height columns: [−] [number = save] [+] */}
+            <div className="grid h-28 grid-cols-[1fr_1.6fr_1fr] gap-2 landscape:h-[clamp(5.5rem,30dvh,8.5rem)]">
+              <button
+                type="button"
+                onClick={() => handleStepReps(-1)}
+                className={stepColClass}
+                aria-label="Уменьшить"
+              >
+                <Minus className="h-8 w-8" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleTapRepNumber}
+                aria-label={`Сохранить ${repsValue}`}
+                className={`touch-manipulation flex h-full items-center justify-center rounded-2xl border-2 transition-colors ${
+                  repSaveFlash
+                    ? 'border-[#16A34A] bg-[#DCFCE7] dark:border-[#4ADE80] dark:bg-[#052E16]'
+                    : 'border-gray-300 bg-white active:bg-gray-50 dark:border-[#334155] dark:bg-[#1A2333] dark:active:bg-[#243044]'
+                }`}
+              >
+                <span
+                  className={`font-mono-num text-[4.75rem] font-bold leading-none landscape:text-[clamp(3.5rem,20dvh,5.5rem)] ${
+                    repSaveFlash ? 'text-[#16A34A] dark:text-[#4ADE80]' : sideColorText
                   }`}
                 >
-                  {val}
-                </button>
-              ))}
-            </div>
-          </div>
+                  {repsValue}
+                </span>
+              </button>
 
-          {/* Primary Save CTA (Blue for single; Red for Left side, Green for Right side on paired) */}
-          <button
-            type="button"
-            onClick={handleCompleteSet}
-            className={`tap-scale flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl px-6 text-base font-bold tracking-wide text-white shadow-sm transition-colors landscape:min-h-[48px] lg:landscape:min-h-[56px] lg:landscape:text-lg ${
-              currentExercise.isPaired
-                ? isPairedSecondStep
-                  ? 'bg-[#16A34A] active:bg-[#15803D]'
-                  : 'bg-[#DC2626] active:bg-[#B91C1C]'
-                : 'bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] dark:bg-[#2563EB] dark:hover:bg-[#3B82F6] dark:active:bg-[#1D4ED8]'
-            }`}
-          >
-            <Check className="h-5 w-5" />
-            {currentExercise.isPaired
-              ? isPairedSecondStep
-                ? 'Сохранить правую'
-                : 'Сохранить левую'
-              : 'ГОТОВО'}
-          </button>
-        </div>
+              <button
+                type="button"
+                onClick={() => handleStepReps(1)}
+                className={stepColClass}
+                aria-label="Увеличить"
+              >
+                <Plus className="h-8 w-8" />
+              </button>
+            </div>
+
+            <p className="text-center text-xs font-semibold text-gray-500 dark:text-gray-400">
+              {repSaveFlash
+                ? 'Записано'
+                : currentExercise.isPaired
+                  ? `Тап по числу — сохранить ${isPairedSecondStep ? 'правую' : 'левую'} сторону`
+                  : 'Тап по числу — сохранить подход'}
+            </p>
+          </div>
+        )}
       </main>
 
       {/* Antagonist Swap Sheet */}
