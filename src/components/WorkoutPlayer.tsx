@@ -1769,7 +1769,7 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
             </div>
 
             {/* Three equal-height columns: [−] [number = save] [+] */}
-            <div className="grid h-28 grid-cols-[1fr_1.6fr_1fr] gap-2 landscape:h-[clamp(5.5rem,30dvh,8.5rem)]">
+            <div className="grid h-28 grid-cols-[1fr_1.6fr_1fr] gap-2 landscape:h-auto landscape:min-h-[6rem] landscape:flex-1 landscape:grid-cols-[1fr_2.2fr_1fr]">
               <button
                 type="button"
                 onClick={() => handleStepReps(-1)}
@@ -1783,14 +1783,14 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
                 type="button"
                 onClick={handleTapRepNumber}
                 aria-label={`Сохранить ${repsValue}`}
-                className={`touch-manipulation flex h-full items-center justify-center rounded-2xl border-2 transition-colors ${
+                className={`touch-manipulation flex h-full min-w-0 items-center [container-type:size] justify-center rounded-2xl border-2 transition-colors ${
                   repSaveFlash
                     ? 'border-[#16A34A] bg-[#DCFCE7] dark:border-[#4ADE80] dark:bg-[#052E16]'
                     : 'border-gray-300 bg-white active:bg-gray-50 dark:border-[#334155] dark:bg-[#1A2333] dark:active:bg-[#243044]'
                 }`}
               >
                 <span
-                  className={`font-mono-num text-[4.75rem] font-bold leading-none landscape:text-[clamp(3.5rem,20dvh,5.5rem)] ${
+                  className={`font-mono-num text-[4.75rem] font-bold leading-none landscape:text-[min(78cqh,52cqw)] ${
                     repSaveFlash ? 'text-[#16A34A] dark:text-[#4ADE80]' : sideColorText
                   }`}
                 >
