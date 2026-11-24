@@ -48,9 +48,24 @@ export interface Exercise {
   isCustom?: boolean;
 }
 
+// How a slot's target is set (docs/ARCHITECTURE_V3_STEP0.md, section 3).
+export type TargetSpec =
+  | { kind: 'fixed'; value: number } // exactly this many (coach plans, old data)
+  | { kind: 'pctMax'; pct: number } // share of the user's max: 0.3 = AGT, 0.75 = strength
+  | { kind: 'rir'; rir: 0 | 1 | 2 | 3 }; // "leave N in the tank", estimated from the max
+
+/**
+ * A plan slot. Old / coach plans pin an exercise with a fixed target
+ * (`exerciseId` + `target`), which behaves exactly as before. Generated or
+ * shared plans may describe the slot by pattern + rank + spec instead; the
+ * engine then picks an exercise that fits the user's conditions.
+ */
 export interface WorkoutItem {
-  exerciseId: string;
+  exerciseId?: string;
   target: number; // baseline reps or seconds (ignored/overridden if plan.useAgt30 is true)
+  pattern?: import('./domain/catalog/types').MovementPattern;
+  rank?: import('./domain/catalog/types').DifficultyRank;
+  spec?: TargetSpec;
 }
 
 export interface WorkoutPlan {

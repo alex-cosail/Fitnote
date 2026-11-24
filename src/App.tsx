@@ -20,6 +20,7 @@ import { CATALOG_TEXT_RU } from './data/catalogText.ru';
 import { CATALOG_IDS, RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
 import { resolveExercises } from './domain/catalog/resolve';
 import { recordMax } from './domain/catalog/userMaxes';
+import { resolveWorkout } from './domain/plan/resolveWorkout';
 import { applyImport, ImportPayload } from './domain/plan/importPlan';
 import { calcAgt30, getEffectiveRounds } from './domain/plan/targets';
 import { useWakeLock } from './hooks/useWakeLock';
@@ -133,16 +134,11 @@ export default function App() {
           target: item.target,
           plannedTarget: item.target,
         }))
-      : plan.items.map((item) => {
-          const ex = exercises.find((e) => e.id === item.exerciseId);
-          const target =
-            plan.useAgt30 && ex ? calcAgt30(ex) : item.target;
-          return {
-            exerciseId: item.exerciseId,
-            target,
-            plannedTarget: target,
-          };
-        });
+      : resolveWorkout(plan, { catalog: CATALOG, exercises }).map((r) => ({
+          exerciseId: r.exerciseId,
+          target: r.target,
+          plannedTarget: r.target,
+        }));
 
     const isRoundFlow = !isRed && (Boolean(plan.useAgt30) || plan.rounds >= 8);
 

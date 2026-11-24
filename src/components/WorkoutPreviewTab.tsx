@@ -16,7 +16,9 @@ import {
 } from '../data/seed';
 import { getMuscleLabel } from '../domain/catalog/muscles';
 import { formatMetricTarget } from '../domain/format';
-import { calcAgt30, getEffectiveRounds, targetStep } from '../domain/plan/targets';
+import { CATALOG } from '../data/catalog';
+import { ResolvedItem, resolveWorkout } from '../domain/plan/resolveWorkout';
+import { getEffectiveRounds, targetStep } from '../domain/plan/targets';
 import {
   ActiveSession,
   Exercise,
@@ -97,8 +99,16 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
 
   const effectiveRounds = getEffectiveRounds(selectedPlan.rounds, readiness);
 
-  const displayedItems =
-    readiness === 'red' ? RED_MOBILITY_EXERCISES : selectedPlan.items;
+  // What will actually be played: plan slots resolved for this user (same
+  // engine as the workout start), or the fixed red-day mobility block.
+  const displayedItems: ResolvedItem[] =
+    readiness === 'red'
+      ? RED_MOBILITY_EXERCISES.map((it, i) => ({
+          slotIndex: i,
+          exerciseId: it.exerciseId,
+          target: it.target,
+        }))
+      : resolveWorkout(selectedPlan, { catalog: CATALOG, exercises });
 
   const estimatedMinutes =
     readiness === 'red'
@@ -609,10 +619,9 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           <div className="grid grid-cols-1 gap-2.5 landscape:gap-2">
             {displayedItems.map((item, idx) => {
               const ex = getExercise(item.exerciseId);
-              const plannedTarget =
-                selectedPlan.useAgt30 && readiness !== 'red'
-                  ? calcAgt30(ex)
-                  : item.target;
+              const plannedTarget = item.target;
+              const planTarget =
+                selectedPlan.items[item.slotIndex]?.target ?? item.target;
 
               return (
                 <article
@@ -643,9 +652,9 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                         {canTune && (
                           <button
                             type="button"
-                            onClick={() => handleChangeTarget(idx, ex, -1)}
+                            onClick={() => handleChangeTarget(item.slotIndex, ex, -1)}
                             disabled={
-                              item.target <= targetStep(ex.metric).min
+                              planTarget <= targetStep(ex.metric).min
                             }
                             className={stepBtnClass}
                             aria-label={`Уменьшить цель: ${ex.name}`}
@@ -666,7 +675,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                         {canTune && (
                           <button
                             type="button"
-                            onClick={() => handleChangeTarget(idx, ex, 1)}
+                            onClick={() => handleChangeTarget(item.slotIndex, ex, 1)}
                             className={stepBtnClass}
                             aria-label={`Увеличить цель: ${ex.name}`}
                           >
