@@ -6,7 +6,7 @@ import { readAnyStore } from '../../storage/schema';
 import { Exercise } from '../../types';
 import { resolveExercises } from './resolve';
 import { MOVEMENT_PATTERNS } from './types';
-import { recordMax, splitLegacyExercises } from './userMaxes';
+import { absorbIntoCatalog, recordMax, splitLegacyExercises } from './userMaxes';
 import { validateCatalog } from './validate';
 
 // Catalog validation runs with every test / build check: any new exercise
@@ -127,6 +127,39 @@ describe('resolveExercises', () => {
     const b = recordMax(user, CATALOG_IDS, 'custom-1', 7, '2026-11-24');
     expect(b.customExercises[0]).toMatchObject({ checkup_max: 7, lastCheckupDate: '2026-11-24' });
     expect(b.maxes).toBe(user.maxes);
+  });
+});
+
+describe('custom exercise later added to the catalog', () => {
+  const ids = new Set([...CATALOG_IDS, 'air-squats']);
+  const airSquats: Exercise = {
+    ...INITIAL_EXERCISES[0],
+    id: 'air-squats',
+    name: 'Air Squats',
+    checkup_max: 40,
+    lastCheckupDate: '2026-11-20',
+    isCustom: true,
+  };
+  const other: Exercise = { ...airSquats, id: 'hanging-knee-raises', name: 'Hanging Knee Raises' };
+
+  it('moves its max into maxes and drops the custom copy', () => {
+    const res = absorbIntoCatalog({ maxes: SEED_MAXES, customExercises: [airSquats, other] }, ids);
+    expect(res.maxes['air-squats']).toEqual({ value: 40, date: '2026-11-20' });
+    expect(res.customExercises.map((e) => e.id)).toEqual(['hanging-knee-raises']);
+  });
+
+  it('keeps a max the user already has in maxes', () => {
+    const res = absorbIntoCatalog(
+      { maxes: { 'air-squats': { value: 50 } }, customExercises: [airSquats] },
+      ids
+    );
+    expect(res.maxes['air-squats'].value).toBe(50);
+    expect(res.customExercises).toEqual([]);
+  });
+
+  it('is a no-op when nothing collides', () => {
+    const user = { maxes: SEED_MAXES, customExercises: [other] };
+    expect(absorbIntoCatalog(user, CATALOG_IDS)).toBe(user);
   });
 });
 

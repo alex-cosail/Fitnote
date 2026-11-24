@@ -32,6 +32,31 @@ export function recordMax(
 }
 
 /**
+ * A custom exercise whose id has since been added to the catalog becomes a
+ * catalog exercise: its max moves to `maxes` (unless the user already has
+ * one there) and the custom copy is dropped, so the list has no duplicates.
+ * Plans and logs reference the same id, so nothing else changes.
+ */
+export function absorbIntoCatalog(
+  user: UserExerciseData,
+  catalogIds: ReadonlySet<string>
+): UserExerciseData {
+  if (!user.customExercises.some((e) => catalogIds.has(e.id))) return user;
+  const maxes = { ...user.maxes };
+  const customExercises: Exercise[] = [];
+  for (const e of user.customExercises) {
+    if (!catalogIds.has(e.id)) {
+      customExercises.push(e);
+      continue;
+    }
+    if (!maxes[e.id] && typeof e.checkup_max === 'number') {
+      maxes[e.id] = { value: e.checkup_max, date: e.lastCheckupDate };
+    }
+  }
+  return { maxes, customExercises };
+}
+
+/**
  * Splits an old-style exercise list (catalog copies + custom exercises,
  * schema ≤ 2) into user maxima and custom exercises. Texts of catalog
  * exercises are dropped: the catalog in code is authoritative.

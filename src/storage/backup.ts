@@ -1,4 +1,4 @@
-import { DEFAULT_FITNOTE_DATA } from '../data/seed';
+import { CATALOG_IDS, DEFAULT_FITNOTE_DATA } from '../data/seed';
 import { FitnoteData } from '../types';
 import { mergeStoredData } from '../utils/mergeStoredData';
 import {
@@ -88,7 +88,7 @@ export function parseBackup(text: string): ParseBackupResult {
       isBackup ? { schemaVersion: obj.schemaVersion, data: obj.data } : parsed
     );
     const exportedAt = typeof obj.exportedAt === 'string' ? obj.exportedAt : undefined;
-    const merged = mergeStoredData(migrated, DEFAULT_FITNOTE_DATA);
+    const merged = mergeStoredData(migrated, DEFAULT_FITNOTE_DATA, CATALOG_IDS);
     const data: FitnoteData = {
       ...merged,
       activeSession: null,

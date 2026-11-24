@@ -1,4 +1,4 @@
-import { DEFAULT_FITNOTE_DATA } from '../data/seed';
+import { CATALOG_IDS, DEFAULT_FITNOTE_DATA } from '../data/seed';
 import {
   LEGACY_STORAGE_KEY_V1,
   readAnyStore,
@@ -21,7 +21,7 @@ export function loadFitnoteData(): FitnoteData {
       window.localStorage.getItem(LEGACY_STORAGE_KEY_V1);
     if (!raw) return DEFAULT_FITNOTE_DATA;
     const data = readAnyStore(JSON.parse(raw));
-    return mergeStoredData(data, DEFAULT_FITNOTE_DATA);
+    return mergeStoredData(data, DEFAULT_FITNOTE_DATA, CATALOG_IDS);
   } catch {
     // Unreadable or written by a newer version: keep the raw text aside
     // before the app starts saving defaults over it.

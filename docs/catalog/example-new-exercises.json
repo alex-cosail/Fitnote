@@ -1,7 +1,7 @@
 {
   "exercises": [
     {
-      "id": "air-squat",
+      "id": "air-squats",
       "pattern": "squat",
       "family": "legs_knee",
       "rank": 2,
@@ -17,12 +17,12 @@
       "ladder": { "plus1": "reverse-lunges" },
       "text": {
         "ru": {
-          "name": "Air Squat",
+          "name": "Air Squats",
           "cue": "Стопы на ширине плеч, колени по линии носков, спина ровная.",
           "details": "Встань прямо, стопы на ширине плеч, носки слегка развёрнуты. На вдохе отведи таз назад и вниз, как будто садишься на стул, колени идут по линии носков, пятки прижаты к земле. Опустись до параллели бедра с землёй или чуть ниже, сохраняя ровную спину. На выдохе вернись в стойку, толкаясь всей стопой."
         },
         "en": {
-          "name": "Air Squat",
+          "name": "Air Squats",
           "cue": "Feet shoulder-width, knees track over toes, back neutral."
         }
       }

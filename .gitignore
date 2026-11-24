@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Personal exports from the app (journal, maxima) — never commit
+fitnote-report-*.json
+fitnote-backup-*.json
+fitnote-prompt-*.txt

@@ -23,7 +23,7 @@
 {
   "exercises": [
     {
-      "id": "air-squat",
+      "id": "air-squats",
       "pattern": "squat",
       "family": "legs_knee",
       "rank": 2,
@@ -40,8 +40,8 @@
       "teenAllowed": true,
       "ladder": { "minus1": "…", "plus1": "reverse-lunges" },
       "text": {
-        "ru": { "name": "Air Squat", "cue": "…", "details": "…" },
-        "en": { "name": "Air Squat", "cue": "…", "details": "…" },
+        "ru": { "name": "Air Squats", "cue": "…", "details": "…" },
+        "en": { "name": "Air Squats", "cue": "…", "details": "…" },
         "tr": { "name": "Hava Squat", "cue": "…", "details": "…" }
       }
     }
@@ -53,7 +53,7 @@
 
 | Поле | Обязательно | Значения | Смысл |
 |---|---|---|---|
-| `id` | да | латиница в нижнем регистре, цифры, дефисы: `air-squat` | Постоянный идентификатор. Никогда не меняется и не переиспользуется |
+| `id` | да | латиница в нижнем регистре, цифры, дефисы: `air-squats` | Постоянный идентификатор. Никогда не меняется и не переиспользуется. Если упражнение уже есть у вас как «своё» (пришло от тренера), используйте **тот же id** — см. ниже |
 | `pattern` | да | `push_h`, `pull_h`, `push_v`, `pull_v`, `squat`, `hinge`, `lunge`, `core` | Один из 8 паттернов движения (раздел 1.1 брифа v3) |
 | `family` | да | см. «Семейства» | Семейство лестницы: внутри него работают кнопки −1 / +1. Может объединять паттерны (присед и выпады — `legs_knee`) |
 | `rank` | да | 1–5 | Ступень: 1 `--`, 2 `-`, 3 `Base`, 4 `+`, 5 `++` (см. «Опорные ступени») |
@@ -71,6 +71,8 @@
 | `ladder.minus1` / `ladder.plus1` | нет | id из каталога или из этого же файла, того же `family` | Предпочтительный сосед на ступень легче / тяжелее. Важнее вычисленного по семейству |
 | `text.ru` | да | `name`, `cue`, `details` | Название, подсказка (одно предложение до 140 символов, читается на площадке), описание техники (3–5 предложений) |
 | `text.en`, `text.tr` | нет | то же | Английский и турецкий; при отсутствии показывается русский |
+
+**Свои упражнения, которые переходят в каталог.** Сейчас у вас есть три своих упражнения от тренера: `air-squats` (Air Squats), `single-leg-rdl` (Single-Leg Romanian Deadlift), `hanging-knee-raises` (Hanging Knee Raises). Если добавлять их в каталог, берите именно эти id. После обновления приложения своё упражнение с таким id само станет упражнением каталога: ваш максимум сохранится, планы и журнал продолжат на него ссылаться, дубля не будет.
 
 **Теги мышц:** `lats`, `biceps`, `chest`, `triceps`, `front_delts`, `rear_delts`, `upper_back`, `quads`, `glutes`, `hamstrings`, `hip_flexors`, `obliques`, `core`, `lower_back`, `forearms`, `spine_decompression`, `shoulder_press`. Новый тег допустим, но проверка предупредит: для него нужно русское название в `src/domain/catalog/muscles.ts`.
 
@@ -130,7 +132,9 @@
 
 Верни ТОЛЬКО JSON вида {"exercises": [ ... ]} без пояснений. Каждое упражнение —
 объект с полями:
-- id: латиница в нижнем регистре и дефисы, например "air-squat"; не повторяй
+- id: латиница в нижнем регистре и дефисы, например "air-squats"; для этих
+  упражнений используй ровно такие id: air-squats (Air Squats), single-leg-rdl
+  (Single-Leg Romanian Deadlift), hanging-knee-raises (Hanging Knee Raises); не повторяй
   существующие id: strict-pull-ups, parallel-bar-dips, australian-pull-ups,
   floor-push-ups, bulgarian-split-squat, single-leg-glute-bridge, side-plank,
   dead-hang, pallof-press, romanian-deadlift, band-row, reverse-lunges, pike-push-ups;
