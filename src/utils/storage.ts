@@ -1,26 +1,48 @@
 import { DEFAULT_FITNOTE_DATA, INITIAL_EXERCISES } from '../data/seed';
+import {
+  LEGACY_STORAGE_KEY_V1,
+  readAnyStore,
+  STORAGE_KEY,
+  wrapEnvelope,
+} from '../storage/schema';
 import { FitnoteData } from '../types';
 import { mergeStoredData } from './mergeStoredData';
 
-const STORAGE_KEY = 'fitnote_offline_store_v1';
-
+/**
+ * Loads the current store; on first run after the update, migrates the old
+ * v1 store. The v1 key is left untouched as a safety net for one release.
+ */
 export function loadFitnoteData(): FitnoteData {
   if (typeof window === 'undefined') return DEFAULT_FITNOTE_DATA;
+  let raw: string | null = null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    raw =
+      window.localStorage.getItem(STORAGE_KEY) ??
+      window.localStorage.getItem(LEGACY_STORAGE_KEY_V1);
     if (!raw) return DEFAULT_FITNOTE_DATA;
-    const parsed = JSON.parse(raw) as Partial<FitnoteData>;
-    return mergeStoredData(parsed, DEFAULT_FITNOTE_DATA, INITIAL_EXERCISES);
+    const data = readAnyStore(JSON.parse(raw));
+    return mergeStoredData(data, DEFAULT_FITNOTE_DATA, INITIAL_EXERCISES);
   } catch {
+    // Unreadable or written by a newer version: keep the raw text aside
+    // before the app starts saving defaults over it.
+    if (raw) {
+      try {
+        window.localStorage.setItem(`${STORAGE_KEY}_unreadable_${Date.now()}`, raw);
+      } catch {
+        // nothing more we can do
+      }
+    }
     return DEFAULT_FITNOTE_DATA;
   }
 }
 
-export function saveFitnoteData(data: FitnoteData): void {
-  if (typeof window === 'undefined') return;
+/** Saves the store; returns false when the browser refused (e.g. quota). */
+export function saveFitnoteData(data: FitnoteData): boolean {
+  if (typeof window === 'undefined') return false;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(wrapEnvelope(data)));
+    return true;
   } catch {
-    // Ignore storage quota errors silently
+    return false;
   }
 }

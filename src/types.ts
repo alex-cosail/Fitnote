@@ -190,4 +190,6 @@ export interface FitnoteData {
   cardioLogs: CardioLog[];
   checkUpHistory: CheckUpEntry[];
   activeSession: ActiveSession | null;
+  // ISO time of the last saved backup file (absent = never).
+  lastBackupAt?: string;
 }

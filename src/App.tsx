@@ -9,6 +9,7 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
+import { BackupSection } from './components/BackupSection';
 import { CatalogTab } from './components/CatalogTab';
 import { CheckUpTab } from './components/CheckUpTab';
 import { SyncLogTab } from './components/SyncLogTab';
@@ -490,6 +491,18 @@ export default function App() {
             onDeleteWorkoutLog={handleDeleteWorkoutLog}
             onDeleteCardioLog={handleDeleteCardioLog}
             onImportPlan={handleImportPlan}
+            topSlot={
+              <BackupSection
+                data={data}
+                onBackupSaved={(iso) =>
+                  setData((prev) => ({ ...prev, lastBackupAt: iso }))
+                }
+                onRestore={(restored) => {
+                  setData({ ...restored, activeSession: null });
+                  setIsPlayerVisible(false);
+                }}
+              />
+            }
           />
         )}
       </main>

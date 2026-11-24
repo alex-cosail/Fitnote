@@ -29,6 +29,8 @@ interface SyncLogTabProps {
   onAddCardio: (log: CardioLog) => void;
   onDeleteWorkoutLog: (id: string) => void;
   onDeleteCardioLog: (id: string) => void;
+  // Rendered first in the left column (backup / restore).
+  topSlot?: React.ReactNode;
   onImportPlan: (payload: {
     workouts?: WorkoutPlan[];
     exercises?: Exercise[];
@@ -131,6 +133,7 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
   onDeleteWorkoutLog,
   onDeleteCardioLog,
   onImportPlan,
+  topSlot,
 }) => {
   // Cardio quick logger
   const [cardioType, setCardioType] = useState<CardioType>('Бег');
@@ -472,6 +475,7 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
       <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
         {/* Left Column: Cardio Logger + JSON Export/Import */}
         <div className="space-y-5 lg:col-span-5">
+          {topSlot}
           {/* Quick Cardio Logger */}
           <section className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-[#232E42] dark:bg-[#131A26]">
             <h2 className="text-base font-bold text-[#111827] dark:text-[#F3F4F6]">
