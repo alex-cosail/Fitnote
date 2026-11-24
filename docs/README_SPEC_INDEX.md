@@ -9,6 +9,7 @@
 | [SUMMARY.md](SUMMARY.md) | Что сделано: назначение, стек, релизы и деплой, содержимое v2 |
 | [BACKLOG.md](BACKLOG.md) | Планы, найденные проблемы надёжности, техдолг |
 | [ARCHITECTURE_V3_STEP0.md](ARCHITECTURE_V3_STEP0.md) | Архитектура v3, шаг 0 (фундамент): каталог отдельно от данных, тренировка из слотов, хранилище v2 с миграцией и резервной копией, движок, формат шеринга и QR, локализация, разделение плеера, план по частям, вопросы заказчику |
+| [CATALOG_TEMPLATE.md](CATALOG_TEMPLATE.md) | Шаблон разметки упражнений и промпт для ИИ (шаг 1); проверка файла — `npm run catalog:check -- файл.json`, образец — [catalog/example-new-exercises.json](catalog/example-new-exercises.json) |
 
 ## v2 — выполнено (релиз `v2`)
 

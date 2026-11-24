@@ -7,6 +7,7 @@ import { Exercise } from '../../types';
 import { resolveExercises } from './resolve';
 import { MOVEMENT_PATTERNS } from './types';
 import { recordMax, splitLegacyExercises } from './userMaxes';
+import { validateCatalog } from './validate';
 
 // Catalog validation runs with every test / build check: any new exercise
 // added by the author (with AI, by template) must pass these.
@@ -59,6 +60,22 @@ describe('catalog integrity', () => {
       });
     });
   }
+
+  it('passes the shared catalog validator with no errors or warnings', () => {
+    expect(validateCatalog(CATALOG, CATALOG_TEXT_RU)).toEqual([]);
+  });
+
+  it('validator reports problems in plain Russian', () => {
+    const bad = { ...CATALOG[0], id: 'Bad Id', rank: 7 as never, ladder: { minus1: 'nope' } };
+    const issues = validateCatalog([bad], {}, CATALOG);
+    const text = issues.map((i) => i.message).join('\n');
+    expect(text).toContain('id: только латиница');
+    expect(text).toContain('нет названия');
+    expect(text).toContain('rank — число от 1');
+    expect(text).toContain('"nope" нет ни в каталоге');
+    const dup = validateCatalog([CATALOG[0]], CATALOG_TEXT_RU, CATALOG);
+    expect(dup.map((i) => i.message)).toContain('такой id уже есть в каталоге — придумайте другой');
+  });
 
   it('texts exist only for catalog ids', () => {
     for (const id of Object.keys(CATALOG_TEXT_RU)) expect(CATALOG_IDS.has(id)).toBe(true);

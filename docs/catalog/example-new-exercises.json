@@ -1,0 +1,54 @@
+{
+  "exercises": [
+    {
+      "id": "air-squat",
+      "pattern": "squat",
+      "family": "legs_knee",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["quads", "glutes"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "generic_strength",
+      "defaultMax": { "low": 10, "medium": 25, "high": 50 },
+      "ladder": { "plus1": "reverse-lunges" },
+      "text": {
+        "ru": {
+          "name": "Air Squat",
+          "cue": "Стопы на ширине плеч, колени по линии носков, спина ровная.",
+          "details": "Встань прямо, стопы на ширине плеч, носки слегка развёрнуты. На вдохе отведи таз назад и вниз, как будто садишься на стул, колени идут по линии носков, пятки прижаты к земле. Опустись до параллели бедра с землёй или чуть ниже, сохраняя ровную спину. На выдохе вернись в стойку, толкаясь всей стопой."
+        },
+        "en": {
+          "name": "Air Squat",
+          "cue": "Feet shoulder-width, knees track over toes, back neutral."
+        }
+      }
+    },
+    {
+      "id": "incline-push-ups",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["hands_only"],
+      "stability": "bilateral",
+      "targetMuscles": ["chest", "triceps"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 8, "medium": 20, "high": 35 },
+      "ladder": { "plus1": "floor-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Incline Push-Ups",
+          "cue": "Ладони на перекладине или скамье, тело прямое, грудь к опоре.",
+          "details": "Поставь ладони на низкую перекладину, скамью или подоконник чуть шире плеч, отступи ногами назад, чтобы тело стало прямой линией. На вдохе опусти грудь к опоре, локти под 45° к корпусу. На выдохе выжми себя обратно, не прогибаясь в пояснице. Чем ниже опора, тем тяжелее."
+        }
+      }
+    }
+  ]
+}
