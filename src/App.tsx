@@ -14,11 +14,9 @@ import { CheckUpTab } from './components/CheckUpTab';
 import { SyncLogTab } from './components/SyncLogTab';
 import { WorkoutPlayer } from './components/WorkoutPlayer';
 import { WorkoutPreviewTab } from './components/WorkoutPreviewTab';
-import {
-  RED_MOBILITY_EXERCISES,
-  calcAgt30,
-  getWarmupPlan,
-} from './data/seed';
+import { RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
+import { applyImport, ImportPayload } from './domain/plan/importPlan';
+import { calcAgt30, getEffectiveRounds } from './domain/plan/targets';
 import { useWakeLock } from './hooks/useWakeLock';
 import {
   ActiveSession,
@@ -115,11 +113,7 @@ export default function App() {
     const readiness: ReadinessLevel = data.readiness;
     const isRed = readiness === 'red';
 
-    const effectiveRounds = isRed
-      ? 2
-      : readiness === 'yellow'
-        ? Math.max(1, Math.round(plan.rounds * 0.7))
-        : plan.rounds;
+    const effectiveRounds = getEffectiveRounds(plan.rounds, readiness);
 
     const sessionItems = isRed
       ? RED_MOBILITY_EXERCISES.map((item) => ({
@@ -277,73 +271,22 @@ export default function App() {
     }));
   };
 
-  const handleImportPlan = (payload: {
-    workouts?: WorkoutPlan[];
-    exercises?: Exercise[];
-  }) => {
-    let addedWorkouts = 0;
-    let addedExercises = 0;
-
-    setData((prev) => {
-      const nextExercises = [...prev.exercises];
-      if (payload.exercises) {
-        payload.exercises.forEach((incoming) => {
-          if (!incoming.id || !incoming.name) return;
-          const idx = nextExercises.findIndex((e) => e.id === incoming.id);
-          if (idx >= 0) {
-            nextExercises[idx] = { ...nextExercises[idx], ...incoming };
-          } else {
-            nextExercises.push({
-              ...incoming,
-              svgKey: incoming.svgKey ?? 'generic_strength',
-              target_muscles: incoming.target_muscles ?? ['core'],
-              antagonist_muscles: incoming.antagonist_muscles ?? ['core'],
-              cue:
-                incoming.cue ??
-                'Плавный контроль техники на каждом повторении.',
-              checkup_max: incoming.checkup_max ?? 10,
-              metric: incoming.metric ?? 'reps',
-            });
-          }
-          addedExercises += 1;
-        });
-      }
-
-      const nextWorkouts = [...prev.workouts];
-      if (payload.workouts) {
-        payload.workouts.forEach((incoming) => {
-          if (!incoming.title || !Array.isArray(incoming.items)) return;
-          const planId = incoming.id || `plan-${Date.now()}-${addedWorkouts}`;
-          const normalized: WorkoutPlan = {
-            id: planId,
-            title: incoming.title,
-            subtitle: incoming.subtitle ?? 'Импортированный план',
-            formatLabel: incoming.formatLabel ?? 'Custom Plan',
-            rounds: Math.max(1, incoming.rounds ?? 3),
-            restBetweenExercises: incoming.restBetweenExercises ?? 45,
-            restBetweenRounds: incoming.restBetweenRounds ?? 90,
-            useAgt30: Boolean(incoming.useAgt30),
-            items: incoming.items,
-          };
-          const idx = nextWorkouts.findIndex((w) => w.id === planId);
-          if (idx >= 0) {
-            nextWorkouts[idx] = normalized;
-          } else {
-            nextWorkouts.push(normalized);
-          }
-          addedWorkouts += 1;
-        });
-      }
-
-      // Note: workoutLogs, cardioLogs, and checkUpHistory are untouched!
-      return {
-        ...prev,
-        exercises: nextExercises,
-        workouts: nextWorkouts,
-      };
-    });
-
-    return { addedWorkouts, addedExercises };
+  // Counts come from the same pure merge that updates the state, so the
+  // "Imported N plans" message is always right.
+  const handleImportPlan = (payload: ImportPayload) => {
+    const result = applyImport(
+      { exercises: data.exercises, workouts: data.workouts },
+      payload
+    );
+    setData((prev) => ({
+      ...prev,
+      exercises: result.exercises,
+      workouts: result.workouts,
+    }));
+    return {
+      addedWorkouts: result.addedWorkouts,
+      addedExercises: result.addedExercises,
+    };
   };
 
   const navItems: {

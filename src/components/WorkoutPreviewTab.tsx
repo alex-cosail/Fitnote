@@ -12,11 +12,11 @@ import {
 import {
   COOLDOWN_STEPS,
   RED_MOBILITY_EXERCISES,
-  calcAgt30,
-  formatMetricTarget,
-  getMuscleLabel,
   getWarmupPlan,
 } from '../data/seed';
+import { getMuscleLabel } from '../domain/catalog/muscles';
+import { formatMetricTarget } from '../domain/format';
+import { calcAgt30, getEffectiveRounds, targetStep } from '../domain/plan/targets';
 import {
   ActiveSession,
   Exercise,
@@ -95,12 +95,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   const getExercise = (id: string) =>
     exercises.find((ex) => ex.id === id) ?? exercises[0];
 
-  const effectiveRounds =
-    readiness === 'red'
-      ? 2
-      : readiness === 'yellow'
-        ? Math.max(1, Math.round(selectedPlan.rounds * 0.7))
-        : selectedPlan.rounds;
+  const effectiveRounds = getEffectiveRounds(selectedPlan.rounds, readiness);
 
   const displayedItems =
     readiness === 'red' ? RED_MOBILITY_EXERCISES : selectedPlan.items;
@@ -191,8 +186,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   };
 
   const handleChangeTarget = (idx: number, ex: Exercise, direction: 1 | -1) => {
-    const step = ex.metric === 'seconds' ? 5 : 1;
-    const min = ex.metric === 'seconds' ? 5 : 1;
+    const { step, min } = targetStep(ex.metric);
     const current = selectedPlan.items[idx].target;
     const nextTarget = Math.max(min, current + direction * step);
     if (nextTarget === current) return;
@@ -651,7 +645,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                             type="button"
                             onClick={() => handleChangeTarget(idx, ex, -1)}
                             disabled={
-                              item.target <= (ex.metric === 'seconds' ? 5 : 1)
+                              item.target <= targetStep(ex.metric).min
                             }
                             className={stepBtnClass}
                             aria-label={`Уменьшить цель: ${ex.name}`}

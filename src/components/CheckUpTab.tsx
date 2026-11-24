@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, Minus, Plus } from 'lucide-react';
+import { getMuscleLabel } from '../domain/catalog/muscles';
 import {
   formatClock,
-  formatMetricShort,
-  getMuscleLabel,
-} from '../data/seed';
+  formatMetricTarget as formatMetricShort,
+} from '../domain/format';
 import { CheckUpEntry, Exercise } from '../types';
 import { soundEngine } from '../utils/audio';
 import { ExerciseSvg } from './ExerciseSvg';

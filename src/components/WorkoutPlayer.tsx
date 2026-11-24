@@ -11,15 +11,12 @@ import {
   VolumeX,
   X,
 } from 'lucide-react';
-import {
-  COOLDOWN_STEPS,
-  calcAgt30,
-  findAntagonistMatches,
-  formatClock,
-  formatMetricTarget,
-  getMuscleLabel,
-  getWarmupPlan,
-} from '../data/seed';
+import { COOLDOWN_STEPS, getWarmupPlan } from '../data/seed';
+import { findAntagonistMatches } from '../domain/catalog/antagonists';
+import { getMuscleLabel } from '../domain/catalog/muscles';
+import { formatClock, formatMetricTarget } from '../domain/format';
+import { calcAgt30 } from '../domain/plan/targets';
+import { carryoverTarget } from '../domain/session/carryover';
 import {
   ActiveSession,
   Exercise,
@@ -668,22 +665,20 @@ export const WorkoutPlayer: React.FC<WorkoutPlayerProps> = ({
       completedAt: new Date().toISOString(),
     };
 
-    // Smart carryover: the next round opens with this round's actual result.
-    // Timed holds only carry upwards, so an early (or accidental) stop does
-    // not cut the coach's target for the remaining rounds.
-    // Only inside this session; the saved plan is untouched.
-    const shouldCarry =
-      finalActual > 0 &&
-      (currentExercise.metric === 'seconds'
-        ? finalActual > currentItem.target
-        : finalActual !== currentItem.target);
+    // Smart carryover (rules in domain/session/carryover.ts). Only inside
+    // this session; the saved plan is untouched.
+    const nextTarget = carryoverTarget(
+      currentExercise.metric,
+      currentItem.target,
+      finalActual
+    );
     const nextItems =
-      shouldCarry
+      nextTarget !== currentItem.target
         ? session.items.map((it, idx) =>
             idx === session.currentItemIndex
               ? {
                   ...it,
-                  target: finalActual,
+                  target: nextTarget,
                   plannedTarget: it.plannedTarget ?? it.target,
                 }
               : it

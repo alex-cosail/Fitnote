@@ -5,12 +5,9 @@ import {
   Search,
   X,
 } from 'lucide-react';
-import {
-  MUSCLE_LABELS,
-  findAntagonistMatches,
-  formatMetricShort,
-  getMuscleLabel,
-} from '../data/seed';
+import { findAntagonistMatches } from '../domain/catalog/antagonists';
+import { MUSCLE_LABELS, getMuscleLabel } from '../domain/catalog/muscles';
+import { formatMetricTarget as formatMetricShort } from '../domain/format';
 import { Exercise, MetricType, SvgKey } from '../types';
 import { ExerciseSvg } from './ExerciseSvg';
 
