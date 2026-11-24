@@ -210,4 +210,6 @@ export interface FitnoteData {
   activeSession: ActiveSession | null;
   // ISO time of the last saved backup file (absent = never).
   lastBackupAt?: string;
+  // Interface language (absent = Russian; the switcher arrives in step 4).
+  locale?: 'ru' | 'en' | 'tr';
 }

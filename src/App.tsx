@@ -16,7 +16,7 @@ import { SyncLogTab } from './components/SyncLogTab';
 import { WorkoutPlayer } from './components/WorkoutPlayer';
 import { WorkoutPreviewTab } from './components/WorkoutPreviewTab';
 import { CATALOG } from './data/catalog';
-import { CATALOG_TEXT_RU } from './data/catalogText.ru';
+import { catalogTextsFor } from './data/catalogTexts';
 import { CATALOG_IDS, RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
 import { resolveExercises } from './domain/catalog/resolve';
 import { recordMax } from './domain/catalog/userMaxes';
@@ -24,6 +24,8 @@ import { resolveWorkout } from './domain/plan/resolveWorkout';
 import { applyImport, ImportPayload } from './domain/plan/importPlan';
 import { calcAgt30, getEffectiveRounds } from './domain/plan/targets';
 import { useWakeLock } from './hooks/useWakeLock';
+import { I18nProvider, Locale, makeT } from './i18n';
+import { useHashRoute } from './routing/useHashRoute';
 import {
   ActiveSession,
   AppTab,
@@ -76,14 +78,26 @@ export default function App() {
     return loaded;
   });
 
+  const locale: Locale = data.locale ?? 'ru';
+  const t = makeT(locale);
+
   // Screens work with resolved exercises: catalog (code) + user maxima + custom.
   const exercises = useMemo(
     () =>
-      resolveExercises(CATALOG, CATALOG_TEXT_RU, data.maxes, data.customExercises),
-    [data.maxes, data.customExercises]
+      resolveExercises(
+        CATALOG,
+        catalogTextsFor(locale),
+        data.maxes,
+        data.customExercises
+      ),
+    [locale, data.maxes, data.customExercises]
   );
 
-  const [activeTab, setActiveTab] = useState<AppTab>('workout');
+  // Tabs follow the URL hash (#/workout, #/log, …). Routes reserved for later
+  // steps (onboarding, studio, shared workouts) show the Workout tab for now.
+  const [route, navigate] = useHashRoute();
+  const activeTab: AppTab = route.name === 'tab' ? route.tab : 'workout';
+  const setActiveTab = (tab: AppTab) => navigate({ name: 'tab', tab });
   const [isPlayerVisible, setIsPlayerVisible] = useState<boolean>(
     () => Boolean(loadFitnoteData().activeSession)
   );
@@ -306,13 +320,14 @@ export default function App() {
     label: string;
     icon: React.FC<{ className?: string }>;
   }[] = [
-    { id: 'workout', label: 'Workout', icon: Dumbbell },
-    { id: 'checkup', label: 'Check-Up', icon: Activity },
-    { id: 'catalog', label: 'Catalog', icon: BookOpen },
-    { id: 'sync', label: 'Sync / Log', icon: ClipboardList },
+    { id: 'workout', label: t('nav.workout'), icon: Dumbbell },
+    { id: 'checkup', label: t('nav.checkup'), icon: Activity },
+    { id: 'catalog', label: t('nav.catalog'), icon: BookOpen },
+    { id: 'sync', label: t('nav.log'), icon: ClipboardList },
   ];
 
   return (
+    <I18nProvider locale={locale}>
     <div className="min-h-screen overflow-x-hidden bg-white text-[#111827] transition-colors dark:bg-[#0B0F17] dark:text-[#F3F4F6]">
       {/* Landscape Top Navigation (scrolls away on phone landscape, sticky on lg+ desktop) */}
       <header className="z-30 hidden border-b border-gray-200 bg-white/95 backdrop-blur-md dark:border-[#1E293B] dark:bg-[#0F1520]/95 landscape:block lg:sticky lg:top-0">
@@ -355,20 +370,20 @@ export default function App() {
                 onClick={handleToggleTheme}
                 aria-label={
                   data.theme === 'dark'
-                    ? 'Включить дневную светлую тему'
-                    : 'Включить вечернюю тёмную тему'
+                    ? t('theme.toDay')
+                    : t('theme.toNight')
                 }
                 className="tap-scale flex min-h-[40px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-gray-200 bg-white px-2.5 text-xs font-semibold text-[#111827] hover:bg-gray-50 dark:border-[#2A3548] dark:bg-[#141A24] dark:text-[#F3F4F6] dark:hover:bg-[#1E293B]"
               >
                 {data.theme === 'dark' ? (
                   <>
                     <Moon className="h-4 w-4 text-[#FBBF24]" />
-                    <span className="hidden sm:inline">Ночь</span>
+                    <span className="hidden sm:inline">{t('theme.night')}</span>
                   </>
                 ) : (
                   <>
                     <Sun className="h-4 w-4 text-[#D97706]" />
-                    <span className="hidden sm:inline">День</span>
+                    <span className="hidden sm:inline">{t('theme.day')}</span>
                   </>
                 )}
               </button>
@@ -382,12 +397,12 @@ export default function App() {
               {data.isMuted ? (
                 <>
                   <VolumeX className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <span className="hidden sm:inline">Звук выкл</span>
+                  <span className="hidden sm:inline">{t('sound.off')}</span>
                 </>
               ) : (
                 <>
                   <Volume2 className="h-4 w-4 text-[#DC2626] dark:text-[#EF4444]" />
-                  <span className="hidden sm:inline">Звук вкл</span>
+                  <span className="hidden sm:inline">{t('sound.on')}</span>
                 </>
               )}
             </button>
@@ -410,20 +425,20 @@ export default function App() {
               onClick={handleToggleTheme}
               aria-label={
                 data.theme === 'dark'
-                  ? 'Включить дневную светлую тему'
-                  : 'Включить вечернюю тёмную тему'
+                  ? t('theme.toDay')
+                  : t('theme.toNight')
               }
               className="tap-scale flex min-h-[44px] items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold text-gray-600 dark:text-gray-300"
             >
               {data.theme === 'dark' ? (
                 <>
                   <Moon className="h-4 w-4 text-[#FBBF24]" />
-                  <span>Ночь</span>
+                  <span>{t('theme.night')}</span>
                 </>
               ) : (
                 <>
                   <Sun className="h-4 w-4 text-[#D97706]" />
-                  <span>День</span>
+                  <span>{t('theme.day')}</span>
                 </>
               )}
             </button>
@@ -432,14 +447,14 @@ export default function App() {
             type="button"
             onClick={handleToggleMute}
             className="tap-scale flex min-h-[44px] items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold text-gray-600 dark:text-gray-300"
-            aria-label={data.isMuted ? 'Включить звук' : 'Выключить звук'}
+            aria-label={data.isMuted ? t('sound.turnOn') : t('sound.turnOff')}
           >
             {data.isMuted ? (
               <VolumeX className="h-4 w-4 text-gray-400 dark:text-gray-500" />
             ) : (
               <Volume2 className="h-4 w-4 text-[#DC2626] dark:text-[#EF4444]" />
             )}
-            <span>{data.isMuted ? 'Mute' : 'Звук'}</span>
+            <span>{data.isMuted ? t('sound.mutedShort') : t('sound.short')}</span>
           </button>
         </div>
       </div>
@@ -520,7 +535,7 @@ export default function App() {
 
       {/* Portrait Mobile Fixed 4-Tab Bottom Navigation (lifted away from rounded bottom edges) */}
       <nav
-        aria-label="Основная навигация"
+        aria-label={t('nav.aria')}
         className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 z-40 rounded-2xl border border-gray-200 bg-white/95 shadow-lg shadow-black/5 backdrop-blur-md dark:border-[#1E293B] dark:bg-[#101622]/95 dark:shadow-black/50 landscape:hidden"
       >
         <div className="grid h-15 grid-cols-4 items-center px-1">
@@ -561,5 +576,6 @@ export default function App() {
         />
       )}
     </div>
+    </I18nProvider>
   );
 }
