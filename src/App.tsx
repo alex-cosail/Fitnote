@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
   Activity,
   BookOpen,
@@ -15,7 +15,11 @@ import { CheckUpTab } from './components/CheckUpTab';
 import { SyncLogTab } from './components/SyncLogTab';
 import { WorkoutPlayer } from './components/WorkoutPlayer';
 import { WorkoutPreviewTab } from './components/WorkoutPreviewTab';
-import { RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
+import { CATALOG } from './data/catalog';
+import { CATALOG_TEXT_RU } from './data/catalogText.ru';
+import { CATALOG_IDS, RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
+import { resolveExercises } from './domain/catalog/resolve';
+import { recordMax } from './domain/catalog/userMaxes';
 import { applyImport, ImportPayload } from './domain/plan/importPlan';
 import { calcAgt30, getEffectiveRounds } from './domain/plan/targets';
 import { useWakeLock } from './hooks/useWakeLock';
@@ -71,6 +75,13 @@ export default function App() {
     return loaded;
   });
 
+  // Screens work with resolved exercises: catalog (code) + user maxima + custom.
+  const exercises = useMemo(
+    () =>
+      resolveExercises(CATALOG, CATALOG_TEXT_RU, data.maxes, data.customExercises),
+    [data.maxes, data.customExercises]
+  );
+
   const [activeTab, setActiveTab] = useState<AppTab>('workout');
   const [isPlayerVisible, setIsPlayerVisible] = useState<boolean>(
     () => Boolean(loadFitnoteData().activeSession)
@@ -123,7 +134,7 @@ export default function App() {
           plannedTarget: item.target,
         }))
       : plan.items.map((item) => {
-          const ex = data.exercises.find((e) => e.id === item.exerciseId);
+          const ex = exercises.find((e) => e.id === item.exerciseId);
           const target =
             plan.useAgt30 && ex ? calcAgt30(ex) : item.target;
           return {
@@ -192,7 +203,7 @@ export default function App() {
   };
 
   const handleRecordCheckUp = (exerciseId: string, newMax: number) => {
-    const targetEx = data.exercises.find((e) => e.id === exerciseId);
+    const targetEx = exercises.find((e) => e.id === exerciseId);
     if (!targetEx) return;
     const nowIso = new Date().toISOString();
     const updatedEx: Exercise = {
@@ -212,9 +223,7 @@ export default function App() {
 
     setData((prev) => ({
       ...prev,
-      exercises: prev.exercises.map((e) =>
-        e.id === exerciseId ? updatedEx : e
-      ),
+      ...recordMax(prev, CATALOG_IDS, exerciseId, newMax, nowIso),
       checkUpHistory: [entry, ...prev.checkUpHistory],
     }));
   };
@@ -222,7 +231,7 @@ export default function App() {
   const handleAddExercise = (exercise: Exercise) => {
     setData((prev) => ({
       ...prev,
-      exercises: [exercise, ...prev.exercises],
+      customExercises: [{ ...exercise, isCustom: true }, ...prev.customExercises],
     }));
   };
 
@@ -276,12 +285,18 @@ export default function App() {
   // "Imported N plans" message is always right.
   const handleImportPlan = (payload: ImportPayload) => {
     const result = applyImport(
-      { exercises: data.exercises, workouts: data.workouts },
-      payload
+      {
+        maxes: data.maxes,
+        customExercises: data.customExercises,
+        workouts: data.workouts,
+      },
+      payload,
+      CATALOG_IDS
     );
     setData((prev) => ({
       ...prev,
-      exercises: result.exercises,
+      maxes: result.maxes,
+      customExercises: result.customExercises,
       workouts: result.workouts,
     }));
     return {
@@ -438,7 +453,7 @@ export default function App() {
         {activeTab === 'workout' && (
           <WorkoutPreviewTab
             workouts={data.workouts}
-            exercises={data.exercises}
+            exercises={exercises}
             selectedWorkoutId={data.selectedWorkoutId}
             readiness={data.readiness}
             warmupMinutes={data.warmupMinutes}
@@ -466,7 +481,7 @@ export default function App() {
 
         {activeTab === 'checkup' && (
           <CheckUpTab
-            exercises={data.exercises}
+            exercises={exercises}
             history={data.checkUpHistory}
             isMuted={data.isMuted}
             onRecordCheckUp={handleRecordCheckUp}
@@ -475,14 +490,14 @@ export default function App() {
 
         {activeTab === 'catalog' && (
           <CatalogTab
-            exercises={data.exercises}
+            exercises={exercises}
             onAddExercise={handleAddExercise}
           />
         )}
 
         {activeTab === 'sync' && (
           <SyncLogTab
-            exercises={data.exercises}
+            exercises={exercises}
             workouts={data.workouts}
             workoutLogs={data.workoutLogs}
             cardioLogs={data.cardioLogs}
@@ -541,7 +556,7 @@ export default function App() {
       {isPlayerVisible && data.activeSession && (
         <WorkoutPlayer
           session={data.activeSession}
-          exercises={data.exercises}
+          exercises={exercises}
           isMuted={data.isMuted}
           onToggleMute={handleToggleMute}
           onUpdateSession={handleUpdateSession}

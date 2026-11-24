@@ -28,7 +28,7 @@ const log = (id: string, date: string): WorkoutLog => ({
   sets: [],
 });
 
-// A realistic v1 store as saved by Fitnote ≤ v2.
+// Current-shape user data with logs (catalog split is tested in catalog.test.ts).
 const v1Store = (): FitnoteData => ({
   ...DEFAULT_FITNOTE_DATA,
   readiness: 'yellow',
@@ -40,20 +40,20 @@ const v1Store = (): FitnoteData => ({
 });
 
 describe('schema migration', () => {
-  it('current schema is 2', () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe(2);
+  it('current schema is 3', () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe(3);
   });
 
-  it('a bare v1 store is read without losing anything', () => {
+  it('a bare v1 store without exercises keeps all its data', () => {
     const v1 = v1Store();
     const data = readAnyStore(JSON.parse(JSON.stringify(v1)));
     expect(data).toEqual(v1);
   });
 
-  it('a v2 envelope round-trips', () => {
+  it('the current envelope round-trips', () => {
     const v1 = v1Store();
     const env = JSON.parse(JSON.stringify(wrapEnvelope(v1, NOW)));
-    expect(env.schemaVersion).toBe(2);
+    expect(env.schemaVersion).toBe(3);
     expect(env.savedAt).toBe(new Date(NOW).toISOString());
     expect(readAnyStore(env)).toEqual(v1);
   });
@@ -68,7 +68,7 @@ describe('backup file', () => {
   it('contains everything except a running workout', () => {
     const data = { ...v1Store(), activeSession: { id: 'running' } as never };
     const file = buildBackup(data, NOW);
-    expect(file).toMatchObject({ app: 'Fitnote', kind: 'backup', schemaVersion: 2 });
+    expect(file).toMatchObject({ app: 'Fitnote', kind: 'backup', schemaVersion: 3 });
     expect(file.data.activeSession).toBeNull();
     expect(file.data.workoutLogs).toHaveLength(2);
     expect(backupFileName(NOW)).toBe('fitnote-backup-2026-11-24.json');

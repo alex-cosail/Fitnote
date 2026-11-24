@@ -1,4 +1,4 @@
-import { DEFAULT_FITNOTE_DATA, INITIAL_EXERCISES } from '../data/seed';
+import { DEFAULT_FITNOTE_DATA } from '../data/seed';
 import { FitnoteData } from '../types';
 import { mergeStoredData } from '../utils/mergeStoredData';
 import {
@@ -77,6 +77,7 @@ export function parseBackup(text: string): ParseBackupResult {
   const isBackup = obj.app === 'Fitnote' && obj.kind === 'backup';
   const looksLikeStore =
     Array.isArray(obj.workoutLogs) || Array.isArray(obj.exercises) ||
+    (typeof obj.maxes === 'object' && obj.maxes !== null) ||
     (typeof obj.schemaVersion === 'number' && typeof obj.data === 'object');
   if (!isBackup && !looksLikeStore) {
     return { ok: false, error: 'Это не копия Fitnote.' };
@@ -87,7 +88,7 @@ export function parseBackup(text: string): ParseBackupResult {
       isBackup ? { schemaVersion: obj.schemaVersion, data: obj.data } : parsed
     );
     const exportedAt = typeof obj.exportedAt === 'string' ? obj.exportedAt : undefined;
-    const merged = mergeStoredData(migrated, DEFAULT_FITNOTE_DATA, INITIAL_EXERCISES);
+    const merged = mergeStoredData(migrated, DEFAULT_FITNOTE_DATA);
     const data: FitnoteData = {
       ...merged,
       activeSession: null,

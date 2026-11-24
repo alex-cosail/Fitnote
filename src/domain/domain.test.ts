@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CATALOG_IDS,
   DEFAULT_FITNOTE_DATA,
   INITIAL_EXERCISES,
   INITIAL_WORKOUTS,
@@ -143,7 +144,11 @@ describe('warm-up plans', () => {
 });
 
 describe('plan import', () => {
-  const current = { exercises: INITIAL_EXERCISES, workouts: INITIAL_WORKOUTS };
+  const current = {
+    maxes: DEFAULT_FITNOTE_DATA.maxes,
+    customExercises: [] as Exercise[],
+    workouts: INITIAL_WORKOUTS,
+  };
 
   it('adds a new plan with defaults and reports the count', () => {
     const res = applyImport(
@@ -156,6 +161,7 @@ describe('plan import', () => {
           } as never,
         ],
       },
+      CATALOG_IDS,
       123
     );
     expect(res.addedWorkouts).toBe(1);
@@ -173,69 +179,85 @@ describe('plan import', () => {
   });
 
   it('replaces a plan with the same id instead of duplicating it', () => {
-    const res = applyImport(current, {
-      workouts: [{ ...INITIAL_WORKOUTS[0], title: 'A v2' }],
-    });
+    const res = applyImport(
+      current,
+      { workouts: [{ ...INITIAL_WORKOUTS[0], title: 'A v2' }] },
+      CATALOG_IDS
+    );
     expect(res.workouts).toHaveLength(INITIAL_WORKOUTS.length);
     expect(res.workouts[0].title).toBe('A v2');
   });
 
-  it('skips invalid entries and fills defaults for new exercises', () => {
-    const res = applyImport(current, {
-      workouts: [{ title: '' } as never, { title: 'No items' } as never],
-      exercises: [
-        { id: 'air-squat', name: 'Air Squat' } as never,
-        { name: 'No id' } as never,
-      ],
-    });
+  it('catalog exercises only take a provided max; texts stay from the catalog', () => {
+    const res = applyImport(
+      current,
+      {
+        exercises: [
+          { id: 'strict-pull-ups', name: 'Renamed', checkup_max: 12 } as never,
+          { id: 'dead-hang', name: 'Dead Hang' } as never,
+        ],
+      },
+      CATALOG_IDS
+    );
+    expect(res.maxes['strict-pull-ups'].value).toBe(12);
+    expect(res.maxes['dead-hang']).toEqual(current.maxes['dead-hang']);
+    expect(res.customExercises).toEqual([]);
+    expect(res.addedExercises).toBe(2);
+  });
+
+  it('skips invalid entries and adds unknown exercises as custom with defaults', () => {
+    const res = applyImport(
+      current,
+      {
+        workouts: [{ title: '' } as never, { title: 'No items' } as never],
+        exercises: [
+          { id: 'air-squat', name: 'Air Squat' } as never,
+          { name: 'No id' } as never,
+        ],
+      },
+      CATALOG_IDS
+    );
     expect(res.addedWorkouts).toBe(0);
     expect(res.addedExercises).toBe(1);
-    expect(res.exercises.at(-1)).toMatchObject({
+    expect(res.customExercises).toHaveLength(1);
+    expect(res.customExercises[0]).toMatchObject({
       id: 'air-squat',
       metric: 'reps',
       checkup_max: 10,
       svgKey: 'generic_strength',
+      isCustom: true,
     });
   });
 
   it('does not mutate the input', () => {
     const before = JSON.stringify(current);
-    applyImport(current, { exercises: [{ id: 'x', name: 'X' } as never] });
+    applyImport(current, { exercises: [{ id: 'x', name: 'X' } as never] }, CATALOG_IDS);
     expect(JSON.stringify(current)).toBe(before);
   });
 });
 
 describe('stored data merge', () => {
   it('empty storage object gives the defaults', () => {
-    const merged = mergeStoredData({}, DEFAULT_FITNOTE_DATA, INITIAL_EXERCISES);
-    expect(merged.exercises).toBe(DEFAULT_FITNOTE_DATA.exercises);
+    const merged = mergeStoredData({}, DEFAULT_FITNOTE_DATA);
+    expect(merged.maxes).toBe(DEFAULT_FITNOTE_DATA.maxes);
+    expect(merged.customExercises).toEqual([]);
     expect(merged.workouts).toBe(DEFAULT_FITNOTE_DATA.workouts);
     expect(merged.workoutLogs).toEqual([]);
     expect(merged.activeSession).toBeNull();
     expect(merged.theme).toBe('light');
   });
 
-  it('back-fills isPaired and details from the seed into old stored exercises', () => {
-    const old = INITIAL_EXERCISES.map(({ isPaired, details, ...rest }) => rest);
-    const merged = mergeStoredData(
-      { exercises: old as Exercise[] },
-      DEFAULT_FITNOTE_DATA,
-      INITIAL_EXERCISES
-    );
-    const bss = merged.exercises.find((e) => e.id === 'bulgarian-split-squat');
-    expect(bss?.isPaired).toBe(true);
-    expect(bss?.details).toBeTruthy();
-  });
-
   it('keeps user data and custom exercises, sanitises theme', () => {
     const custom: Exercise = { ...byId('dead-hang'), id: 'custom-1', isCustom: true };
     const stored: Partial<FitnoteData> = {
-      exercises: [custom],
+      maxes: { 'strict-pull-ups': { value: 12 } },
+      customExercises: [custom],
       workoutLogs: [{ id: 'w1' } as never],
       theme: 'neon' as never,
     };
-    const merged = mergeStoredData(stored, DEFAULT_FITNOTE_DATA, INITIAL_EXERCISES);
-    expect(merged.exercises).toEqual([custom]);
+    const merged = mergeStoredData(stored, DEFAULT_FITNOTE_DATA);
+    expect(merged.maxes).toEqual({ 'strict-pull-ups': { value: 12 } });
+    expect(merged.customExercises).toEqual([custom]);
     expect(merged.workoutLogs).toHaveLength(1);
     expect(merged.theme).toBe('light');
   });

@@ -68,23 +68,25 @@ export interface CatalogExercise {
 
 ### Разметка текущих упражнений
 
-| id | pattern | rank | stability | posture |
-|---|---|---|---|---|
-| strict-pull-ups | pull_v | 3 | bilateral | hands_only |
-| parallel-bar-dips | push_h | 4 | bilateral | hands_only |
-| australian-pull-ups | pull_h | 2 | bilateral | hands_only |
-| floor-push-ups | push_h | 3 | bilateral | hands_only |
-| bulgarian-split-squat | lunge | 4 | unilateral | standing |
-| single-leg-glute-bridge | hinge | 3 | unilateral | floor_contact |
-| side-plank | core | 3 | unstable | floor_contact |
-| dead-hang | core | 2 | bilateral | hands_only |
-| pallof-press | core | 3 | bilateral | standing |
-| romanian-deadlift | hinge | 3 | bilateral | standing |
-| band-row | pull_h | 2 | bilateral | standing |
-| reverse-lunges | lunge | 3 | unilateral | standing |
-| pike-push-ups | push_v | 3 | bilateral | hands_only |
+Источник истины — `src/data/catalog.ts` (сделано в шаге 0.4). Проверка разметки — `src/domain/catalog/catalog.test.ts`.
 
-Ранги предварительные — их утверждает заказчик вместе с наполнением каталога на шаге 1.
+| id | pattern | family | rank | stability | posture |
+|---|---|---|---|---|---|
+| strict-pull-ups | pull_v | pull_vertical | 3 | bilateral | hands_only |
+| parallel-bar-dips | push_h | push_horizontal | 4 | bilateral | hands_only |
+| australian-pull-ups | pull_h | pull_horizontal | 3 | bilateral | hands_only |
+| floor-push-ups | push_h | push_horizontal | 3 | bilateral | hands_only |
+| bulgarian-split-squat | lunge | legs_knee | 4 | unilateral | standing |
+| single-leg-glute-bridge | hinge | hinge | 2 | unilateral | floor_contact |
+| side-plank | core | core_lateral | 3 | unstable | floor_contact |
+| dead-hang | core | hang | 2 | bilateral | hands_only |
+| pallof-press | core | core_antirotation | 3 | bilateral | standing |
+| romanian-deadlift | hinge | hinge | 3 | bilateral | standing |
+| band-row | pull_h | pull_horizontal | 2 | bilateral | standing |
+| reverse-lunges | lunge | legs_knee | 3 | unilateral | standing |
+| pike-push-ups | push_v | push_vertical | 3 | bilateral | hands_only |
+
+Ранги, семейства и стартовые максимумы по уровням предварительные — их утверждает заказчик вместе с наполнением каталога на шаге 1. Воздушных приседаний в каталоге пока нет, поэтому болгарский −1 сейчас ведёт на обратные выпады.
 
 ## 3. Решение 2: тренировка из слотов
 

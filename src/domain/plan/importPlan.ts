@@ -1,47 +1,67 @@
 import { Exercise, WorkoutPlan } from '../../types';
+import { MaxEntry } from '../catalog/types';
 
 export interface ImportPayload {
   workouts?: WorkoutPlan[];
   exercises?: Exercise[];
 }
 
-export interface ImportResult {
-  exercises: Exercise[];
+export interface ImportState {
+  maxes: Record<string, MaxEntry>;
+  customExercises: Exercise[];
   workouts: WorkoutPlan[];
+}
+
+export interface ImportResult extends ImportState {
   addedWorkouts: number;
   addedExercises: number;
 }
 
 /**
- * Merges an imported coach / AI plan into the current catalog and plans.
- * Existing ids are updated, new ones appended with safe defaults.
+ * Merges an imported coach / AI plan into the user's data.
+ * - Catalog exercises: only a provided `checkup_max` is taken (into maxes);
+ *   names and texts come from the catalog.
+ * - Other exercises: added or updated as custom exercises with safe defaults.
+ * - Plans with an existing id are replaced, new ones appended.
  * Logs, cardio and check-up history are never touched.
  * `idSeed` makes generated plan ids deterministic (defaults to Date.now()).
  */
 export function applyImport(
-  current: { exercises: Exercise[]; workouts: WorkoutPlan[] },
+  current: ImportState,
   payload: ImportPayload,
+  catalogIds: ReadonlySet<string>,
   idSeed: number = Date.now()
 ): ImportResult {
   let addedWorkouts = 0;
   let addedExercises = 0;
 
-  const exercises = [...current.exercises];
+  const maxes = { ...current.maxes };
+  const customExercises = [...current.customExercises];
   for (const incoming of payload.exercises ?? []) {
     if (!incoming.id || !incoming.name) continue;
-    const idx = exercises.findIndex((e) => e.id === incoming.id);
-    if (idx >= 0) {
-      exercises[idx] = { ...exercises[idx], ...incoming };
+    if (catalogIds.has(incoming.id)) {
+      if (typeof incoming.checkup_max === 'number') {
+        maxes[incoming.id] = {
+          value: incoming.checkup_max,
+          date: incoming.lastCheckupDate ?? maxes[incoming.id]?.date,
+        };
+      }
     } else {
-      exercises.push({
-        ...incoming,
-        svgKey: incoming.svgKey ?? 'generic_strength',
-        target_muscles: incoming.target_muscles ?? ['core'],
-        antagonist_muscles: incoming.antagonist_muscles ?? ['core'],
-        cue: incoming.cue ?? 'Плавный контроль техники на каждом повторении.',
-        checkup_max: incoming.checkup_max ?? 10,
-        metric: incoming.metric ?? 'reps',
-      });
+      const idx = customExercises.findIndex((e) => e.id === incoming.id);
+      if (idx >= 0) {
+        customExercises[idx] = { ...customExercises[idx], ...incoming, isCustom: true };
+      } else {
+        customExercises.push({
+          ...incoming,
+          svgKey: incoming.svgKey ?? 'generic_strength',
+          target_muscles: incoming.target_muscles ?? ['core'],
+          antagonist_muscles: incoming.antagonist_muscles ?? ['core'],
+          cue: incoming.cue ?? 'Плавный контроль техники на каждом повторении.',
+          checkup_max: incoming.checkup_max ?? 10,
+          metric: incoming.metric ?? 'reps',
+          isCustom: true,
+        });
+      }
     }
     addedExercises += 1;
   }
@@ -70,5 +90,5 @@ export function applyImport(
     addedWorkouts += 1;
   }
 
-  return { exercises, workouts, addedWorkouts, addedExercises };
+  return { maxes, customExercises, workouts, addedWorkouts, addedExercises };
 }

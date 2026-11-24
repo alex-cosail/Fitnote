@@ -1,16 +1,22 @@
-import { FitnoteData } from '../types';
+import { CATALOG } from '../data/catalog';
+import { splitLegacyExercises } from '../domain/catalog/userMaxes';
+import { Exercise, FitnoteData } from '../types';
 
 /**
  * Versioned storage envelope and the migration chain.
  *
  * v1: the bare FitnoteData object under 'fitnote_offline_store_v1' (Fitnote ≤ v2).
- * v2: { schemaVersion: 2, data: FitnoteData } under 'fitnote_store'.
+ * v2: { schemaVersion: 2, data } under 'fitnote_store' (Fitnote v2.1).
+ * v3: data.exercises (full catalog copies) replaced by data.maxes (user's
+ *     check-up maxima by catalog id) and data.customExercises.
  *
  * Every later schema change adds `migrations[n]` (data of version n → n+1)
  * and bumps CURRENT_SCHEMA_VERSION. Old data is always walked up the chain.
  */
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
+
+const CATALOG_IDS: ReadonlySet<string> = new Set(CATALOG.map((c) => c.id));
 
 export const STORAGE_KEY = 'fitnote_store';
 export const LEGACY_STORAGE_KEY_V1 = 'fitnote_offline_store_v1';
@@ -27,6 +33,25 @@ type Migration = (data: unknown) => unknown;
 const migrations: Record<number, Migration> = {
   // v1 → v2: the payload is unchanged; v2 only adds the envelope.
   1: (data) => data,
+  // v2 → v3: catalog copies → maxima; unknown ids → custom exercises.
+  2: (data) => {
+    if (!isObject(data)) return data;
+    const { exercises, ...rest } = data;
+    if (!Array.isArray(exercises) || exercises.length === 0) return rest;
+    const user = splitLegacyExercises(
+      exercises as Exercise[],
+      CATALOG_IDS,
+      isObject(rest.maxes) ? (rest.maxes as FitnoteData['maxes']) : {}
+    );
+    return {
+      ...rest,
+      maxes: user.maxes,
+      customExercises: [
+        ...(Array.isArray(rest.customExercises) ? (rest.customExercises as Exercise[]) : []),
+        ...user.customExercises,
+      ],
+    };
+  },
 };
 
 export class SchemaTooNewError extends Error {

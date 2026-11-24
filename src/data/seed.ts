@@ -1,186 +1,22 @@
+import { resolveExercises } from '../domain/catalog/resolve';
 import {
   Exercise,
   FitnoteData,
   MobilityStep,
   WorkoutPlan,
 } from '../types';
+import { CATALOG, SEED_MAXES } from './catalog';
+import { CATALOG_TEXT_RU } from './catalogText.ru';
 
-export const INITIAL_EXERCISES: Exercise[] = [
-  {
-    id: 'strict-pull-ups',
-    name: 'Strict Pull-Ups',
-    metric: 'reps',
-    checkup_max: 9,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['lats', 'biceps'],
-    antagonist_muscles: ['chest', 'triceps'],
-    cue: 'Лопатки вниз и назад, подбородок выше перекладины без рывка.',
-    details:
-      'Хват чуть шире плеч, корпус прямой, ноги слегка выведены вперёд («лодочка»), пресс и ягодицы напряжены. На выдохе сначала опусти лопатки вниз, затем подтяни грудь к перекладине без раскачки, выводя подбородок выше турника. На вдохе плавно опустись за 2 секунды до почти полного выпрямления рук.',
-    svgKey: 'pullups',
-  },
-  {
-    id: 'parallel-bar-dips',
-    name: 'Parallel Bar Dips',
-    metric: 'reps',
-    checkup_max: 23,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['chest', 'triceps', 'front_delts'],
-    antagonist_muscles: ['lats', 'biceps', 'rear_delts'],
-    cue: 'Корпус чуть вперёд, локти вдоль тела, опускайся до угла 90°.',
-    details:
-      'В упоре на брусьях опусти плечи вниз от ушей, слегка наклони корпус вперёд и удерживай пресс жёстким. На вдохе сгибай локти строго назад вдоль тела, опускайся подконтрольно до угла 90° в локтевом суставе (плечо параллельно земле). На выдохе мощно выжми себя вверх, не заваливая плечи вперёд.',
-    svgKey: 'dips',
-  },
-  {
-    id: 'australian-pull-ups',
-    name: 'Australian Pull-Ups',
-    metric: 'reps',
-    checkup_max: 25,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['upper_back', 'rear_delts', 'biceps'],
-    antagonist_muscles: ['chest', 'front_delts'],
-    cue: 'Тело в одну прямую линию, тяни грудь к перекладине со сведением лопаток.',
-    details:
-      'Возьмись за низкую перекладину прямым хватом на ширине плеч и вытяни тело в прямую линию от пяток до макушки (таз не провисает). На выдохе тяни нижнюю часть груди к перекладине, сводя лопатки и направляя локти назад под 45°. Зафиксируй верхнюю точку на секунду и плавно вернись в исходный вис.',
-    svgKey: 'australian_pullups',
-  },
-  {
-    id: 'floor-push-ups',
-    name: 'Floor Push-Ups',
-    metric: 'reps',
-    checkup_max: 35,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['chest', 'triceps'],
-    antagonist_muscles: ['upper_back', 'rear_delts'],
-    cue: 'Корпус жёсткий, локти под 45° к телу, касание грудью пола.',
-    details:
-      'Ладони на полу под плечами или чуть шире, тело натянуто в жёсткую планку без прогиба в пояснице. На вдохе опускайся вниз единым блоком до лёгкого касания грудью пола, направляя локти под углом около 45° к корпусу (не разводи широко в стороны). На выдохе выжми пол от себя.',
-    svgKey: 'pushups',
-  },
-  {
-    id: 'bulgarian-split-squat',
-    name: 'Bulgarian Split Squat',
-    metric: 'reps',
-    checkup_max: 30,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['quads', 'glutes'],
-    antagonist_muscles: ['hamstrings'],
-    cue: 'Задняя нога на опоре, вес на пятке передней ноги, колено стабильно.',
-    details:
-      'Положи подъём стопы задней ноги на опору, шаг передней ногой достаточно длинный, корпус слегка наклонён вперёд, вес на пятке и середине стопы передней ноги. На вдохе опустись вниз, направляя переднее колено чётко по линии носка (не заваливая внутрь) до параллели бедра с полом. На выдохе вытолкни себя вверх пяткой передней ноги. Сначала выполни подход на одну ногу, затем на другую.',
-    svgKey: 'bulgarian_split_squat',
-    isPaired: true,
-  },
-  {
-    id: 'single-leg-glute-bridge',
-    name: 'Single-Leg Glute Bridge',
-    metric: 'reps',
-    checkup_max: 30,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['glutes', 'hamstrings'],
-    antagonist_muscles: ['quads', 'hip_flexors'],
-    cue: 'Пауза 1 сек в верхней точке, таз без перекоса, толкай пяткой.',
-    details:
-      'Ляг на спину, опорную стопу поставь на пол ближе к тазу, вторую ногу выпрями или подтяни колено к груди, поясница прижата к полу. На выдохе надави пяткой опорной ноги и подними таз до прямой линии от колена до плеча без прогиба в пояснице и перекоса таза. Сделай паузу 1 секунду вверху и плавно опусти таз. Повтори на обе ноги.',
-    svgKey: 'glute_bridge',
-    isPaired: true,
-  },
-  {
-    id: 'side-plank',
-    name: 'Side Plank',
-    metric: 'seconds',
-    checkup_max: 120,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['obliques', 'core'],
-    antagonist_muscles: ['obliques'],
-    cue: 'Локоть строго под плечом, таз высоко, шея на линии позвоночника.',
-    details:
-      'Встань в боковой упор на предплечье: локоть строго под плечевым суставом, предплечье перпендикулярно телу, стопы вместе или в ножницах. Вытолкни таз вверх так, чтобы тело образовало ровную линию без провисания и завала вперёд, шея на одной линии с позвоночником. Дыши ровно, удерживая напряжение бокового кора на каждую сторону.',
-    svgKey: 'side_plank',
-    isPaired: true,
-  },
-  {
-    id: 'dead-hang',
-    name: 'Dead Hang',
-    metric: 'seconds',
-    checkup_max: 45,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['forearms', 'spine_decompression'],
-    antagonist_muscles: ['shoulder_press'],
-    cue: 'Плечи мягко оттяни от ушей, дыши ровно в рёбра, хват плотный.',
-    details:
-      'Возьмись за перекладину полным закрытым хватом на ширине плеч, полностью расслабь поясницу и ноги, позволяя весу тела мягко вытягивать позвоночник. Плечи при этом чуть подконтрольны и не зажаты к ушам. Дыши глубоко и спокойно в нижние рёбра до окончания таймера.',
-    svgKey: 'dead_hang',
-  },
-  {
-    id: 'pallof-press',
-    name: 'Pallof Press',
-    metric: 'reps',
-    checkup_max: 20,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['core', 'obliques'],
-    antagonist_muscles: ['lower_back'],
-    cue: 'Сопротивляйся скручиванию резинки, выпрямляй руки строго по центру.',
-    details:
-      'Закрепи резинку на уровне груди и встань боком к опоре так, чтобы лента была натянута; ноги на ширине плеч, колени мягкие, руки с резинкой прижаты к центру груди. На выдохе выжми руки строго вперёд по центральной оси тела, сопротивляясь скручиванию корпуса к креплению. Удержи прямые руки 1–2 секунды и плавно верни к груди. Выполни на обе стороны.',
-    svgKey: 'pallof_press',
-    isPaired: true,
-  },
-  {
-    id: 'romanian-deadlift',
-    name: 'Romanian Deadlift',
-    metric: 'reps',
-    checkup_max: 25,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['hamstrings', 'glutes'],
-    antagonist_muscles: ['quads', 'hip_flexors'],
-    cue: 'Спина нейтральная, отводи таз назад до натяжения задней поверхности.',
-    details:
-      'Стопы на ширине таза, колени слегка согнуты и зафиксированы в этом угле на всё движение, грудь раскрыта, лопатки собраны. На вдохе начинай движение с отведения таза строго назад, наклоняя ровный корпус вперёд и ведя снаряд или резинку вплотную к ногам до середины голени — пока чувствуешь чёткое натяжение задней поверхности бедра без округления поясницы. На выдохе за счёт сжатия ягодиц верни таз вперёд.',
-    svgKey: 'romanian_deadlift',
-  },
-  {
-    id: 'band-row',
-    name: 'Band Row',
-    metric: 'reps',
-    checkup_max: 30,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['upper_back', 'lats', 'rear_delts'],
-    antagonist_muscles: ['chest', 'front_delts'],
-    cue: 'Тяни рукояти к нижним рёбрам, своди лопатки без подъёма плеч.',
-    details:
-      'Закрепи резинку спереди на уровне пояса или груди, отойди до рабочего натяжения, корпус ровный, плечи опущены. На выдохе сначала сведи лопатки и потяни локти строго назад вдоль корпуса, приводя кисти к нижним рёбрам без подъёма плеч к ушам и рывка спиной. Зафиксируй паузу на 1 секунду и плавно верни руки вперёд.',
-    svgKey: 'band_row',
-  },
-  {
-    id: 'reverse-lunges',
-    name: 'Reverse Lunges',
-    metric: 'reps',
-    checkup_max: 30,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['quads', 'glutes'],
-    antagonist_muscles: ['hamstrings'],
-    cue: 'Длинный шаг назад, голень передней ноги вертикальна, корпус ровный.',
-    details:
-      'Встань прямо, стопы на ширине таза, пресс подтянут. На вдохе сделай контролируемый длинный шаг назад на носок и опусти заднее колено почти до пола (угол около 90° в обоих коленях); голень передней ноги остаётся вертикальной, вес распределён на пятку и всю стопу передней ноги. На выдохе оттолкнись передней ногой и вернись в стойку. Сделай на обе ноги.',
-    svgKey: 'reverse_lunges',
-    isPaired: true,
-  },
-  {
-    id: 'pike-push-ups',
-    name: 'Pike Push-Ups',
-    metric: 'reps',
-    checkup_max: 15,
-    lastCheckupDate: '2026-11-01',
-    target_muscles: ['front_delts', 'shoulder_press', 'triceps'],
-    antagonist_muscles: ['lats', 'forearms'],
-    cue: 'Таз высоко «домиком», опускай макушку вперёд перед линией ладоней.',
-    details:
-      'Прими положение «домиком»: таз поднят максимально высоко вверх, ладони на ширине плеч, ноги прямые или чуть согнуты. На вдохе сгибай локти назад под 45° и опускай голову вперёд перед линией ладоней (чтобы ладони и точка опускания головы образовывали треугольник). На выдохе выжми себя вверх по обратной дуге.',
-    svgKey: 'pike_pushups',
-  },
-];
+export const CATALOG_IDS: ReadonlySet<string> = new Set(CATALOG.map((c) => c.id));
+
+// The catalog resolved with the shipped maxima (what a fresh install sees).
+export const INITIAL_EXERCISES: Exercise[] = resolveExercises(
+  CATALOG,
+  CATALOG_TEXT_RU,
+  SEED_MAXES,
+  []
+);
 
 export const INITIAL_WORKOUTS: WorkoutPlan[] = [
   {
@@ -364,7 +200,8 @@ export const RED_MOBILITY_EXERCISES: { exerciseId: string; target: number }[] = 
 ];
 
 export const DEFAULT_FITNOTE_DATA: FitnoteData = {
-  exercises: INITIAL_EXERCISES,
+  maxes: SEED_MAXES,
+  customExercises: [],
   workouts: INITIAL_WORKOUTS,
   selectedWorkoutId: 'workout-a',
   readiness: 'green',

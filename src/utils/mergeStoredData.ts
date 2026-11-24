@@ -1,34 +1,27 @@
-import { Exercise, FitnoteData } from '../types';
+import { FitnoteData } from '../types';
+
+const isPlainObject = (x: unknown): x is Record<string, unknown> =>
+  typeof x === 'object' && x !== null && !Array.isArray(x);
 
 /**
- * Builds a full FitnoteData from a (possibly old or partial) stored object:
- * defaults for missing fields, seed `isPaired` / `details` back-filled into
- * stored seed exercises, empty arrays for missing logs.
+ * Builds a full FitnoteData from a (possibly partial) current-schema object:
+ * defaults for missing fields, empty arrays for missing logs.
  * Pure: no window / localStorage access.
  */
 export function mergeStoredData(
   parsed: Partial<FitnoteData>,
-  defaults: FitnoteData,
-  seedExercises: Exercise[]
+  defaults: FitnoteData
 ): FitnoteData {
-  const exercises =
-    Array.isArray(parsed.exercises) && parsed.exercises.length > 0
-      ? parsed.exercises.map((ex) => {
-          const seedMatch = seedExercises.find((s) => s.id === ex.id);
-          if (!seedMatch) return ex;
-          return {
-            ...ex,
-            isPaired: ex.isPaired ?? seedMatch.isPaired,
-            details: ex.details ?? seedMatch.details,
-          };
-        })
-      : defaults.exercises;
-
   return {
     ...defaults,
     ...parsed,
     theme: parsed.theme === 'dark' ? 'dark' : 'light',
-    exercises,
+    maxes: isPlainObject(parsed.maxes)
+      ? (parsed.maxes as FitnoteData['maxes'])
+      : defaults.maxes,
+    customExercises: Array.isArray(parsed.customExercises)
+      ? parsed.customExercises
+      : [],
     workouts:
       Array.isArray(parsed.workouts) && parsed.workouts.length > 0
         ? parsed.workouts

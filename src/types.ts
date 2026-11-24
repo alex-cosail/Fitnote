@@ -179,7 +179,10 @@ export interface CheckUpEntry {
 }
 
 export interface FitnoteData {
-  exercises: Exercise[];
+  // Catalog exercises live in code (src/data/catalog.ts); the user keeps
+  // only their check-up maxima and their own exercises (schema ≥ 3).
+  maxes: Record<string, { value: number; date?: string }>;
+  customExercises: Exercise[];
   workouts: WorkoutPlan[];
   selectedWorkoutId: string;
   readiness: ReadinessLevel;
