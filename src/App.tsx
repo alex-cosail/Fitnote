@@ -314,6 +314,27 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  const handleToggleFavorite = (id: string) => {
+    setData((prev) => {
+      const favs = prev.favorites ?? [];
+      return {
+        ...prev,
+        favorites: favs.includes(id) ? favs.filter((f) => f !== id) : [...favs, id],
+      };
+    });
+  };
+
+  // «Создать свою»: the own workout is added to the list and selected.
+  const handleSaveOwn = (plan: WorkoutPlan) => {
+    setData((prev) => ({
+      ...prev,
+      workouts: [plan, ...prev.workouts],
+      selectedWorkoutId: plan.id,
+    }));
+    setActiveTab('workout');
+    window.scrollTo(0, 0);
+  };
+
   // Counts come from the same pure merge that updates the state, so the
   // "Imported N plans" message is always right.
   const handleImportPlan = (payload: ImportPayload) => {
@@ -530,7 +551,10 @@ export default function App() {
           <GeneratorPanel
             exercises={exercises}
             logs={data.workoutLogs}
+            favorites={data.favorites ?? []}
+            onToggleFavorite={handleToggleFavorite}
             onAdd={handleAddGenerated}
+            onSaveOwn={handleSaveOwn}
           />
         )}
         {activeTab === 'catalog' && (

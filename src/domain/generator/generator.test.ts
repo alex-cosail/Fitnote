@@ -9,6 +9,7 @@ import {
   DEFAULT_PROFILE, GeneratedWorkout, GeneratorContext, GeneratorProfile, HealthLevel,
   applyMode, buildMonth, buildWeek, calibrateMax, calibrateTempo, capMinutes, checkSession, deficitTemplate,
   estimateSeconds, fitRounds, hasSameDirectionInRow, historyFromLogs, nextTarget, orderRound, outcomeFromLog,
+  antagonistOptions, basketIssues, buildOwnPlan, changeRounds, changeTarget, fixFor, ownItem, stepRank, swapExercise, zoneCandidates,
   dayPlan, replaceGenerated, runGenerator, shortRounds, toWorkoutPlans, weekDebt, weekIsCovered,
 } from '.';
 import { CAP_TOLERANCE, DELOAD } from './rules';
@@ -450,5 +451,68 @@ describe('the plan played today (day mode on the Workout tab)', () => {
     const plan = { ...coachA, items: [...coachA.items, { exerciseId: 'custom-123', target: 10 }] };
     const ids = dayPlan(plan, 'accent', { ...opts, accentMinutes: 15 }).plan.items.map((it) => it.exerciseId);
     expect(ids).toContain('custom-123');
+  });
+});
+
+describe('«Редактировать» and «Создать свою»', () => {
+  const exercises = resolveExercises(CATALOG, texts, {}, [], 'medium');
+  const p = profileOf();
+  const [sa] = buildWeek(p, ctxFor(p));
+  const plan = sa.plan;
+
+  it('−/+ target makes it fixed; rounds stay within 1–20', () => {
+    const e = changeTarget(plan, 0, 1, 'reps');
+    expect(e.items[0].target).toBe(plan.items[0].target + 1);
+    expect(e.items[0].spec).toBeUndefined();
+    expect(changeRounds({ ...plan, rounds: 1 }, -1).rounds).toBe(1);
+    expect(changeRounds({ ...plan, rounds: 20 }, 1).rounds).toBe(20);
+  });
+
+  it('step easier / harder moves along the ladder, never onto another slot', () => {
+    const i = plan.items.findIndex((it) => it.exerciseId === 'floor-push-ups' || it.pattern === 'push_h');
+    const harder = stepRank(plan, i, 1, CATALOG, exercises);
+    const next = byId.get(harder.items[i].exerciseId!)!;
+    expect(next.rank).toBeGreaterThan(byId.get(plan.items[i].exerciseId!)!.rank);
+    const ids = harder.items.map((it) => it.exerciseId);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('⇄ cycles through the same pattern', () => {
+    const s1 = swapExercise(plan, 0, CATALOG, exercises);
+    expect(s1.items[0].exerciseId).not.toBe(plan.items[0].exerciseId);
+    expect(s1.items[0].pattern).toBe(plan.items[0].pattern);
+  });
+
+  it('a zone offers up to 6 exercises, favorites first, chosen ones left out', () => {
+    const list = zoneCandidates('upper', CATALOG, ['band-face-pull'], 'medium', ['floor-push-ups']);
+    expect(list.length).toBeLessThanOrEqual(6);
+    expect(list[0].id).toBe('band-face-pull');
+    expect(list.map((c) => c.id)).not.toContain('floor-push-ups');
+    expect(zoneCandidates('balance', CATALOG, [], 'medium', []).every((c) => c.stability !== 'bilateral')).toBe(true);
+  });
+
+  it('antagonist offer: pull for a push, hinge for a squat', () => {
+    expect(antagonistOptions('floor-push-ups', CATALOG, []).map((c) => c.pattern)).toEqual(
+      expect.arrayContaining(['pull_h'])
+    );
+    expect(antagonistOptions('air-squats', CATALOG, []).every((c) => c.pattern === 'hinge')).toBe(true);
+  });
+
+  it('a basket of pulls and dips: no legs, no core; «Добавить сюда» fixes it', () => {
+    const items = ['strict-pull-ups', 'parallel-bar-dips', 'australian-pull-ups'].map((id) => ownItem(byId.get(id)!, 'S', exercises));
+    expect(basketIssues(items, CATALOG)).toEqual(expect.arrayContaining(['no_legs', 'no_core']));
+    let next = items;
+    for (const issue of basketIssues(next, CATALOG)) {
+      const c = fixFor(issue, next, CATALOG, 'medium', []);
+      if (c) next = [...next, ownItem(c, 'S', exercises)];
+    }
+    expect(basketIssues(next, CATALOG)).toEqual([]);
+  });
+
+  it('the own workout gets a round order without two pushes / pulls in a row', () => {
+    const items = ['strict-pull-ups', 'australian-pull-ups', 'floor-push-ups', 'air-squats'].map((id) => ownItem(byId.get(id)!, 'S', exercises));
+    const own = buildOwnPlan(items, 3, 'S', 'own-1', 'Своя', 'Сила');
+    expect(hasSameDirectionInRow(own.items.map((it) => it.pattern!))).toBe(false);
+    expect(own.restBetweenRounds).toBe(90);
   });
 });

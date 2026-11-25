@@ -214,6 +214,8 @@ export interface FitnoteData {
   activeSession: ActiveSession | null;
   // ISO time of the last saved backup file (absent = never).
   lastBackupAt?: string;
+  // Favorite exercise ids (♥ in the generator); the engine prefers them.
+  favorites?: string[];
   // Minutes for the accent mode (absent = 20).
   accentMinutes?: number;
   // Last answer to "When is the next workout?" (calendar reminder).

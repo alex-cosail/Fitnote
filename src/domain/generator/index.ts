@@ -16,3 +16,9 @@ export { runGenerator, toWorkoutPlans, replaceGenerated, DEFAULT_REQUEST, LEVEL_
 export type { GenPeriod, GenLevel, GenRequest, GenResult } from './app';
 export { dayPlan, dayTimes, DEFAULT_ACCENT_MINUTES, ACCENT_MINUTES } from './day';
 export type { DayPlan, DayOptions } from './day';
+export {
+  changeTarget, changeRounds, stepRank, swapExercise, alternatives,
+  zoneCandidates, antagonistOptions, ownItem, buildOwnPlan, basketIssues, fixFor, OWN_CHOICES,
+} from './edit';
+export type { OwnZone } from './edit';
+export { COMPONENT } from './rules';
