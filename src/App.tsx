@@ -573,6 +573,10 @@ export default function App() {
           onUpdateSession={handleUpdateSession}
           onCompleteSession={handleCompleteSession}
           onExitSession={handleExitPlayer}
+          reminderPrefs={data.reminder}
+          onReminderPrefsChange={(reminder) =>
+            setData((prev) => ({ ...prev, reminder }))
+          }
         />
       )}
     </div>

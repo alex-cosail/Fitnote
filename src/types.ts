@@ -210,6 +210,8 @@ export interface FitnoteData {
   activeSession: ActiveSession | null;
   // ISO time of the last saved backup file (absent = never).
   lastBackupAt?: string;
+  // Last answer to "When is the next workout?" (calendar reminder).
+  reminder?: { daysAhead: 0 | 1 | 2 | 3; time: string };
   // Interface language (absent = Russian; the switcher arrives in step 4).
   locale?: 'ru' | 'en' | 'tr';
 }

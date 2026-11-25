@@ -45,3 +45,18 @@ export async function shareOrDownloadFile(
   downloadFile(name, text);
   return 'downloaded';
 }
+
+/**
+ * Hands a calendar event to the phone: share sheet with a text/calendar file
+ * when supported (calendar apps pick it up), otherwise a download that the
+ * system opens with the calendar (iPhone shows "Add to Calendar").
+ */
+export async function shareOrDownloadCalendar(name: string, ics: string): Promise<'shared' | 'downloaded'> {
+  const file = new File([ics], name, { type: 'text/calendar' });
+  if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+    await navigator.share({ files: [file], title: 'Fitnote — тренировка' });
+    return 'shared';
+  }
+  downloadFile(name, ics, 'text/calendar');
+  return 'downloaded';
+}

@@ -13,7 +13,16 @@ import {
   togglePause,
 } from '../../domain/session/transitions';
 import { ActiveSession, Exercise, RirValue, WorkoutLog } from '../../types';
+import {
+  buildIcsEvent,
+  googleCalendarUrl,
+  nextReminderDate,
+  REMINDER_ALARM_MINUTES,
+  ReminderPrefs,
+  roundedTimeOfDay,
+} from '../../domain/reminder/ics';
 import { soundEngine } from '../../utils/audio';
+import { shareOrDownloadCalendar } from '../../utils/download';
 import { ExerciseVisual } from './ExerciseVisual';
 import { useHoldTimer } from './hooks/useHoldTimer';
 import { usePhaseTicker } from './hooks/usePhaseTicker';
@@ -27,6 +36,8 @@ export interface WorkoutPlayerProps {
   onUpdateSession: (next: ActiveSession) => void;
   onCompleteSession: (log: WorkoutLog) => void;
   onExitSession: () => void;
+  reminderPrefs?: ReminderPrefs;
+  onReminderPrefsChange?: (prefs: ReminderPrefs) => void;
 }
 
 /**
@@ -41,6 +52,8 @@ export function usePlayerController({
   onUpdateSession,
   onCompleteSession,
   onExitSession,
+  reminderPrefs,
+  onReminderPrefsChange,
 }: WorkoutPlayerProps) {
   const currentItem = session.items[session.currentItemIndex];
   const currentExercise =
@@ -50,6 +63,13 @@ export function usePlayerController({
   const [showAntagonistSheet, setShowAntagonistSheet] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [finishNote, setFinishNote] = useState('');
+  // "When is the next workout?" — defaults to the last answer.
+  const [reminderDays, setReminderDays] = useState<ReminderPrefs['daysAhead']>(
+    reminderPrefs?.daysAhead ?? 0
+  );
+  const [reminderTime, setReminderTime] = useState<string>(
+    () => reminderPrefs?.time ?? roundedTimeOfDay(new Date())
+  );
   const [pairedLeftValue, setPairedLeftValue] = useState<number | null>(null);
   // Brief "saved" highlight after a tap on the rep number, then move on.
   const [repSaveFlash, setRepSaveFlash] = useState(false);
@@ -229,8 +249,36 @@ export function usePlayerController({
 
   const roundFlowCompleted = completedRounds(session.logs);
 
-  const handleSaveFinish = () => {
-    onCompleteSession(buildWorkoutLog(session, finishNote, Date.now()));
+  const reminderEvent = () => {
+    const now = new Date();
+    const appUrl = `${window.location.origin}${window.location.pathname}#/workout`;
+    return {
+      uid: `fitnote-${now.getTime()}@fitnote`,
+      title: 'Fitnote: следующая тренировка',
+      description: `Открыть Fitnote: ${appUrl}`,
+      url: appUrl,
+      start: nextReminderDate(reminderDays, reminderTime, now),
+      durationMinutes: 60,
+      alarmMinutesBefore: REMINDER_ALARM_MINUTES,
+      now,
+    };
+  };
+
+  // Saves the workout; if a day is chosen, first hands a calendar event with a
+  // one-hour alarm to the phone (still inside the tap, as sharing requires).
+  const handleSaveFinish = async () => {
+    const log = buildWorkoutLog(session, finishNote, Date.now());
+    onReminderPrefsChange?.({ daysAhead: reminderDays, time: reminderTime });
+    if (reminderDays > 0) {
+      const ev = reminderEvent();
+      const name = `fitnote-${ev.start.toISOString().slice(0, 10)}.ics`;
+      try {
+        await shareOrDownloadCalendar(name, buildIcsEvent(ev));
+      } catch {
+        // Share sheet closed or refused: the workout is saved anyway.
+      }
+    }
+    onCompleteSession(log);
   };
 
   const antagonistMatches = findAntagonistMatches(currentExercise, exercises);
@@ -295,6 +343,11 @@ export function usePlayerController({
     currentItem,
     exercises,
     finishNote,
+    reminderDays,
+    setReminderDays,
+    reminderTime,
+    setReminderTime,
+    reminderGoogleUrl: () => googleCalendarUrl(reminderEvent()),
     handleAddRestSeconds,
     handleCompleteSet,
     handleRoundFlowFinish,

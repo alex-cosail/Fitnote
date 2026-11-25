@@ -7,9 +7,14 @@ export const FinishPhase: React.FC = () => {
     finishNote,
     handleSaveFinish,
     onExitSession,
+    reminderDays,
+    reminderGoogleUrl,
+    reminderTime,
     rir,
     session,
     setFinishNote,
+    setReminderDays,
+    setReminderTime,
   } = usePlayer();
 
   const totalReps = session.logs
@@ -95,6 +100,61 @@ export const FinishPhase: React.FC = () => {
               placeholder="Например: хорошее самочувствие, турник в парке"
               className="mt-1.5 min-h-[46px] w-full rounded-xl border border-gray-300 bg-white px-3.5 text-sm text-[#111827] placeholder:text-gray-400 focus:border-[#111827] focus:outline-none dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:placeholder:text-gray-500 dark:focus:border-[#94A3B8]"
             />
+          </div>
+
+          {/* When is the next workout? → calendar event with a 1-hour alarm */}
+          <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-3.5 dark:border-[#232E42] dark:bg-[#131A26]">
+            <p className="text-sm font-bold text-[#111827] dark:text-[#F3F4F6]">
+              Когда следующая тренировка?
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+              {(
+                [
+                  [1, 'Завтра'],
+                  [2, 'Послезавтра'],
+                  [3, 'Через 3 дня'],
+                  [0, 'Не напоминать'],
+                ] as const
+              ).map(([days, label]) => (
+                <button
+                  key={days}
+                  type="button"
+                  onClick={() => setReminderDays(days)}
+                  className={`tap-scale min-h-[44px] rounded-xl px-2 text-xs font-semibold transition-colors ${
+                    reminderDays === days
+                      ? 'bg-[#111827] text-white dark:bg-[#F3F4F6] dark:text-[#0B0F17]'
+                      : 'border border-gray-300 bg-white text-gray-700 dark:border-[#334155] dark:bg-[#1A2333] dark:text-gray-200'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {reminderDays > 0 && (
+              <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                <label htmlFor="reminder-time" className="font-semibold">
+                  Время
+                </label>
+                <input
+                  id="reminder-time"
+                  type="time"
+                  value={reminderTime}
+                  onChange={(e) => e.target.value && setReminderTime(e.target.value)}
+                  className="font-mono-num min-h-[40px] rounded-xl border border-gray-300 bg-white px-2.5 text-sm font-bold text-[#111827] dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6]"
+                />
+                <span>· напомню за час через календарь телефона</span>
+                {typeof navigator !== 'undefined' && navigator.onLine && (
+                  <a
+                    href={reminderGoogleUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-[#2563EB] underline dark:text-[#60A5FA]"
+                  >
+                    или в Google Календарь
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="mt-5">
