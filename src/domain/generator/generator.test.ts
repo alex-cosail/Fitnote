@@ -9,7 +9,7 @@ import {
   DEFAULT_PROFILE, GeneratedWorkout, GeneratorContext, GeneratorProfile, HealthLevel,
   applyMode, buildMonth, buildWeek, calibrateMax, calibrateTempo, capMinutes, checkSession, deficitTemplate,
   estimateSeconds, fitRounds, hasSameDirectionInRow, historyFromLogs, nextTarget, orderRound, outcomeFromLog,
-  antagonistOptions, basketIssues, buildOwnPlan, changeRounds, changeTarget, fixFor, ownItem, stepRank, swapExercise, zoneCandidates,
+  antagonistOptions, basketIssues, buildOwnPlan, changeRounds, changeTarget, fixFor, ladderPosition, ownItem, stepRank, swapExercise, zoneCandidates,
   dayPlan, replaceGenerated, runGenerator, shortRounds, toWorkoutPlans, weekDebt, weekIsCovered,
 } from '.';
 import { CAP_TOLERANCE, DELOAD } from './rules';
@@ -514,5 +514,24 @@ describe('«Редактировать» and «Создать свою»', () =>
     const own = buildOwnPlan(items, 3, 'S', 'own-1', 'Своя', 'Сила');
     expect(hasSameDirectionInRow(own.items.map((it) => it.pattern!))).toBe(false);
     expect(own.restBetweenRounds).toBe(90);
+  });
+});
+
+describe('ladder position on the card', () => {
+  it('push-ups family: steps from knee push-ups to archer; ends dim the buttons', () => {
+    const mid = ladderPosition('floor-push-ups', CATALOG)!;
+    expect(mid.ranks).toEqual([1, 2, 3, 4, 5]);
+    expect(mid.current).toBe(3);
+    expect(mid.canEasier && mid.canHarder).toBe(true);
+    const bottom = ladderPosition('knee-push-ups', CATALOG)!;
+    expect(bottom.canEasier).toBe(false);
+    const top = ladderPosition('archer-push-ups', CATALOG)!;
+    expect(top.canHarder).toBe(false);
+  });
+
+  it('only the steps available here are shown (home: no bars)', () => {
+    const home = ladderPosition('strict-pull-ups', CATALOG, { environment: 'home' })!;
+    expect(home.ranks).toEqual([3]);
+    expect(home.canEasier || home.canHarder).toBe(false);
   });
 });

@@ -246,3 +246,28 @@ export function fixFor(
   }
   return pool[0];
 }
+
+export interface LadderPosition {
+  /** Steps (ranks) available in this exercise's ladder family, easiest first. */
+  ranks: number[];
+  current: number;
+  canEasier: boolean;
+  canHarder: boolean;
+}
+
+/**
+ * Where an exercise stands on its ladder (the family, under the conditions):
+ * the card shows the scale and dims − / + at the ends.
+ */
+export function ladderPosition(id: string, catalog: CatalogExercise[], cond: Conditions = {}): LadderPosition | undefined {
+  const c = catalog.find((x) => x.id === id);
+  if (!c) return undefined;
+  const family = catalog.filter((x) => x.family === c.family && (x.id === c.id || isAvailable(x, cond)));
+  const ranks = [...new Set(family.map((x) => x.rank))].sort((a, b) => a - b);
+  return {
+    ranks,
+    current: c.rank,
+    canEasier: Boolean(ladderNeighbour(catalog, id, -1, cond)) && ranks[0] < c.rank,
+    canHarder: Boolean(ladderNeighbour(catalog, id, 1, cond)) && ranks[ranks.length - 1] > c.rank,
+  };
+}

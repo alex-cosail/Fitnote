@@ -18,7 +18,7 @@ export { dayPlan, dayTimes, DEFAULT_ACCENT_MINUTES, ACCENT_MINUTES } from './day
 export type { DayPlan, DayOptions } from './day';
 export {
   changeTarget, changeRounds, stepRank, swapExercise, alternatives,
-  zoneCandidates, antagonistOptions, ownItem, buildOwnPlan, basketIssues, fixFor, OWN_CHOICES,
+  zoneCandidates, antagonistOptions, ownItem, buildOwnPlan, basketIssues, fixFor, OWN_CHOICES, ladderPosition,
 } from './edit';
-export type { OwnZone } from './edit';
+export type { OwnZone, LadderPosition } from './edit';
 export { COMPONENT } from './rules';

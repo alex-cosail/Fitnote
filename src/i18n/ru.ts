@@ -114,6 +114,9 @@ export const ru = {
   'own.issue.balance_quota': "Мало упражнений на баланс.",
   'own.fixHere': "Добавить сюда",
   'own.keep': "Оставить так",
+  'card.step': "Ступень {n}",
+  'card.other': "Другое",
+  'card.perSide': "на сторону",
 };
 
 export type Dict = Record<keyof typeof ru, string>;

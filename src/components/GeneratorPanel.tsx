@@ -1,16 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowLeftRight, Check, ChevronDown, ChevronsDown, ChevronsUp, Heart, Minus, Pencil, Plus, Sparkles } from 'lucide-react';
+import { Check, ChevronDown, Heart, Minus, Pencil, Plus, Sparkles } from 'lucide-react';
 import { CATALOG } from '../data/catalog';
 import { formatMetricTarget } from '../domain/format';
 import {
   Component, DEFAULT_PROFILE, DEFAULT_REQUEST, GenLevel, GenPeriod, GenRequest, GeneratedWorkout,
-  changeRounds, changeTarget, estimateSeconds, runGenerator, stepRank, swapExercise, toWorkoutPlans,
+  changeRounds, changeTarget, estimateSeconds, ladderPosition, runGenerator, stepRank, swapExercise, toWorkoutPlans,
 } from '../domain/generator';
 import { MovementPattern } from '../domain/catalog/types';
 import { useT } from '../i18n';
 import type { TranslationKey } from '../i18n/ru';
 import { Exercise, WorkoutLog, WorkoutPlan } from '../types';
 import { CreateOwnPanel } from './CreateOwnPanel';
+import { ExerciseStepCard } from './ExerciseStepCard';
 
 interface GeneratorPanelProps {
   exercises: Exercise[];
@@ -117,6 +118,27 @@ export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
           </button>
         </div>
       )}
+      {editing ? (
+        <div className="mt-3 space-y-2 border-t border-gray-100 pt-3 dark:border-[#1E293B]">
+          {plan.items.map((it, i) => {
+            const ex = exById.get(it.exerciseId!);
+            if (!ex) return null;
+            return (
+              <ExerciseStepCard
+                key={`${it.exerciseId}-${i}`}
+                exercise={ex}
+                target={it.target}
+                ladder={ladderPosition(ex.id, CATALOG, cond)}
+                favorite={favorites.includes(ex.id)}
+                onTarget={(dir) => edit(index, (p) => changeTarget(p, i, dir, ex.metric))}
+                onStep={(dir) => edit(index, (p) => stepRank(p, i, dir, CATALOG, exercises, cond))}
+                onToggleFavorite={() => onToggleFavorite(ex.id)}
+                onSwap={() => edit(index, (p) => swapExercise(p, i, CATALOG, exercises, cond))}
+              />
+            );
+          })}
+        </div>
+      ) : (
       <ol className="mt-3 space-y-1.5 border-t border-gray-100 pt-3 dark:border-[#1E293B]">
         {plan.items.map((it, i) => {
           const ex = exById.get(it.exerciseId!);
@@ -134,32 +156,11 @@ export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
                   {ex?.isPaired ? ' ×2' : ''}
                 </span>
               </div>
-              {editing && ex && (
-                <div className="mt-1 mb-2 flex flex-wrap items-center gap-1.5">
-                  <button type="button" className={iconBtn} onClick={() => edit(index, (p) => changeTarget(p, i, -1, ex.metric))} aria-label={t('gen.edit.less')}>
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <button type="button" className={iconBtn} onClick={() => edit(index, (p) => changeTarget(p, i, 1, ex.metric))} aria-label={t('gen.edit.more')}>
-                    <Plus className="h-4 w-4" />
-                  </button>
-                  <button type="button" className={iconBtn} onClick={() => edit(index, (p) => stepRank(p, i, -1, CATALOG, exercises, cond))} aria-label={t('gen.edit.easier')} title={t('gen.edit.easier')}>
-                    <ChevronsDown className="h-4 w-4" />
-                  </button>
-                  <button type="button" className={iconBtn} onClick={() => edit(index, (p) => stepRank(p, i, 1, CATALOG, exercises, cond))} aria-label={t('gen.edit.harder')} title={t('gen.edit.harder')}>
-                    <ChevronsUp className="h-4 w-4" />
-                  </button>
-                  <button type="button" className={iconBtn} onClick={() => edit(index, (p) => swapExercise(p, i, CATALOG, exercises, cond))} aria-label={t('gen.edit.swap')} title={t('gen.edit.swap')}>
-                    <ArrowLeftRight className="h-4 w-4" />
-                  </button>
-                  <button type="button" className={iconBtn} onClick={() => onToggleFavorite(ex.id)} aria-pressed={fav} aria-label={t('gen.edit.favorite')} title={t('gen.edit.favorite')}>
-                    <Heart className={`h-4 w-4 ${fav ? 'fill-[#DC2626] text-[#DC2626]' : ''}`} />
-                  </button>
-                </div>
-              )}
-            </li>
+                          </li>
           );
         })}
       </ol>
+      )}
     </article>
   );
 

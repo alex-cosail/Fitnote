@@ -114,4 +114,7 @@ export const tr: Dict = {
   'own.issue.balance_quota': "Denge çalışması az.",
   'own.fixHere': "Buraya ekle",
   'own.keep': "Böyle kalsın",
+  'card.step': "Basamak {n}",
+  'card.other': "Başka",
+  'card.perSide': "her taraf",
 };

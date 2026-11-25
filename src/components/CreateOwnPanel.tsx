@@ -4,11 +4,13 @@ import { CATALOG } from '../data/catalog';
 import { formatMetricTarget } from '../domain/format';
 import {
   COMPONENT, Component, DEFAULT_PROFILE, OwnZone, antagonistOptions, basketIssues, buildOwnPlan,
-  changeTarget, estimateSeconds, fixFor, ownItem, zoneCandidates,
+  changeTarget, estimateSeconds, fixFor, ladderPosition, ownItem, stepRank, zoneCandidates,
 } from '../domain/generator';
 import { useT } from '../i18n';
 import type { TranslationKey } from '../i18n/ru';
 import { Exercise, WorkoutItem, WorkoutPlan } from '../types';
+import { ExerciseStepCard } from './ExerciseStepCard';
+import { ExerciseSvg } from './ExerciseSvg';
 
 interface CreateOwnPanelProps {
   exercises: Exercise[];
@@ -58,12 +60,18 @@ export const CreateOwnPanel: React.FC<CreateOwnPanelProps> = ({
   const add = (id: string, offerAntagonist: boolean) => {
     const c = catalogById.get(id);
     if (!c) return;
-    setItems((xs) => [...xs, ownItem(c, component, exercises)]);
+    // A fast double tap must not add the same exercise twice.
+    setItems((xs) => (xs.some((x) => x.exerciseId === id) ? xs : [...xs, ownItem(c, component, exercises)]));
     setAntagonistFor(offerAntagonist ? id : null);
     setChecking(false);
   };
   const remove = (i: number) => {
     setItems((xs) => xs.filter((_, j) => j !== i));
+    setChecking(false);
+  };
+  const asPlan = (xs: WorkoutItem[]): WorkoutPlan => ({ id: '', title: '', subtitle: '', formatLabel: '', rounds, restBetweenExercises: 0, restBetweenRounds: 0, items: xs });
+  const step = (i: number, dir: 1 | -1) => {
+    setItems((xs) => stepRank(asPlan(xs), i, dir, CATALOG, exercises, cond).items);
     setChecking(false);
   };
   const tune = (i: number, dir: 1 | -1) => {
@@ -154,6 +162,7 @@ export const CreateOwnPanel: React.FC<CreateOwnPanelProps> = ({
                 key={c.id}
                 className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white p-2 pl-3 dark:border-[#232E42] dark:bg-[#131A26]"
               >
+                {ex && <ExerciseSvg svgKey={ex.svgKey} className="h-14 w-20 shrink-0" />}
                 <button type="button" onClick={() => add(c.id, true)} className="tap-scale min-h-[44px] min-w-0 flex-1 text-left">
                   <span className="block text-sm font-semibold text-[#111827] dark:text-[#F3F4F6]">{ex?.name ?? c.id}</span>
                   <span className="block text-xs text-gray-500 dark:text-gray-400">
@@ -195,28 +204,25 @@ export const CreateOwnPanel: React.FC<CreateOwnPanelProps> = ({
         {items.length === 0 ? (
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">{t('own.basketEmpty')}</p>
         ) : (
-          <ol className="mt-3 space-y-2 border-t border-gray-100 pt-3 dark:border-[#1E293B]">
+          <div className="mt-3 space-y-2 border-t border-gray-100 pt-3 dark:border-[#1E293B]">
             {items.map((it, i) => {
               const ex = exById.get(it.exerciseId!);
+              if (!ex) return null;
               return (
-                <li key={`${it.exerciseId}-${i}`} className="flex items-center gap-2 text-sm">
-                  <span className="min-w-0 flex-1 text-[#111827] dark:text-[#F3F4F6]">{ex?.name ?? it.exerciseId}</span>
-                  <button type="button" className={iconBtn} onClick={() => tune(i, -1)} aria-label={t('gen.edit.less')}>
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="font-mono-num w-14 text-center font-semibold text-[#DC2626] dark:text-[#F87171]">
-                    {ex ? formatMetricTarget(it.target, ex.metric) : it.target}
-                  </span>
-                  <button type="button" className={iconBtn} onClick={() => tune(i, 1)} aria-label={t('gen.edit.more')}>
-                    <Plus className="h-4 w-4" />
-                  </button>
-                  <button type="button" className={iconBtn} onClick={() => remove(i)} aria-label={t('own.remove')}>
-                    <X className="h-4 w-4" />
-                  </button>
-                </li>
+                <ExerciseStepCard
+                  key={`${it.exerciseId}-${i}`}
+                  exercise={ex}
+                  target={it.target}
+                  ladder={ladderPosition(ex.id, CATALOG, cond)}
+                  favorite={favorites.includes(ex.id)}
+                  onTarget={(dir) => tune(i, dir)}
+                  onStep={(dir) => step(i, dir)}
+                  onToggleFavorite={() => onToggleFavorite(ex.id)}
+                  onRemove={() => remove(i)}
+                />
               );
             })}
-          </ol>
+          </div>
         )}
 
         {checking && issues.length > 0 && (

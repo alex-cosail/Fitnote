@@ -113,4 +113,7 @@ export const en: Dict = {
   'own.issue.balance_quota': "Too little balance work.",
   'own.fixHere': "Add here",
   'own.keep': "Keep as is",
+  'card.step': "Step {n}",
+  'card.other': "Other",
+  'card.perSide': "per side",
 };
