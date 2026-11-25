@@ -13,6 +13,7 @@ export type ThemeMode = 'light' | 'dark';
 export type AppTab = 'workout' | 'checkup' | 'catalog' | 'sync';
 
 export type SvgKey =
+  | import('./data/sceneKeys').SceneKey
   | 'pullups'
   | 'dips'
   | 'australian_pullups'

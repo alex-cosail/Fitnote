@@ -1,5 +1,6 @@
 import React from 'react';
 import { SvgKey } from '../types';
+import { EXERCISE_SCENES } from './exerciseScenes';
 
 interface ExerciseSvgProps {
   svgKey: SvgKey;
@@ -15,6 +16,8 @@ export const ExerciseSvg: React.FC<ExerciseSvgProps> = ({
   className = 'w-32 h-24',
 }) => {
   const renderScene = () => {
+    const scene = (EXERCISE_SCENES as Record<string, () => React.ReactElement>)[svgKey];
+    if (scene) return scene();
     switch (svgKey) {
       case 'pullups':
         return (

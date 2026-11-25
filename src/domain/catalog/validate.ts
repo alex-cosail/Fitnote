@@ -1,4 +1,5 @@
 import { MUSCLE_LABELS } from './muscles';
+import { SCENE_KEYS } from '../../data/sceneKeys';
 import {
   CatalogExercise,
   CatalogText,
@@ -21,6 +22,7 @@ export const SVG_KEYS = [
   'pullups', 'dips', 'australian_pullups', 'pushups', 'bulgarian_split_squat',
   'glute_bridge', 'side_plank', 'dead_hang', 'pallof_press', 'romanian_deadlift',
   'band_row', 'reverse_lunges', 'pike_pushups', 'generic_strength',
+  ...SCENE_KEYS,
 ] as const;
 
 export interface Issue {
