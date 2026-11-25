@@ -49,6 +49,12 @@ export const SCENE_KEYS = [
   'db_romanian_deadlift',
   'single_leg_rdl',
   'nordic_curl_negatives',
+  'scapular_wall_slides',
+  'incline_pike_push_ups',
+  'band_overhead_press',
+  'half_kneeling_db_press',
+  'elevated_pike_push_ups',
+  'wall_handstand_hold',
 ] as const;
 
 export type SceneKey = (typeof SCENE_KEYS)[number];

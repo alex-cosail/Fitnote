@@ -661,4 +661,80 @@ export const EXERCISE_SCENES: Record<SceneKey, () => React.ReactElement> = {
       <polyline points="116,61 122,63 121,57" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </g>
   ),
+  // ——— vertical push ———
+  scapular_wall_slides: () => (
+    <g>
+      <Floor y={104} />
+      <line x1="40" y1="8" x2="40" y2="104" stroke={GEAR} strokeWidth="3" />
+      {/* back to the wall, arms slide up the wall in a W → Y */}
+      <Head x={50} y={22} />
+      <Body points="50,29 50,68" />
+      <Limb points="50,36 64,32 62,12" color={RED} />
+      <Limb points="50,68 54,104" />
+      <Arrow x1={80} y1={40} x2={80} y2={16} />
+    </g>
+  ),
+  incline_pike_push_ups: () => (
+    <g>
+      <Floor y={104} />
+      <Box x={96} y={78} w={32} h={26} />
+      {/* hands on the box, hips high, head goes down between the hands */}
+      <Limb points="40,104 70,44" />
+      <Body points="70,44 98,66" />
+      <Head x={106} y={70} />
+      <Limb points="98,66 102,78" color={RED} />
+      <Arrow x1={140} y1={62} x2={140} y2={40} />
+    </g>
+  ),
+  band_overhead_press: () => (
+    <g>
+      <Floor y={104} />
+      {/* standing on the band, press it overhead */}
+      <Head x={80} y={24} />
+      <Body points="80,31 80,66" />
+      <Limb points="80,38 90,26 92,8" color={RED} />
+      <Limb points="80,66 72,104" />
+      <Limb points="80,66 88,104" />
+      <line x1="84" y1="104" x2="92" y2="8" stroke={RED} strokeWidth="1.8" strokeDasharray="3.5 2.5" />
+      <Arrow x1={118} y1={40} x2={118} y2={14} />
+    </g>
+  ),
+  half_kneeling_db_press: () => (
+    <g>
+      <Floor />
+      {/* half kneeling, one dumbbell pressed overhead, trunk tall */}
+      <Limb points="76,70 98,72 98,98" />
+      <Limb points="76,70 70,98 50,98" />
+      <Head x={79} y={30} />
+      <Body points="78,37 76,70" />
+      <Limb points="78,44 86,30 88,14" color={RED} />
+      <rect x="82" y="6" width="14" height="6" rx="2" fill={GEAR} />
+      <Arrow x1={118} y1={40} x2={118} y2={16} />
+    </g>
+  ),
+  elevated_pike_push_ups: () => (
+    <g>
+      <Floor y={104} />
+      <Box x={18} y={70} w={28} h={34} />
+      {/* feet on the box, hips high, head down towards the floor */}
+      <Limb points="40,70 72,38" />
+      <Body points="72,38 98,78" />
+      <Head x={104} y={86} />
+      <Limb points="98,78 100,104" color={RED} />
+      <Arrow x1={136} y1={88} x2={136} y2={64} />
+    </g>
+  ),
+  wall_handstand_hold: () => (
+    <g>
+      <Floor y={104} />
+      <line x1="124" y1="8" x2="124" y2="104" stroke={GEAR} strokeWidth="3" />
+      {/* handstand facing the wall, straight line from hands to feet */}
+      <Limb points="100,104 102,80" color={RED} />
+      <Head x={96} y={88} />
+      <Body points="102,78 110,34" />
+      <Limb points="110,34 118,12" />
+      <circle cx="40" cy="30" r="9" fill="none" stroke={RED} strokeWidth="2" />
+      <polyline points="40,24 40,30 44,33" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+  ),
 };
