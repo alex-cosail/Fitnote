@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  androidCalendarIntentUrl,
   buildIcsEvent,
   googleCalendarUrl,
   icsEscape,
   icsFold,
   icsUtc,
+  isAndroid,
   nextReminderDate,
   roundedTimeOfDay,
 } from './ics';
@@ -70,5 +72,29 @@ describe('iCalendar', () => {
     });
     expect(url).toContain('action=TEMPLATE');
     expect(url).toContain('dates=20261127T153000Z%2F20261127T161500Z');
+  });
+});
+
+describe('Android calendar intent', () => {
+  it('opens a pre-filled new event with begin and end times', () => {
+    const start = new Date(Date.UTC(2026, 10, 27, 15, 30));
+    const url = androidCalendarIntentUrl(
+      { title: 'Fitnote: следующая тренировка', description: 'Открыть Fitnote', start, durationMinutes: 60 },
+      'https://calendar.google.com/x?a=1&b=2'
+    );
+    expect(url.startsWith('intent:#Intent;action=android.intent.action.INSERT;type=vnd.android.cursor.dir/event;')).toBe(true);
+    expect(url).toContain(`l.beginTime=${start.getTime()}`);
+    expect(url).toContain(`l.endTime=${start.getTime() + 3_600_000}`);
+    expect(url).toContain(`S.title=${encodeURIComponent('Fitnote: следующая тренировка')}`);
+    expect(url).toContain('S.browser_fallback_url=https%3A%2F%2Fcalendar.google.com%2Fx%3Fa%3D1%26b%3D2');
+    expect(url.endsWith(';end')).toBe(true);
+    // No raw separators inside values.
+    const body = url.slice('intent:#Intent;'.length, -';end'.length);
+    for (const part of body.split(';')) expect(part).toMatch(/^[A-Za-z._]+=[^;#]*$/);
+  });
+
+  it('detects Android user agents', () => {
+    expect(isAndroid('Mozilla/5.0 (Linux; Android 14; 23078PND5G) AppleWebKit/537.36 Chrome/131 Mobile Safari/537.36')).toBe(true);
+    expect(isAndroid('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)')).toBe(false);
   });
 });

@@ -9,6 +9,7 @@ export const FinishPhase: React.FC = () => {
     onExitSession,
     reminderDays,
     reminderGoogleUrl,
+    reminderOnAndroid,
     reminderTime,
     rir,
     session,
@@ -142,7 +143,11 @@ export const FinishPhase: React.FC = () => {
                   onChange={(e) => e.target.value && setReminderTime(e.target.value)}
                   className="font-mono-num min-h-[40px] rounded-xl border border-gray-300 bg-white px-2.5 text-sm font-bold text-[#111827] dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6]"
                 />
-                <span>· напомню за час через календарь телефона</span>
+                <span>
+                  {reminderOnAndroid
+                    ? '· после «Сохранить» откроется календарь: поставьте напоминание за час и сохраните событие'
+                    : '· напомню за час через календарь телефона'}
+                </span>
                 {typeof navigator !== 'undefined' && navigator.onLine && (
                   <a
                     href={reminderGoogleUrl()}

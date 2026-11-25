@@ -14,8 +14,10 @@ import {
 } from '../../domain/session/transitions';
 import { ActiveSession, Exercise, RirValue, WorkoutLog } from '../../types';
 import {
+  androidCalendarIntentUrl,
   buildIcsEvent,
   googleCalendarUrl,
+  isAndroid,
   nextReminderDate,
   REMINDER_ALARM_MINUTES,
   ReminderPrefs,
@@ -269,7 +271,11 @@ export function usePlayerController({
   const handleSaveFinish = async () => {
     const log = buildWorkoutLog(session, finishNote, Date.now());
     onReminderPrefsChange?.({ daysAhead: reminderDays, time: reminderTime });
-    if (reminderDays > 0) {
+    if (reminderDays > 0 && isAndroid(navigator.userAgent)) {
+      // Android: open the calendar on a pre-filled "New event" screen.
+      const ev = reminderEvent();
+      window.location.href = androidCalendarIntentUrl(ev, googleCalendarUrl(ev));
+    } else if (reminderDays > 0) {
       const ev = reminderEvent();
       const name = `fitnote-${ev.start.toISOString().slice(0, 10)}.ics`;
       try {
@@ -348,6 +354,7 @@ export function usePlayerController({
     reminderTime,
     setReminderTime,
     reminderGoogleUrl: () => googleCalendarUrl(reminderEvent()),
+    reminderOnAndroid: typeof navigator !== 'undefined' && isAndroid(navigator.userAgent),
     handleAddRestSeconds,
     handleCompleteSet,
     handleRoundFlowFinish,

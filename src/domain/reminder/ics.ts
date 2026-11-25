@@ -120,3 +120,33 @@ export function googleCalendarUrl(e: Pick<CalendarEventInput, 'title' | 'descrip
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
+
+/**
+ * Android: an intent that opens the phone's calendar on a pre-filled
+ * "New event" screen (ACTION_INSERT, works with Xiaomi, Samsung and Google
+ * calendars, offline). Downloaded .ics files are not opened automatically on
+ * Android (field report: Xiaomi Calendar, v2.4). The calendar applies its
+ * own default reminder; the alarm offset cannot be passed this way.
+ * `fallbackUrl` opens in the browser if no app handles the intent.
+ */
+export function androidCalendarIntentUrl(
+  e: Pick<CalendarEventInput, 'title' | 'description' | 'start' | 'durationMinutes'>,
+  fallbackUrl?: string
+): string {
+  const begin = e.start.getTime();
+  const end = begin + e.durationMinutes * 60_000;
+  const parts = [
+    'action=android.intent.action.INSERT',
+    'type=vnd.android.cursor.dir/event',
+    `S.title=${encodeURIComponent(e.title)}`,
+    ...(e.description ? [`S.description=${encodeURIComponent(e.description)}`] : []),
+    `l.beginTime=${begin}`,
+    `l.endTime=${end}`,
+    ...(fallbackUrl ? [`S.browser_fallback_url=${encodeURIComponent(fallbackUrl)}`] : []),
+  ];
+  return `intent:#Intent;${parts.join(';')};end`;
+}
+
+export function isAndroid(userAgent: string): boolean {
+  return /android/i.test(userAgent);
+}
