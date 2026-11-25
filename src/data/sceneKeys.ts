@@ -35,6 +35,20 @@ export const SCENE_KEYS = [
   'single_arm_db_row',
   'band_face_pull',
   'split_stance_explosive_band_row',
+  'box_squats',
+  'air_squats',
+  'goblet_squat',
+  'cossack_squat',
+  'single_leg_bench_squat',
+  'bench_step_ups',
+  'skater_squats',
+  'suspension_pistol_squat',
+  'split_squats',
+  'side_lunges',
+  'band_good_morning',
+  'db_romanian_deadlift',
+  'single_leg_rdl',
+  'nordic_curl_negatives',
 ] as const;
 
 export type SceneKey = (typeof SCENE_KEYS)[number];

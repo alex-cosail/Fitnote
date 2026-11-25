@@ -477,4 +477,188 @@ export const EXERCISE_SCENES: Record<SceneKey, () => React.ReactElement> = {
       <Arrow x1={74} y1={30} x2={92} y2={30} />
     </g>
   ),
+  // ——— legs: squat and lunge ———
+  box_squats: () => (
+    <g>
+      <Floor y={104} />
+      <Box x={98} y={78} w={30} h={26} />
+      {/* sit back to the box, chest up */}
+      <Limb points="72,104 72,76" />
+      <Limb points="72,76 100,76" color={RED} />
+      <Body points="100,76 88,44" />
+      <Head x={85} y={36} />
+      <Limb points="90,50 60,52" />
+      <Arrow x1={52} y1={70} x2={52} y2={90} />
+    </g>
+  ),
+  air_squats: () => (
+    <g>
+      <Floor y={104} />
+      <Limb points="80,104 92,104" />
+      <Limb points="80,104 91.6,90.2" />
+      <Limb points="91.6,90.2 71.9,86.7" color={RED} />
+      <Body points="71.9,86.7 91.4,58.8" />
+      <Head x={96.6} y={51.5} />
+      <Limb points="89.1,62.1 105.1,62.1 119.1,62.1" />
+      <Arrow x1={138} y1={86} x2={138} y2={60} />
+      <Arrow x1={138} y1={60} x2={138} y2={86} />
+    </g>
+  ),
+  goblet_squat: () => (
+    <g>
+      <Floor y={104} />
+      <Limb points="80,104 92,104" />
+      <Limb points="80,104 91.6,90.2" />
+      <Limb points="91.6,90.2 71.9,86.7" color={RED} />
+      <Body points="71.9,86.7 91.4,58.8" />
+      <Head x={96.6} y={51.5} />
+      {/* the weight held at the chest */}
+      <Limb points="89.1,62.1 100,70 103,62" />
+      <rect x="99" y="52" width="10" height="12" rx="2" fill={GEAR} />
+      <Arrow x1={138} y1={86} x2={138} y2={60} />
+    </g>
+  ),
+  cossack_squat: () => (
+    <g>
+      <Floor y={104} />
+      {/* front view: deep on one leg, the other long to the side, toes up */}
+      <Limb points="70,82 54,84 52,104" color={RED} />
+      <Limb points="70,82 124,100 126,94" />
+      <Body points="70,82 66,50" />
+      <Head x={65} y={42} />
+      <Limb points="67,56 90,60" />
+      <Arrow x1={112} y1={60} x2={88} y2={60} />
+    </g>
+  ),
+  single_leg_bench_squat: () => (
+    <g>
+      <Floor y={104} />
+      <Box x={22} y={80} w={30} h={24} />
+      {/* one leg, sit down to the bench, the other leg straight forward */}
+      <Limb points="56,78 82,78" color={RED} />
+      <Limb points="82,78 80,104" />
+      <Limb points="56,78 108,66" />
+      <Body points="56,78 70,46" />
+      <Head x={73} y={38} />
+      <Limb points="68,52 98,50" />
+      <Arrow x1={132} y1={92} x2={132} y2={70} />
+    </g>
+  ),
+  bench_step_ups: () => (
+    <g>
+      <Floor y={104} />
+      <Box x={84} y={76} w={40} h={28} />
+      {/* step up on the box with the front leg */}
+      <Head x={78} y={14} />
+      <Body points="78,21 80,52" />
+      <Limb points="80,52 96,62 98,76" color={RED} />
+      <Limb points="80,52 70,78 64,104" />
+      <Limb points="79,28 70,44" />
+      <Arrow x1={136} y1={60} x2={136} y2={36} />
+    </g>
+  ),
+  skater_squats: () => (
+    <g>
+      <Floor y={104} />
+      {/* one leg, the back knee goes down behind, chest forward */}
+      <Limb points="82,68 98,82 94,104" color={RED} />
+      <Limb points="82,68 70,98 52,90" />
+      <Body points="82,68 96,38" />
+      <Head x={100} y={30} />
+      <Limb points="94,44 124,48" />
+      <Arrow x1={136} y1={70} x2={136} y2={92} />
+    </g>
+  ),
+  suspension_pistol_squat: () => (
+    <g>
+      <Floor y={104} />
+      <Straps ax={112} ay={8} hx={106} hy={50} />
+      {/* pistol on one leg, hands on the straps for balance */}
+      <Limb points="76,88 94,80 88,104" color={RED} />
+      <Limb points="76,88 126,86" />
+      <Body points="76,88 86,58" />
+      <Head x={89} y={50} />
+      <Limb points="85,62 106,50" />
+      <Arrow x1={40} y1={92} x2={40} y2={66} />
+    </g>
+  ),
+  split_squats: () => (
+    <g>
+      <Floor y={104} />
+      {/* feet stay in place, the back knee goes straight down */}
+      <Limb points="80,70 100,82 100,104" color={RED} />
+      <Limb points="80,70 70,98 52,104" />
+      <Body points="80,70 80,38" />
+      <Head x={80} y={30} />
+      <Limb points="80,44 92,58" />
+      <Arrow x1={124} y1={60} x2={124} y2={84} />
+      <Arrow x1={124} y1={84} x2={124} y2={60} />
+    </g>
+  ),
+  side_lunges: () => (
+    <g>
+      <Floor y={104} />
+      {/* front view: step to the side, sit on that leg, the other stays straight */}
+      <Limb points="74,78 100,82 104,104" color={RED} />
+      <Limb points="74,78 40,104" />
+      <Body points="74,78 78,46" />
+      <Head x={79} y={38} />
+      <Limb points="77,54 92,62" />
+      <Arrow x1={108} y1={60} x2={130} y2={60} />
+    </g>
+  ),
+  // ——— hinge ———
+  band_good_morning: () => (
+    <g>
+      <Floor y={104} />
+      {/* band from under the feet to the back of the neck, hips back */}
+      <Body points="70,58 110,58" />
+      <Head x={118} y={55} />
+      <Limb points="70,58 70,82" color={RED} />
+      <Limb points="70,82 74,104" />
+      <line x1="76" y1="104" x2="106" y2="58" stroke={RED} strokeWidth="1.8" strokeDasharray="3.5 2.5" />
+      <path d="M126,84 Q134,70 124,44" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" />
+      <polyline points="120,48 124,43 129,47" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+  ),
+  db_romanian_deadlift: () => (
+    <g>
+      <Floor y={104} />
+      {/* hips back, back flat, dumbbells close to the legs */}
+      <Body points="70,56 108,66" />
+      <Head x={115} y={68} />
+      <Limb points="70,56 72,80" color={RED} />
+      <Limb points="72,80 74,104" />
+      <Limb points="104,65 98,88" />
+      <rect x="90" y="88" width="16" height="7" rx="2" fill={GEAR} />
+      <Arrow x1={40} y1={92} x2={40} y2={64} />
+    </g>
+  ),
+  single_leg_rdl: () => (
+    <g>
+      <Floor y={104} />
+      {/* one leg: trunk and the free leg make one line */}
+      <Body points="78,58 114,64" />
+      <Head x={121} y={64} />
+      <Limb points="78,58 80,82" color={RED} />
+      <Limb points="80,82 82,104" />
+      <Limb points="78,58 32,52" />
+      <Limb points="110,63 110,84" />
+      <Arrow x1={140} y1={94} x2={140} y2={72} />
+    </g>
+  ),
+  nordic_curl_negatives: () => (
+    <g>
+      <Floor />
+      {/* kneeling, ankles held, lean forward slowly; hamstrings brake */}
+      <Limb points="40,98 18,98" />
+      <line x1="12" y1="92" x2="26" y2="92" stroke={INK} strokeWidth="3.2" strokeLinecap="round" />
+      <Body points="40,98 84,54" />
+      <Body points="40,98 58,80" color={RED} />
+      <Head x={89} y={48} />
+      <Limb points="82,58 100,72" />
+      <line x1="104" y1="40" x2="122" y2="62" stroke={RED} strokeWidth="2" strokeDasharray="3 3" strokeLinecap="round" />
+      <polyline points="116,61 122,63 121,57" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+  ),
 };
