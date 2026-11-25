@@ -12,6 +12,7 @@ import {
 import { BackupSection } from './components/BackupSection';
 import { CatalogTab } from './components/CatalogTab';
 import { CheckUpTab } from './components/CheckUpTab';
+import { GeneratorPanel } from './components/GeneratorPanel';
 import { SyncLogTab } from './components/SyncLogTab';
 import { WorkoutPlayer } from './components/WorkoutPlayer';
 import { WorkoutPreviewTab } from './components/WorkoutPreviewTab';
@@ -19,6 +20,7 @@ import { CATALOG } from './data/catalog';
 import { catalogTextsFor } from './data/catalogTexts';
 import { CATALOG_IDS, RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
 import { resolveExercises } from './domain/catalog/resolve';
+import { replaceGenerated } from './domain/generator';
 import { recordMax } from './domain/catalog/userMaxes';
 import { resolveWorkout } from './domain/plan/resolveWorkout';
 import { applyImport, ImportPayload } from './domain/plan/importPlan';
@@ -291,6 +293,19 @@ export default function App() {
     }));
   };
 
+  // Generator: new generated plans replace the previous generated ones and
+  // the first becomes the selected workout.
+  const handleAddGenerated = (plans: WorkoutPlan[]) => {
+    if (plans.length === 0) return;
+    setData((prev) => ({
+      ...prev,
+      workouts: replaceGenerated(prev.workouts, plans),
+      selectedWorkoutId: plans[0].id,
+    }));
+    setActiveTab('workout');
+    window.scrollTo(0, 0);
+  };
+
   // Counts come from the same pure merge that updates the state, so the
   // "Imported N plans" message is always right.
   const handleImportPlan = (payload: ImportPayload) => {
@@ -499,6 +514,13 @@ export default function App() {
           />
         )}
 
+        {activeTab === 'catalog' && (
+          <GeneratorPanel
+            exercises={exercises}
+            logs={data.workoutLogs}
+            onAdd={handleAddGenerated}
+          />
+        )}
         {activeTab === 'catalog' && (
           <CatalogTab
             exercises={exercises}

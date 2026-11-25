@@ -11,18 +11,6 @@ export type { Outcome, NextTarget } from './progress';
 export { orderRound, hasSameDirectionInRow, moveClass } from './order';
 export { pickExercise, pickScore } from './pick';
 
-import { GeneratorProfile } from './types';
-
-/** Defaults until the start wizard exists (GENERATOR_RULES §1.1). */
-export const DEFAULT_PROFILE: GeneratorProfile = {
-  healthLevel: 'strength',
-  perWeek: 3,
-  zones: {},
-  ageGroup: 'adult',
-  level: 'medium',
-  favorites: [],
-  goalExerciseIds: [],
-  painful: [],
-  // The playground the app was made for: bars and bands.
-  usualConditions: { environment: 'outdoor', equipment: ['pullup_bars', 'bands'] },
-};
+export { DEFAULT_PROFILE } from './defaults';
+export { runGenerator, toWorkoutPlans, replaceGenerated, DEFAULT_REQUEST, LEVEL_TO_HEALTH } from './app';
+export type { GenPeriod, GenLevel, GenRequest, GenResult } from './app';

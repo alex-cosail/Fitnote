@@ -8,7 +8,7 @@ import {
   DEFAULT_PROFILE, GeneratedWorkout, GeneratorContext, GeneratorProfile, HealthLevel,
   applyMode, buildMonth, buildWeek, calibrateMax, calibrateTempo, capMinutes, checkSession, deficitTemplate,
   estimateSeconds, fitRounds, hasSameDirectionInRow, historyFromLogs, nextTarget, orderRound, outcomeFromLog,
-  shortRounds, weekDebt, weekIsCovered,
+  replaceGenerated, runGenerator, shortRounds, toWorkoutPlans, weekDebt, weekIsCovered,
 } from '.';
 import { CAP_TOLERANCE, DELOAD } from './rules';
 
@@ -372,5 +372,46 @@ describe('progression', () => {
     const h = historyFromLogs(logs, [{ id: 'goblet-squat', name: 'Goblet Squat' }]);
     expect(h.lastDone['air-squats']).toBe('2026-11-24');
     expect(h.swappedAway['goblet-squat']).toBe(1);
+  });
+});
+
+describe('generator screen glue', () => {
+  const input = {
+    catalog: CATALOG,
+    exercises: resolveExercises(CATALOG, texts, {}, [], 'medium'),
+    logs: [] as WorkoutLog[],
+    date: '2026-11-26',
+  };
+  const label = (g: GeneratedWorkout, week?: number) => ({ title: `${week ?? ''}${g.kind}`, subtitle: '', formatLabel: g.component });
+
+  it('week: the layout for the chosen level; coverage reported', () => {
+    const r = runGenerator({ period: 'week', level: 'full', perWeek: 3 }, input);
+    expect(r.weeks[0].map((g) => g.kind)).toEqual(['S-A', 'S-B', 'F']);
+    expect(r.covered).toBe(true);
+    expect(runGenerator({ period: 'week', level: 'agt', perWeek: 2 }, input).weeks[0].map((g) => g.kind)).toEqual(['F-A', 'F-B']);
+    expect(runGenerator({ period: 'week', level: 'warmup', perWeek: 2 }, input).weeks[0].every((g) => g.component === 'M')).toBe(true);
+  });
+
+  it('single: the next workout of the week by how many were done in 7 days', () => {
+    const one = (logs: WorkoutLog[]) => runGenerator({ period: 'single', level: 'full', perWeek: 3 }, { ...input, logs }).weeks[0];
+    expect(one([])).toHaveLength(1);
+    expect(one([])[0].kind).toBe('S-A');
+    const done = { id: 'l', date: '2026-11-24', workoutTitle: 'x', readiness: 'green', roundsCompleted: 3, roundsPlanned: 3, durationSeconds: 1, sets: [] } as WorkoutLog;
+    expect(one([done])[0].kind).toBe('S-B');
+  });
+
+  it('month: 4 weeks become plans titled by week', () => {
+    const r = runGenerator({ period: 'month', level: 'full', perWeek: 3 }, input);
+    const plans = toWorkoutPlans(r, label);
+    expect(plans).toHaveLength(12);
+    expect(plans[0].title).toBe('1S-A');
+    expect(new Set(plans.map((p) => p.id)).size).toBe(12);
+  });
+
+  it('new generated plans replace old generated ones; coach plans stay', () => {
+    const coach = { id: 'workout-a', title: 'A', subtitle: '', formatLabel: '', rounds: 3, restBetweenExercises: 45, restBetweenRounds: 90, items: [] };
+    const old = { ...coach, id: 'gen-old' };
+    const plans = toWorkoutPlans(runGenerator({ period: 'week', level: 'full', perWeek: 2 }, input), label);
+    expect(replaceGenerated([old, coach], plans).map((p) => p.id)).toEqual([...plans.map((p) => p.id), 'workout-a']);
   });
 });
