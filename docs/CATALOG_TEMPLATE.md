@@ -76,7 +76,7 @@
 
 **Теги мышц:** `lats`, `biceps`, `chest`, `triceps`, `front_delts`, `rear_delts`, `upper_back`, `quads`, `glutes`, `hamstrings`, `hip_flexors`, `obliques`, `core`, `lower_back`, `forearms`, `spine_decompression`, `shoulder_press`. Новый тег допустим, но проверка предупредит: для него нужно русское название в `src/domain/catalog/muscles.ts`.
 
-**Картинки (`svgKey`):** `pullups`, `dips`, `australian_pullups`, `pushups`, `bulgarian_split_squat`, `glute_bridge`, `side_plank`, `dead_hang`, `pallof_press`, `romanian_deadlift`, `band_row`, `reverse_lunges`, `pike_pushups`, `generic_strength`. Можно взять похожую (отжимания от опоры — `pushups`). Свои картинки и анимации — шаг 4.
+**Картинки (`svgKey`):** `pullups`, `dips`, `australian_pullups`, `pushups`, `bulgarian_split_squat`, `glute_bridge`, `side_plank`, `dead_hang`, `pallof_press`, `romanian_deadlift`, `band_row`, `reverse_lunges`, `pike_pushups`, `generic_strength`. Можно взять похожую (отжимания от опоры — `pushups`). Анимированные картинки делаются отдельным промптом — [ANIMATION_TEMPLATE.md](ANIMATION_TEMPLATE.md).
 
 ## Опорные ступени
 
