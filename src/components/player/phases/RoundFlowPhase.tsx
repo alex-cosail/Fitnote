@@ -1,5 +1,4 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
 import { formatMetricTarget } from '../../../domain/format';
 import { ExerciseSvg } from '../../ExerciseSvg';
 import { ExitConfirmModal } from '../ExitConfirmModal';
@@ -9,9 +8,10 @@ export const RoundFlowPhase: React.FC = () => {
   const {
     exercises,
     handleRoundFlowFinish,
-    handleRoundFlowPlusRound,
+    handleTapRoundNumber,
     onExitSession,
     renderTopBar,
+    repSaveFlash,
     roundFlowCompleted,
     session,
     setShowExitConfirm,
@@ -68,34 +68,35 @@ export const RoundFlowPhase: React.FC = () => {
           })}
         </div>
 
-        {/* Bottom (Portrait) / Right (Landscape): round counter + actions */}
-        <div className="flex min-h-0 flex-col justify-center gap-3 rounded-3xl border border-gray-200 bg-white p-4 dark:border-[#232E42] dark:bg-[#131A26]">
-          <div className="text-center">
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-              Кругов выполнено
-            </p>
-            <div className="font-mono-num mt-1 text-[4.5rem] font-bold leading-none tracking-tight text-[#111827] sm:text-[5.5rem] landscape:text-[clamp(3.25rem,15dvh,5rem)] dark:text-[#F3F4F6]">
-              {roundFlowCompleted}
-            </div>
-            <p className="font-mono-num mt-1 text-sm font-semibold text-[#DC2626] dark:text-[#F87171]">
-              Цель: {session.totalRounds}+
-            </p>
-          </div>
-
+        {/* Bottom (Portrait) / Right (Landscape): current round — tap = round done */}
+        <div className="flex min-h-0 flex-col gap-2.5 landscape:h-full">
           <button
             type="button"
-            onClick={handleRoundFlowPlusRound}
-            className="tap-scale flex min-h-[64px] w-full items-center justify-center gap-2 rounded-2xl bg-[#DC2626] px-6 text-lg font-bold tracking-wide text-white shadow-sm active:bg-[#B91C1C]"
+            onClick={handleTapRoundNumber}
+            aria-label={`Круг ${session.currentRound} выполнен`}
+            className={`touch-manipulation flex h-44 w-full flex-col items-center justify-center rounded-3xl border-2 px-3 [container-type:size] transition-colors landscape:h-auto landscape:min-h-0 landscape:flex-1 ${
+              repSaveFlash
+                ? 'border-[#16A34A] bg-[#DCFCE7] dark:border-[#4ADE80] dark:bg-[#052E16]'
+                : 'border-gray-300 bg-white active:bg-gray-50 dark:border-[#334155] dark:bg-[#131A26] dark:active:bg-[#1A2333]'
+            }`}
           >
-            <Plus className="h-6 w-6" />
-            +1 КРУГ ВЫПОЛНЕН
+            <span
+              className={`font-mono-num font-bold leading-none tracking-tight text-[min(62cqh,50cqw)] ${
+                repSaveFlash ? 'text-[#16A34A] dark:text-[#4ADE80]' : 'text-[#111827] dark:text-[#F3F4F6]'
+              }`}
+            >
+              {session.currentRound}
+            </span>
+            <span className="font-mono-num mt-1 text-sm font-semibold text-gray-500 dark:text-gray-400">
+              {repSaveFlash ? 'Круг записан' : `из ${session.totalRounds} · тап — круг выполнен`}
+            </span>
           </button>
 
           <button
             type="button"
             onClick={handleRoundFlowFinish}
             disabled={roundFlowCompleted < 1}
-            className="tap-scale flex min-h-[48px] w-full items-center justify-center gap-1.5 rounded-2xl border border-gray-300 bg-white text-sm font-bold text-[#111827] active:bg-gray-100 disabled:opacity-40 dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:active:bg-[#243044]"
+            className="tap-scale flex min-h-[52px] w-full shrink-0 items-center justify-center gap-1.5 rounded-2xl border border-gray-300 bg-white text-sm font-bold text-[#111827] active:bg-gray-100 disabled:opacity-40 dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6] dark:active:bg-[#243044]"
           >
             Закончить → Заминка
           </button>

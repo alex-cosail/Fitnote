@@ -29,7 +29,7 @@ manifest: {
   theme_color: '#FFFFFF',
   background_color: '#FFFFFF',
   display: 'standalone',
-  orientation: 'portrait',
+  orientation: 'any', // portrait and landscape (the player has landscape layouts)
   start_url: '/',
   icons: [
     {

@@ -8,6 +8,7 @@ import {
   parseBackup,
 } from '../storage/backup';
 import { FitnoteData } from '../types';
+import { downloadFile, shareOrDownloadFile } from '../utils/download';
 
 interface BackupSectionProps {
   data: FitnoteData;
@@ -47,24 +48,29 @@ export const BackupSection: React.FC<BackupSectionProps> = ({
     const now = Date.now();
     const text = JSON.stringify(buildBackup(data, now), null, 2);
     const name = backupFileName(now);
-    const file = new File([text], name, { type: 'application/json' });
+
+    const done = (how: 'shared' | 'downloaded') => {
+      onBackupSaved(new Date(now).toISOString());
+      setStatus({
+        type: 'ok',
+        message:
+          how === 'shared'
+            ? 'Копия отправлена. Храните файл вне телефона: в облаке или в мессенджере.'
+            : `Файл ${name} сохранён в «Загрузки». Перешлите его в облако или мессенджер.`,
+      });
+    };
 
     try {
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Fitnote — резервная копия' });
-      } else {
-        const url = URL.createObjectURL(file);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = name;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-      onBackupSaved(new Date(now).toISOString());
-      setStatus({ type: 'ok', message: 'Копия сохранена. Храните файл вне телефона: в облаке или в мессенджере.' });
+      done(await shareOrDownloadFile(name, text, 'Fitnote — резервная копия'));
     } catch (e) {
       if ((e as Error)?.name === 'AbortError') return; // user closed the share sheet
-      setStatus({ type: 'err', message: 'Не удалось сохранить копию.' });
+      // Sharing refused for another reason: fall back to a plain download.
+      try {
+        downloadFile(name, text);
+        done('downloaded');
+      } catch {
+        setStatus({ type: 'err', message: 'Не удалось сохранить копию.' });
+      }
     }
   };
 

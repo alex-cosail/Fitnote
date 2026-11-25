@@ -201,6 +201,18 @@ export function usePlayerController({
     onUpdateSession(plusRound(session, exercises, Date.now()));
   };
 
+  // Round-flow: tap on the round number = round done (brief highlight first).
+  const handleTapRoundNumber = () => {
+    if (repSaveTimeoutRef.current !== null) return;
+    soundEngine.unlock();
+    setRepSaveFlash(true);
+    repSaveTimeoutRef.current = window.setTimeout(() => {
+      repSaveTimeoutRef.current = null;
+      setRepSaveFlash(false);
+      handleRoundFlowPlusRound();
+    }, 280);
+  };
+
   const handleRoundFlowFinish = () => {
     soundEngine.unlock();
     soundEngine.playGo(isMuted);
@@ -233,10 +245,8 @@ export function usePlayerController({
   const ringProgress = session.isRoundFlow
     ? roundFlowCompleted / Math.max(1, session.totalRounds)
     : (session.currentItemIndex + 1) / Math.max(1, session.items.length);
-  const ringRound =
-    session.isRoundFlow && session.phase === 'rest'
-      ? roundFlowCompleted
-      : session.currentRound;
+  // Always the round in progress (field report: a lower "done" count demotivates).
+  const ringRound = session.currentRound;
 
   // Tap on the rep number: highlight it briefly, then save the set / side.
   const handleTapRepNumber = () => {
@@ -289,6 +299,7 @@ export function usePlayerController({
     handleCompleteSet,
     handleRoundFlowFinish,
     handleRoundFlowPlusRound,
+    handleTapRoundNumber,
     handleSaveFinish,
     handleStepReps,
     handleSwapAntagonist,

@@ -180,7 +180,7 @@ export const ExercisePhase: React.FC = () => {
             </div>
 
             {/* Three equal-height columns: [−] [number = save] [+] */}
-            <div className="grid h-28 grid-cols-[1fr_1.6fr_1fr] gap-2 landscape:h-auto landscape:min-h-[6rem] landscape:flex-1 landscape:grid-cols-[1fr_2.2fr_1fr]">
+            <div className="grid h-32 grid-cols-[1fr_2fr_1fr] gap-2 landscape:h-auto landscape:min-h-[6rem] landscape:flex-1 landscape:grid-cols-[1fr_2.2fr_1fr]">
               <button
                 type="button"
                 onClick={() => handleStepReps(-1)}
@@ -201,7 +201,7 @@ export const ExercisePhase: React.FC = () => {
                 }`}
               >
                 <span
-                  className={`font-mono-num text-[4.75rem] font-bold leading-none landscape:text-[min(78cqh,52cqw)] ${
+                  className={`font-mono-num text-[min(80cqh,58cqw)] font-bold leading-none landscape:text-[min(78cqh,52cqw)] ${
                     repSaveFlash ? 'text-[#16A34A] dark:text-[#4ADE80]' : sideColorText
                   }`}
                 >

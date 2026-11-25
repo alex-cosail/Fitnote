@@ -19,6 +19,7 @@ import {
   WorkoutLog,
   WorkoutPlan,
 } from '../types';
+import { downloadFile, shareOrDownloadFile } from '../utils/download';
 
 interface SyncLogTabProps {
   exercises: Exercise[];
@@ -342,13 +343,11 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
       setCopiedPrompt(true);
       window.setTimeout(() => setCopiedPrompt(false), 2500);
     } catch {
-      const blob = new Blob([promptText], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `fitnote-prompt-${new Date().toISOString().slice(0, 10)}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadFile(
+        `fitnote-prompt-${new Date().toISOString().slice(0, 10)}.txt`,
+        promptText,
+        'text/plain'
+      );
     }
   };
 
@@ -363,15 +362,16 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
     }
   };
 
-  const handleDownloadReport = () => {
+  // Phones: system share sheet (save to Files, send to the coach); otherwise
+  // a download that survives Chrome on Android (see utils/download.ts).
+  const handleDownloadReport = async () => {
     const json = JSON.stringify(buildCoachReport(), null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `fitnote-report-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const name = `fitnote-report-${new Date().toISOString().slice(0, 10)}.json`;
+    try {
+      await shareOrDownloadFile(name, json, 'Fitnote — отчёт для тренера');
+    } catch (e) {
+      if ((e as Error)?.name !== 'AbortError') downloadFile(name, json);
+    }
   };
 
   const processJsonImport = (rawJson: string) => {
@@ -877,7 +877,7 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
                   </>
                 ) : (
                   <>
-                    <Copy className="h-4 w-4" /> Только JSON
+                    <Copy className="h-4 w-4" /> Скопировать текст
                   </>
                 )}
               </button>
@@ -888,7 +888,7 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
                 className="tap-scale flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white text-xs font-bold text-[#111827] dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6]"
               >
                 <Download className="h-4 w-4" />
-                Скачать .json
+                Скачать файл
               </button>
             </div>
           </section>
@@ -956,7 +956,7 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
                 className="tap-scale flex min-h-[48px] items-center justify-center gap-1.5 rounded-xl bg-[#111827] px-3 text-xs font-bold text-white hover:bg-gray-800 dark:bg-[#F3F4F6] dark:text-[#0B0F17] dark:hover:bg-gray-200"
               >
                 <FileUp className="h-4 w-4 shrink-0" />
-                Загрузить .json
+                Из файла
               </button>
             </div>
           </section>
