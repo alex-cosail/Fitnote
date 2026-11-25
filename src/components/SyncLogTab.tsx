@@ -48,7 +48,7 @@ interface SyncLogTabProps {
 
 type PatternGoal = 'build' | 'maintain' | 'deload';
 type RequestScope = 'week' | 'single';
-type TrainingLocation = 'outdoor' | 'home';
+
 
 interface MovementPatternItem {
   id: string;
@@ -76,36 +76,13 @@ const DEFAULT_PATTERN_GOALS: Record<string, PatternGoal> = {
   core: 'build',
 };
 
-const LOCATION_OPTIONS: { id: TrainingLocation; label: string }[] = [
-  { id: 'outdoor', label: 'Уличная площадка' },
-  { id: 'home', label: 'Дома' },
-];
-
-const EQUIPMENT_OPTIONS: {
-  id: string;
-  label: string;
-  locations: TrainingLocation[];
-}[] = [
-  {
-    id: 'pullup_bars',
-    label: 'Турник и брусья',
-    locations: ['outdoor'],
-  },
-  {
-    id: 'suspension',
-    label: 'Подвесные петли / кольца',
-    locations: ['outdoor', 'home'],
-  },
-  {
-    id: 'bands',
-    label: 'Фитнес-резинки',
-    locations: ['outdoor', 'home'],
-  },
-  {
-    id: 'bodyweight',
-    label: 'Без инвентаря (пол / коврик)',
-    locations: ['outdoor', 'home'],
-  },
+// What the person has (customer, 25.11): the playground already means bars,
+// home means a mat; the gym comes later and will close all options.
+const EQUIPMENT_OPTIONS: { id: string; label: string; prompt: string }[] = [
+  { id: 'pullup_bars', label: 'Турник и брусья', prompt: 'турник и брусья (уличная площадка)' },
+  { id: 'suspension', label: 'Подвесные петли', prompt: 'подвесные петли / кольца' },
+  { id: 'bands', label: 'Резинки', prompt: 'фитнес-резинки' },
+  { id: 'mat', label: 'Коврик', prompt: 'коврик (упражнения лёжа и на коленях, дом или чистый пол)' },
 ];
 
 const SAMPLE_IMPORT_JSON = JSON.stringify(
@@ -173,18 +150,9 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
   const [targetWorkoutId, setTargetWorkoutId] = useState<string>(
     () => workouts[0]?.id ?? ''
   );
-  // Multi-select locations for weekly cycle; single location for 1-day adaptation
-  const [weekLocations, setWeekLocations] = useState<TrainingLocation[]>([
-    'outdoor',
-    'home',
-  ]);
-  const [singleLocation, setSingleLocation] =
-    useState<TrainingLocation>('outdoor');
-
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([
     'pullup_bars',
     'bands',
-    'bodyweight',
   ]);
   const [patternGoals, setPatternGoals] = useState<Record<string, PatternGoal>>(
     DEFAULT_PATTERN_GOALS
@@ -195,30 +163,6 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
     setSelectedEquipment((prev) =>
       prev.includes(eqId) ? prev.filter((item) => item !== eqId) : [...prev, eqId]
     );
-  };
-
-  const handleToggleWeekLocation = (loc: TrainingLocation) => {
-    setWeekLocations((prev) => {
-      if (prev.includes(loc)) {
-        // Keep at least one location selected
-        return prev.length > 1 ? prev.filter((l) => l !== loc) : prev;
-      }
-      return [...prev, loc];
-    });
-  };
-
-  const handleSingleLocationChange = (nextLoc: TrainingLocation) => {
-    setSingleLocation(nextLoc);
-    if (nextLoc === 'home') {
-      setSelectedEquipment((prev) => {
-        const filtered = prev.filter((id) => id !== 'pullup_bars');
-        return filtered.length > 0 ? filtered : ['bands', 'bodyweight'];
-      });
-    } else {
-      setSelectedEquipment((prev) =>
-        prev.includes('pullup_bars') ? prev : ['pullup_bars', ...prev]
-      );
-    }
   };
 
   const handleCardioSubmit = (e: React.FormEvent) => {
@@ -290,18 +234,11 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
       (p) => `- ${p.label}: ${goalLabels[patternGoals[p.id] ?? 'maintain']}`
     ).join('\n');
 
-    const visibleEquipOptions =
-      requestScope === 'week'
-        ? EQUIPMENT_OPTIONS
-        : EQUIPMENT_OPTIONS.filter((e) => e.locations.includes(singleLocation));
-
+    const chosen = EQUIPMENT_OPTIONS.filter((e) => selectedEquipment.includes(e.id));
     const equipLabels =
-      selectedEquipment.length > 0
-        ? visibleEquipOptions
-            .filter((e) => selectedEquipment.includes(e.id))
-            .map((e) => e.label)
-            .join(', ')
-        : 'Без инвентаря (пол / коврик)';
+      chosen.length > 0
+        ? chosen.map((e) => e.prompt).join(', ') + '; упражнения стоя без инвентаря доступны всегда'
+        : 'без инвентаря, только упражнения стоя';
 
     const selectedPlan =
       workouts.find((w) => w.id === targetWorkoutId) ?? workouts[0];
@@ -313,14 +250,11 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
             selectedPlan?.title ?? 'текущую тренировку'
           }" под текущие условия).`;
 
-    const locationLabel =
-      requestScope === 'week'
-        ? weekLocations
-            .map((l) => (l === 'outdoor' ? 'Уличная площадка' : 'Дома'))
-            .join(' + ')
-        : singleLocation === 'outdoor'
-          ? 'Уличная площадка'
-          : 'Дома';
+    const places = [
+      selectedEquipment.includes('pullup_bars') ? 'уличная площадка' : null,
+      selectedEquipment.includes('mat') ? 'дом или чистый пол' : null,
+    ].filter(Boolean);
+    const locationLabel = places.length > 0 ? places.join(' и ') : 'где угодно, стоя';
 
     return [
       'Собери тренировочный план для импорта в приложение Fitnote в строгом JSON-формате (`{"workouts": [...], "exercises": [...]}`).',
@@ -463,11 +397,6 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
       hour: '2-digit',
       minute: '2-digit',
     });
-
-  const visibleEquipment =
-    requestScope === 'week'
-      ? EQUIPMENT_OPTIONS
-      : EQUIPMENT_OPTIONS.filter((e) => e.locations.includes(singleLocation));
 
   return (
     <div className="mx-auto max-w-6xl px-5 pt-5 pb-32 landscape:pb-10 lg:pb-12">
@@ -705,72 +634,42 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
                   )}
                 </div>
 
-                {/* 2. Location & Equipment */}
+                {/* 2. Equipment: tick what you have */}
                 <div>
                   <div className="flex items-center justify-between">
                     <label className="block text-[11px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                      2. Локация и экипировка
+                      2. Экипировка
                     </label>
-                    {requestScope === 'week' && (
-                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                        можно выбрать обе
-                      </span>
-                    )}
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                      отметьте, что есть
+                    </span>
                   </div>
-
-                  {requestScope === 'week' ? (
-                    <div className="mt-1.5 grid grid-cols-2 gap-1.5">
-                      {LOCATION_OPTIONS.map((loc) => {
-                        const active = weekLocations.includes(loc.id);
-                        return (
-                          <button
-                            key={loc.id}
-                            type="button"
-                            onClick={() => handleToggleWeekLocation(loc.id)}
-                            className={`min-h-[38px] rounded-xl border px-2 text-xs font-semibold transition-colors ${
-                              active
-                                ? 'border-[#111827] bg-[#111827] text-white dark:border-[#F3F4F6] dark:bg-[#F3F4F6] dark:text-[#0B0F17]'
-                                : 'border-gray-300 bg-white text-gray-600 dark:border-[#334155] dark:bg-[#1A2333] dark:text-gray-300'
-                            }`}
-                          >
-                            {loc.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="mt-1.5 grid grid-cols-2 gap-1 rounded-xl bg-gray-200/70 p-1 dark:bg-[#1A2333]">
-                      {LOCATION_OPTIONS.map((loc) => (
-                        <button
-                          key={loc.id}
-                          type="button"
-                          onClick={() => handleSingleLocationChange(loc.id)}
-                          className={`min-h-[36px] rounded-lg text-xs font-semibold transition-colors ${
-                            singleLocation === loc.id
-                              ? 'bg-white text-[#111827] shadow-xs dark:bg-[#2C3A52] dark:text-white'
-                              : 'text-gray-600 dark:text-gray-400'
-                          }`}
-                        >
-                          {loc.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {visibleEquipment.map((eq) => {
+                  <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+                    {EQUIPMENT_OPTIONS.map((eq) => {
                       const active = selectedEquipment.includes(eq.id);
                       return (
                         <button
                           key={eq.id}
                           type="button"
+                          role="checkbox"
+                          aria-checked={active}
                           onClick={() => handleToggleEquipment(eq.id)}
-                          className={`min-h-[34px] rounded-lg border px-2.5 text-[11px] font-semibold transition-colors ${
+                          className={`flex min-h-[44px] items-center gap-2 rounded-xl border px-2.5 text-left text-xs font-semibold transition-colors ${
                             active
-                              ? 'border-[#111827] bg-[#111827] text-white dark:border-[#F3F4F6] dark:bg-[#F3F4F6] dark:text-[#0B0F17]'
-                              : 'border-gray-300 bg-white text-gray-600 dark:border-[#334155] dark:bg-[#1A2333] dark:text-gray-300'
+                              ? 'border-[#111827] bg-white text-[#111827] dark:border-[#F3F4F6] dark:bg-[#1A2333] dark:text-[#F3F4F6]'
+                              : 'border-gray-300 bg-white text-gray-500 dark:border-[#334155] dark:bg-[#1A2333] dark:text-gray-400'
                           }`}
                         >
+                          <span
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 ${
+                              active
+                                ? 'border-[#111827] bg-[#111827] text-white dark:border-[#F3F4F6] dark:bg-[#F3F4F6] dark:text-[#0B0F17]'
+                                : 'border-gray-300 dark:border-[#475569]'
+                            }`}
+                            aria-hidden="true"
+                          >
+                            {active && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                          </span>
                           {eq.label}
                         </button>
                       );
