@@ -140,12 +140,12 @@ describe('custom exercise later added to the catalog', () => {
     lastCheckupDate: '2026-11-20',
     isCustom: true,
   };
-  const other: Exercise = { ...airSquats, id: 'hanging-knee-raises', name: 'Hanging Knee Raises' };
+  const other: Exercise = { ...airSquats, id: 'my-own-move', name: 'My Own Move' };
 
   it('moves its max into maxes and drops the custom copy', () => {
     const res = absorbIntoCatalog({ maxes: SEED_MAXES, customExercises: [airSquats, other] }, ids);
     expect(res.maxes['air-squats']).toEqual({ value: 40, date: '2026-11-20' });
-    expect(res.customExercises.map((e) => e.id)).toEqual(['hanging-knee-raises']);
+    expect(res.customExercises.map((e) => e.id)).toEqual(['my-own-move']);
   });
 
   it('keeps a max the user already has in maxes', () => {

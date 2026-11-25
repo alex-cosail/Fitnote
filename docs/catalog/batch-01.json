@@ -1,0 +1,869 @@
+{
+  "exercises": [
+    {
+      "id": "knee-push-ups",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 1,
+      "metric": "reps",
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["floor_contact"],
+      "stability": "bilateral",
+      "targetMuscles": ["chest", "triceps", "front_delts"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 12, "medium": 25, "high": 45 },
+      "ladder": { "plus1": "incline-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Knee Push-Ups",
+          "cue": "Колени на коврике, тело в прямой линии до плеч, локти под 45° к корпусу.",
+          "details": "Встань в упор с колен, поставь ладони чуть шире плеч и напряги пресс с ягодицами, убрав прогиб в пояснице. На вдохе плавно опустись грудью почти до коврика, направляя локти под 45° назад. На выдохе выжми себя вверх без рывка и разведения локтей в стороны. Частая ошибка — проваливание таза вниз или сгибание только в тазобедренном суставе."
+        },
+        "en": {
+          "name": "Knee Push-Ups",
+          "cue": "Knees on the mat, straight line from knees to shoulders, elbows at 45°.",
+          "details": "Start in a kneeling plank with hands slightly wider than shoulder-width and brace your glutes and core. Inhale and lower your chest under control until just above the mat with elbows angled at 45°. Exhale and press back up while keeping the torso rigid. Avoid letting the hips sag or breaking at the waist."
+        },
+        "tr": {
+          "name": "Diz Üstü Şınav",
+          "cue": "Dizler matta, omuzlardan dizlere düz çizgi, dirsekler gövdeye 45°.",
+          "details": "Eller omuzlardan biraz geniş, dizler matın üzerinde ve karın ile kalça sıkı olacak şekilde pozisyon al. Nefes alırken dirsekleri 45° açıyla geriye yönlendirip göğsünü mata yaklaştır. Nefes verirken gövdeni tek parça halinde yukarı it. Belin çukurlaşmasından veya kalçanın geride kalmasından kaçın."
+        }
+      }
+    },
+    {
+      "id": "incline-push-ups",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["hands_only"],
+      "stability": "bilateral",
+      "targetMuscles": ["chest", "triceps", "front_delts"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 15, "medium": 30, "high": 50 },
+      "ladder": { "minus1": "knee-push-ups", "plus1": "floor-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Incline Push-Ups",
+          "cue": "Ладони на скамейке или диване, корпус натянут в струну, локти под 45°.",
+          "details": "Упрись ладонями в край низкой скамейки, перекладины или дивана, отойди ногами назад и выстрой прямую линию от пяток до макушки. На вдохе сгибай локти под 45° и опускай нижнюю часть груди к опоре. На выдохе вытолкни корпус вверх, сохраняя лопатки стабильными и без прогиба в пояснице. Частая ошибка — тянуться к опоре головой вместо груди и задирать плечи к ушам."
+        },
+        "en": {
+          "name": "Incline Push-Ups",
+          "cue": "Hands on a bench or couch, body in a rigid line, elbows tucked at 45°.",
+          "details": "Place your hands on a low bench, bar, or couch edge and step back into a straight plank from heels to head. Inhale as you bend your elbows at 45° and lower your lower chest toward the support. Exhale and press back up while keeping your shoulders down away from your ears. Avoid leading with the chin or letting the lower back sag."
+        },
+        "tr": {
+          "name": "Eğimli Şınav (Bench)",
+          "cue": "Eller bankta veya koltukta, vücut düz çizgide, dirsekler 45° açıda.",
+          "details": "Ellerini alçak bir banka, bara veya koltuk kenarına koy ve ayaklarını geriye alıp baştan topuğa düz bir hat kur. Nefes alırken dirsekleri 45° geriye bükerek göğsünü desteğe indir. Nefes verirken omuzları kulaklardan uzak tutarak kendini yukarı it. Başını öne uzatmaktan ve beli çukurlaştırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "feet-elevated-push-ups",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["hands_only"],
+      "stability": "bilateral",
+      "targetMuscles": ["chest", "front_delts", "triceps"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 8, "medium": 18, "high": 32 },
+      "ladder": { "minus1": "floor-push-ups", "plus1": "archer-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Feet-Elevated Push-Ups",
+          "cue": "Ноги на скамейке или шведской стенке, жёсткий пресс, опускайся до груди.",
+          "details": "Поставь носки на диван, скамейку или перекладину шведской стенки, а ладони расположи под плечами на коврике или низкой перекладине. Напряги пресс и ягодицы, чтобы исключить прогиб поясницы под возросшей нагрузкой. На вдохе опусти верх груди к линии ладоней под углом локтей 45°, на выдохе выжми себя вверх. Частая ошибка — провал таза вниз и разведение локтей в стороны."
+        },
+        "en": {
+          "name": "Feet-Elevated Push-Ups",
+          "cue": "Feet on a bench or stall bar, core braced tight, lower chest to hand line.",
+          "details": "Place your toes on a couch, bench, or stall bar while keeping your hands under your shoulders on the mat or low bar. Brace your abs and glutes firmly so your lower back stays neutral. Inhale to lower your upper chest toward the hand line with elbows at 45°, then exhale to press up. Avoid letting your hips drop or flaring your elbows wide."
+        },
+        "tr": {
+          "name": "Ayaklar Yüksekte Şınav",
+          "cue": "Ayaklar bankta veya duvarda, karın sıkı, göğsü ellerin hizasına indir.",
+          "details": "Ayak parmaklarını koltuğa, banka veya duvar barına koy; ellerini omuz hizasında yerleştir. Belin çukurlaşmaması için karın ve kalçayı sıkı tut. Nefes alırken dirsekleri 45° büküp üst göğsünü yere veya bara yaklaştır, nefes verirken güçlüce it. Kalçanın aşağı düşmesinden ve dirseklerin yana açılmasından kaçın."
+        }
+      }
+    },
+    {
+      "id": "banded-push-ups",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bands"],
+      "posture": ["hands_only"],
+      "stability": "bilateral",
+      "targetMuscles": ["chest", "triceps", "front_delts"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 8, "medium": 16, "high": 28 },
+      "ladder": { "minus1": "floor-push-ups", "plus1": "archer-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Banded Push-Ups",
+          "cue": "Резинка через лопатки и под ладонями, мощный дожим вверх без завала плеч.",
+          "details": "Пропусти резинку по верхней части спины ниже шеи и зафиксируй оба конца под ладонями на коврике или низкой скамейке. Встань в жёсткую планку, не позволяя резинке тянуть плечи вверх. На вдохе подконтрольно опустись вниз, а на выдохе преодолей возрастающее натяжение ленты до полного выпрямления рук. Частая ошибка — сползание резинки на шею и прогиб в пояснице."
+        },
+        "en": {
+          "name": "Banded Push-Ups",
+          "cue": "Band across upper back and under palms, press strongly without shrugging.",
+          "details": "Loop a resistance band across your shoulder blades and pin both ends under your palms on a mat or low bench. Set a rigid plank with shoulders packed away from your ears. Inhale to lower under control, then exhale and drive through increasing band tension to full lockout. Avoid letting the band slide onto your neck or sagging at the waist."
+        },
+        "tr": {
+          "name": "Bantlı Şınav",
+          "cue": "Direnç bandı kürek kemiklerinden geçip avuç altında sabitlenir, omuzlar aşağıda.",
+          "details": "Bandı boynunun altından, kürek kemiklerinin üzerinden geçir ve uçlarını ellerinin altında sabitle. Karın ve kalçayı sıkarak düz plank pozisyonu al. Nefes alırken kontrollü alçal, nefes verirken artan bant direncine karşı kolları tamamen kilitle. Bandın boyna kaymasından ve belin düşmesinden kaçın."
+        }
+      }
+    },
+    {
+      "id": "suspension-push-ups",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["suspension"],
+      "posture": ["standing"],
+      "stability": "unstable",
+      "targetMuscles": ["chest", "triceps", "front_delts", "core"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 6, "medium": 14, "high": 24 },
+      "ladder": { "minus1": "floor-push-ups", "plus1": "archer-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Suspension Push-Ups",
+          "cue": "Тело горизонтально или под углом в петлях, стропы не касаются предплечий.",
+          "details": "Возьмись за рукояти подвесных петель, прими упор на носках (на скамейке или на ногах на земле без касания пола руками) и чуть выведи кисти вперёд, чтобы стропы не тёрли предплечья. Напряги кор и стабилизируй лопатки от дрожи в стороны. На вдохе плавно опусти грудь между рукоятей, на выдохе сведи руки обратно перед собой. Частая ошибка — потеря линии корпуса и провал плеч вперёд."
+        },
+        "en": {
+          "name": "Suspension Push-Ups",
+          "cue": "Horizontal or angled body in straps, keep straps just clear of forearms.",
+          "details": "Grip the suspension handles on your toes with your body braced in a straight line and hands slightly clear so straps do not rub your forearms. Stabilize your shoulder blades before bending the elbows. Inhale to lower your chest smoothly between the handles, then exhale and press back to center. Avoid letting your hips sag or shoulders roll forward."
+        },
+        "tr": {
+          "name": "Askı Kayışı Şınavı",
+          "cue": "Vücut kayışlarda gergin ve düz, kayışlar ön kola sürtmeden göğsü indir.",
+          "details": "Askı kayışlarının tutamaçlarını kavra, ayak parmakların üzerinde durarak baştan topuğa düz bir plank kur. Kürek kemiklerini sabitleyip nefes alırken göğsünü iki elin arasına kontrollü indir. Nefes verirken elleri merkeze doğru iterek başlangıca dön. Kalçanın düşmesinden ve omuzların öne yuvarlanmasından kaçın."
+        }
+      }
+    },
+    {
+      "id": "archer-push-ups",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 5,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["hands_only"],
+      "stability": "unilateral",
+      "targetMuscles": ["chest", "triceps", "front_delts", "core"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 4, "medium": 8, "high": 14 },
+      "ladder": { "minus1": "feet-elevated-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Archer Push-Ups",
+          "cue": "Широкая постановка рук, переноси вес на рабочую руку, вторая почти прямая.",
+          "details": "Поставь ладони значительно шире плеч на коврике или длинной низкой скамейке, развернув пальцы слегка наружу. На вдохе смести корпус к одной руке и опусти грудь к её кисти, оставляя вторую руку выпрямленной в сторону. На выдохе мощно выжми себя в центр, не перекручивая таз. Частая ошибка — заваливание корпуса в пояснице и сгибание «страхующей» руки."
+        },
+        "en": {
+          "name": "Archer Push-Ups",
+          "cue": "Wide hand stance, shift weight onto one working arm while keeping the other straight.",
+          "details": "Set your hands much wider than shoulder-width on a mat or long low bench with fingers angled slightly outward. Inhale and shift your chest toward one hand while extending the opposite arm straight out. Exhale and press forcefully back to the center without twisting your pelvis. Avoid collapsing the lower back or bending the straight assist arm."
+        },
+        "tr": {
+          "name": "Okçu Şınavı",
+          "cue": "Geniş el tutuşu, ağırlığı çalışan kola aktarırken diğer kolu düz tut.",
+          "details": "Ellerini omuzlardan oldukça geniş şekilde mat veya uzun alçak bank üzerine yerleştir ve parmakları hafifçe dışa çevir. Nefes alırken ağırlığı tek kola kaydırıp göğsünü o ele yaklaştır, diğer kolu yana düz uzat. Nefes verirken kalçayı döndürmeden merkeze it. Beli düşürmekten veya destek kolu bükmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "scapular-wall-slides",
+      "pattern": "push_v",
+      "family": "push_vertical",
+      "rank": 1,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["front_delts", "upper_back", "shoulder_press"],
+      "antagonistMuscles": ["lats"],
+      "svgKey": "pike_pushups",
+      "defaultMax": { "low": 10, "medium": 18, "high": 30 },
+      "ladder": { "plus1": "incline-pike-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Scapular Wall Slides",
+          "cue": "Поясница прижата к стене или стойке, скользи предплечьями вверх без подъёма плеч.",
+          "details": "Встань спиной к стене или вертикальной стойке шведской стенки, слегка согнув колени и прижав поясницу, лопатки и затылок. Подними руки в форму буквы W, прижав тыльную сторону кистей и локти к опоре. На выдохе плавно скользи руками вверх в букву Y, сохраняя рёбра опущенными, затем на вдохе вернись вниз. Частая ошибка — прогиб в пояснице и отрыв запястий от опоры."
+        },
+        "en": {
+          "name": "Scapular Wall Slides",
+          "cue": "Keep lower back flat against wall or post, slide forearms upward without shrugging.",
+          "details": "Stand with your back against a wall or upright post, knees slightly bent, pressing your lower back, shoulder blades, and head gently in. Form a W shape with elbows and backs of wrists touching the support. Exhale to glide your arms smoothly upward into a Y without flaring your ribs, then inhale back down. Avoid arching your lower back or lifting your wrists away."
+        },
+        "tr": {
+          "name": "Duvarda Kürek Kemiği Kaydırma",
+          "cue": "Belini duvara veya direğe yasla, omuzları kaldırmadan kolları yukarı kaydır.",
+          "details": "Sırtını duvara veya dikey direğe yasla, dizleri hafif büküp bel, kürek kemikleri ve başı temas halinde tut. Kollarını W harfi gibi yerleştir ve el sırtlarını yüzeye değdir. Nefes verirken kaburgaları açmadan kolları Y şekline kaydır, nefes alırken indir. Beli çukurlaştırmaktan veya bilekleri ayırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "incline-pike-push-ups",
+      "pattern": "push_v",
+      "family": "push_vertical",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["hands_only"],
+      "stability": "bilateral",
+      "targetMuscles": ["front_delts", "shoulder_press", "triceps"],
+      "antagonistMuscles": ["lats", "forearms"],
+      "svgKey": "pike_pushups",
+      "defaultMax": { "low": 8, "medium": 16, "high": 28 },
+      "ladder": { "minus1": "scapular-wall-slides", "plus1": "pike-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Incline Pike Push-Ups",
+          "cue": "Ладони на диване или скамейке, таз высоко вверх, макушка уходит вперёд.",
+          "details": "Поставь ладони на сиденье дивана или низкой скамейки и подними таз высоко вверх в угол «домиком», ноги на носках. На вдохе сгибай локти назад под 45° и опускай голову вперёд перед краем опоры, образуя треугольник с ладонями. На выдохе выжми корпус по обратной дуге вверх. Частая ошибка — разведение локтей в стороны и опускание лба прямо между ладоней."
+        },
+        "en": {
+          "name": "Incline Pike Push-Ups",
+          "cue": "Hands on couch or bench, hips piked high, lower head forward ahead of hands.",
+          "details": "Place your hands on a couch or low bench and lift your hips high into an inverted V on your toes. Inhale as you bend elbows back at 45° and guide the top of your head forward just past the bench edge. Exhale and press back along the same diagonal arc. Avoid flaring your elbows wide or dropping your forehead straight between your palms."
+        },
+        "tr": {
+          "name": "Eğimli Pike Şınav",
+          "cue": "Eller koltukta veya bankta, kalça yukarıda, başı ellerin önündeki noktaya indir.",
+          "details": "Ellerini koltuk veya alçak bank kenarına koyup kalçanı ters V şeklinde yukarı kaldır. Nefes alırken dirsekleri 45° geriye bükerek başını ellerin biraz önüne doğru alçalt. Nefes verirken aynı yay boyunca yukarı iterek omuzları aç. Dirsekleri yana açmaktan ve alnı doğrudan ellerin arasına indirmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "band-overhead-press",
+      "pattern": "push_v",
+      "family": "push_vertical",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bands"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["front_delts", "shoulder_press", "triceps"],
+      "antagonistMuscles": ["lats", "forearms"],
+      "svgKey": "pike_pushups",
+      "defaultMax": { "low": 10, "medium": 20, "high": 35 },
+      "ladder": { "minus1": "scapular-wall-slides", "plus1": "pike-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Band Overhead Press",
+          "cue": "Встань на резинку двумя ногами, жми вверх без прогиба поясницы и взлёта плеч.",
+          "details": "Наступи серединой стоп на нижнюю часть резинки, подними верхний край к ключицам и направь локти чуть вперёд в плоскость лопаток. Напряги пресс и ягодицы, фиксируя таз. На выдохе выжми ленту строго над макушкой, на вдохе плавно верни к плечам. Частая ошибка — переразгибание поясницы при выпрямлении рук."
+        },
+        "en": {
+          "name": "Band Overhead Press",
+          "cue": "Stand on the band, press overhead with ribs down and no lower-back arch.",
+          "details": "Step firmly on the resistance band with both feet and hold the top edge at collarbone level with elbows angled slightly forward. Brace your abs and glutes to lock your ribcage down. Exhale to press straight overhead until elbows lock softly, then inhale back to shoulders. Avoid leaning back or flaring your ribs."
+        },
+        "tr": {
+          "name": "Bantla Baş Üstü Pres",
+          "cue": "Bant ayak altında, beli çukurlaştırmadan ve kaburgaları açmadan yukarı it.",
+          "details": "İki ayağınla bandın ortasına bas, bandın üst kısmını köprücük kemiği hizasında tut ve dirsekleri hafif öne al. Kalça ve karnı sıkarak gövdeyi sabitle. Nefes verirken kolları başın tam üzerine düz it, nefes alırken kontrollü indir. Geriye yaslanmaktan veya beli bükmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "half-kneeling-db-press",
+      "pattern": "push_v",
+      "family": "push_vertical",
+      "rank": 3,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["home"],
+      "equipment": ["weights"],
+      "posture": ["floor_contact"],
+      "stability": "unilateral",
+      "targetMuscles": ["front_delts", "shoulder_press", "triceps", "core"],
+      "antagonistMuscles": ["lats", "forearms"],
+      "svgKey": "pike_pushups",
+      "defaultMax": { "low": 8, "medium": 15, "high": 25 },
+      "ladder": { "minus1": "band-overhead-press", "plus1": "elevated-pike-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Half-Kneeling Dumbbell Press",
+          "cue": "Колено на коврике со стороны гантели, жми вверх вертикально, ягодица напряжена.",
+          "details": "Встань в выпад одним коленом на коврик: гантель в руке со стороны опорного колена, локоть выведен чуть вперёд (30°), свободная рука для баланса в сторону. Напряги ягодицу опорной ноги и пресс, исключая наклон вбок. На выдохе выжми гантель вверх по вертикали к уху, на вдохе опусти за 2 секунды. Частая ошибка — прогиб поясницы и завал корпуса от гантели."
+        },
+        "en": {
+          "name": "Half-Kneeling Dumbbell Press",
+          "cue": "Kneel on the pressing-side knee, squeeze glute and core, press straight overhead.",
+          "details": "Set into a half-kneeling stance with the dumbbell on the same side as your down knee and your elbow angled 30° forward. Squeeze the back glute and brace your abs to keep your torso upright. Exhale to press the dumbbell straight overhead toward your ear, then inhale down over two seconds. Avoid arching the lower back or leaning sideways."
+        },
+        "tr": {
+          "name": "Tek Diz Üstünde Dambıl Pres",
+          "cue": "Dambıl yerdeki diz tarafında, kalça ve karın sıkı, dikey yukarı it.",
+          "details": "Tek dizin matta olacak şekilde pozisyon al; dambılı yerdeki dizle aynı elinde, dirseği hafif önde tut. Arka kalçayı ve karnı sıkarak yana eğilmeyi engelle. Nefes verirken dambılı kulağının hizasına dik it, nefes alırken 2 saniyede indir. Beli bükmekten veya yana yatmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "elevated-pike-push-ups",
+      "pattern": "push_v",
+      "family": "push_vertical",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["hands_only"],
+      "stability": "bilateral",
+      "targetMuscles": ["front_delts", "shoulder_press", "triceps"],
+      "antagonistMuscles": ["lats", "forearms"],
+      "svgKey": "pike_pushups",
+      "defaultMax": { "low": 4, "medium": 10, "high": 18 },
+      "ladder": { "minus1": "pike-push-ups", "plus1": "wall-handstand-hold" },
+      "text": {
+        "ru": {
+          "name": "Elevated Pike Push-Ups",
+          "cue": "Носки на диване или скамейке, спина почти вертикальна, опускайся вперёд в треугольник.",
+          "details": "Поставь носки на диван, скамейку или перекладину стенки и подойди ладонями ближе к опоре, выводя таз строго над плечами. На вдохе сгибай локти назад под 45° и опускай голову вперёд перед линией ладоней до лёгкого касания. На выдохе мощно выжми себя вверх, вытягивая плечи к ушам в верхней точке. Частая ошибка — потеря вертикали корпуса и завал в обычные отжимания."
+        },
+        "en": {
+          "name": "Elevated Pike Push-Ups",
+          "cue": "Feet on couch or bench, torso nearly vertical, lower crown ahead of hands.",
+          "details": "Place your toes on a couch, bench, or stall bar and walk your hands back until your hips stack almost vertically over your shoulders. Inhale to bend your elbows back at 45° and lower your head forward ahead of your hand line. Exhale and press straight up to full shoulder elevation. Avoid flattening your torso into a regular push-up angle."
+        },
+        "tr": {
+          "name": "Ayaklar Yüksekte Pike Şınav",
+          "cue": "Ayaklar bankta veya koltukta, gövde neredeyse dik, başı ellerin önüne indir.",
+          "details": "Ayak parmaklarını koltuk, bank veya duvar barına koy ve kalçan omuzların üzerine gelene dek ellerinle yaklaş. Nefes alırken dirsekleri 45° geriye bükerek başını ellerin önündeki üçgen noktaya indir. Nefes verirken güçlüce yukarı it. Gövde açısını düzleştirip normal şınava kaymaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "wall-handstand-hold",
+      "pattern": "push_v",
+      "family": "push_vertical",
+      "rank": 5,
+      "metric": "seconds",
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["hands_only"],
+      "stability": "bilateral",
+      "teenAllowed": false,
+      "targetMuscles": ["shoulder_press", "front_delts", "triceps", "core"],
+      "antagonistMuscles": ["lats", "forearms"],
+      "svgKey": "pike_pushups",
+      "defaultMax": { "low": 15, "medium": 35, "high": 65 },
+      "ladder": { "minus1": "elevated-pike-push-ups" },
+      "text": {
+        "ru": {
+          "name": "Wall Handstand Hold",
+          "cue": "Животом к стене, активно толкай пол вверх плечами, поясница без прогиба.",
+          "details": "Из упора лёжа стопами к стене поочерёдно шагни ногами вверх по стене и подойди руками на безопасное расстояние 20–30 см от плинтуса. Напряги пресс и ягодицы, вытягивая носки вверх и активно отталкиваясь ладонями от пола («длинные руки»). Дыши ровно, сходи вниз аккуратно шагами в сторону. Частая ошибка — прогиб поясницы «бананом» и задержка дыхания."
+        },
+        "en": {
+          "name": "Wall Handstand Hold",
+          "cue": "Chest-to-wall alignment, push the floor away actively, keep ribs tucked.",
+          "details": "Start in a plank with feet against the wall and walk your feet up while stepping hands smoothly to 20–30 cm from the wall. Tuck your ribs, squeeze glutes, and push tall through your shoulders. Breathe steadily and step down to one side before fatigue compromises control. Avoid letting the lower back arch into a banana shape or holding your breath."
+        },
+        "tr": {
+          "name": "Duvarda Amut Tutuşu",
+          "cue": "Yüzün duvara dönük, yeri omuzlarla aktif it, belini düz ve karnını sıkı tut.",
+          "details": "Ayakların duvara dayalı şınav pozisyonundan adımlayarak yukarı çık ve ellerini duvardan 20–30 cm mesafeye getir. Karın ve kalçayı sıkıp omuzlarla yeri sürekli yukarı doğru it. Düzenli nefes al ve yorgunluk artmadan kontrollü şekilde yana adım atarak in. Belin aşırı çukurlaşmasından ve nefesi tutmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "prone-ywt-raises",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 1,
+      "metric": "reps",
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["floor_contact"],
+      "stability": "bilateral",
+      "targetMuscles": ["upper_back", "rear_delts"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "australian_pullups",
+      "defaultMax": { "low": 8, "medium": 14, "high": 22 },
+      "ladder": { "plus1": "seated-band-row" },
+      "text": {
+        "ru": {
+          "name": "Prone Y-W-T Raises",
+          "cue": "Лёжа на животе на коврике, лоб в пол, своди лопатки без задирания плеч.",
+          "details": "Ляг на коврик лицом вниз, лоб опусти на ладони или полотенце, слегка подтяни пресс от прогиба. Поочерёдно поднимай прямые и согнутые руки в положениях Y, W и T большими пальцами вверх, удерживая верхнюю точку на 1 секунду. Выдыхай на подъёме, вдыхай при опускании. Частая ошибка — подъём головы и напряжение шеи вместо работы между лопатками."
+        },
+        "en": {
+          "name": "Prone Y-W-T Raises",
+          "cue": "Face down on mat, forehead resting, squeeze shoulder blades with thumbs up.",
+          "details": "Lie face down on your mat with forehead resting lightly and abs slightly braced to protect your lower back. Lift your arms sequentially into Y, W, and T shapes with thumbs pointing up, pausing one second at the top. Exhale as you lift and inhale as you lower smoothly. Avoid craning your neck or shrugging your upper traps."
+        },
+        "tr": {
+          "name": "Yüzüstü Y-W-T Kaldırış",
+          "cue": "Matta yüzüstü yat, alın yerde, başparmaklar yukarıda kürek kemiklerini sıkıştır.",
+          "details": "Mat üzerine yüzüstü uzan, alnını hafifçe yere yasla ve beli korumak için karnı hafif sık. Kollarını sırayla Y, W ve T şekillerinde başparmaklar yukarı bakacak biçimde kaldırıp tepede 1 saniye bekle. Kaldırırken nefes ver, indirirken al. Boynu yukarı kaldırmaktan ve omuzları kulaklara çekmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "seated-band-row",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bands"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["upper_back", "lats", "rear_delts"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "band_row",
+      "defaultMax": { "low": 12, "medium": 24, "high": 40 },
+      "ladder": { "minus1": "prone-ywt-raises", "plus1": "australian-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Seated Band Row",
+          "cue": "Сидя на коврике или скамейке, резинка на стопах, тяни локти к рёбрам.",
+          "details": "Сядь с прямой спиной (дома на коврике, на площадке на низкой скамейке), чуть согни колени и закинь резинку за середину стоп. Вытяни макушку вверх и опусти плечи от ушей. На выдохе сведи лопатки и потяни кисти к нижним рёбрам, фиксируя паузу на 1 секунду, на вдохе плавно отпусти. Частая ошибка — округление поясницы и раскачка корпусом назад."
+        },
+        "en": {
+          "name": "Seated Band Row",
+          "cue": "Seated upright with band looped around midfoot, pull elbows to lower ribs.",
+          "details": "Sit tall on a mat or bench with knees slightly bent and loop the band securely around your midfeet. Lengthen your spine and drop your shoulders away from your ears. Exhale to retract your shoulder blades and row your hands to your lower ribs for a one-second pause, then inhale back slowly. Avoid rounding your lower back or rocking backward."
+        },
+        "tr": {
+          "name": "Oturarak Bant Çekişi",
+          "cue": "Dik otur, bandı ayak tabanlarına sabitle, dirsekleri alt kaburgalara çek.",
+          "details": "Dizler hafif bükülü dik oturarak bandı ayak tabanlarının ortasına geçir; omuzları aşağı indir. Nefes verirken önce kürek kemiklerini yaklaştır ve elleri alt kaburgalarına çekip 1 saniye bekle, nefes alırken kontrollü uzat. Beli kamburlaştırmaktan veya gövdeyi geriye savurmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "single-arm-db-row",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 3,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["weights"],
+      "posture": ["hands_only"],
+      "stability": "unilateral",
+      "targetMuscles": ["upper_back", "lats", "rear_delts", "biceps"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "band_row",
+      "defaultMax": { "low": 10, "medium": 18, "high": 30 },
+      "ladder": { "minus1": "seated-band-row", "plus1": "split-stance-explosive-band-row" },
+      "text": {
+        "ru": {
+          "name": "Single-Arm Dumbbell Row",
+          "cue": "Свободная рука на диване или скамейке, спина ровная, тяни гантель дугой к тазу.",
+          "details": "Упрись одной ладонью в диван, низкую скамейку или перекладину, ноги поставь широко в устойчивую разножку, спина параллельна опоре и нейтральна. На выдохе потяни гантель не к груди, а по дуге назад к карману брюк, сводя лопатку к позвоночнику. На вдохе плавно опусти вес за 2 секунды без скручивания плеча. Частая ошибка — скручивание корпуса за весом вверх и тяга бицепсом к подмышке."
+        },
+        "en": {
+          "name": "Single-Arm Dumbbell Row",
+          "cue": "Support one hand on couch or bench, flat back, sweep dumbbell toward your hip.",
+          "details": "Place your free hand firmly on a couch, low bench, or low bar with feet staggered for stability and your back flat. Exhale and sweep the dumbbell back in an arc toward your hip pocket while squeezing your shoulder blade inward. Inhale to lower over two seconds without letting your torso twist. Avoid rotating your chest upward or pulling straight into the armpit."
+        },
+        "tr": {
+          "name": "Tek Kol Dambıl Çekişi",
+          "cue": "Serbest el koltukta veya bankta, sırt düz, dambılı kalça hizasına yay çizerek çek.",
+          "details": "Bir elini koltuğa veya banka daya, ayaklarını dengeli biçimde aç ve sırtını düz tut. Nefes verirken dambılı koltukaltına değil, kürek kemiğini sıkarak geriye kalça cebine doğru çek. Nefes alırken omzu döndürmeden 2 saniyede indir. Gövdeyi yukarı döndürmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "suspension-row",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 3,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["suspension"],
+      "posture": ["standing"],
+      "stability": "unstable",
+      "targetMuscles": ["upper_back", "lats", "rear_delts", "biceps"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "australian_pullups",
+      "defaultMax": { "low": 8, "medium": 16, "high": 28 },
+      "ladder": { "minus1": "band-row", "plus1": "feet-elevated-australian-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Suspension Row",
+          "cue": "Тело в прямой планке в петлях, тяни грудь к кистям и разворачивай ладони к рёбрам.",
+          "details": "Возьмись за рукояти петель и шагни вперёд на пятки под рабочим углом (чем ниже угол, тем тяжелее), удерживая жёсткий пресс и ягодицы. На выдохе потяни грудь к кистям, плавно разворачивая ладони внутрь и сводя лопатки. На вдохе подконтрольно вернись в исходный вис, не опуская плечи к ушам. Частая ошибка — проваливание таза и рывок головой вперёд."
+        },
+        "en": {
+          "name": "Suspension Row",
+          "cue": "Rigid plank in straps, pull chest toward handles while rotating palms toward ribs.",
+          "details": "Grip the suspension handles and walk your feet forward onto your heels to set your desired angle, keeping abs and glutes tight. Exhale to pull your chest to your hands while rotating your palms neutral and squeezing your shoulder blades. Inhale to lower under control without shrugging. Avoid letting the hips sag or jutting the chin forward."
+        },
+        "tr": {
+          "name": "Askı Kayışı Çekişi",
+          "cue": "Vücut düz çizgide, göğsü tutamaçlara çekip kürek kemiklerini sıkıştır.",
+          "details": "Kayışların tutamaçlarını kavra ve ayaklarını öne yürütüp topuklar üzerinde sabit açı oluştur; karın ve kalçayı sık. Nefes verirken avuçları gövdeye döndürüp göğsü ellere çek, kürek kemiklerini birleştir. Nefes alırken omuzları salmadan yavaşça in. Kalçayı düşürmekten ve başı öne uzatmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "band-face-pull",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 3,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["bands"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["rear_delts", "upper_back"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "band_row",
+      "defaultMax": { "low": 12, "medium": 25, "high": 40 },
+      "ladder": { "minus1": "prone-ywt-raises", "plus1": "feet-elevated-australian-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Band Face Pull",
+          "cue": "Резинка на уровне глаз на стойке, тяни к лбу с разворотом кистей наружу.",
+          "details": "Закрепи резинку на шведской стенке или стойке турника на уровне глаз, отойди до натяжения и встань в лёгкую разножку. На выдохе потяни ленту ко лбу, разводя локти в стороны на уровне плеч и разворачивая большие пальцы назад (поза двойного бицепса). Удержи 1 секунду и плавно верни руки. Частая ошибка — перегиб поясницы и тяга локтями вниз."
+        },
+        "en": {
+          "name": "Band Face Pull",
+          "cue": "Anchor band at eye level, pull toward forehead while externally rotating wrists.",
+          "details": "Anchor the band to a stall bar or post at eye level and step back into a staggered stance. Exhale to pull the band toward your forehead, keeping elbows high and rotating thumbs backward into external rotation. Hold for one second and return smoothly. Avoid leaning back through the lower spine or dropping the elbows."
+        },
+        "tr": {
+          "name": "Bantla Yüz Çekişi (Face Pull)",
+          "cue": "Bant göz hizasında sabit, alına doğru çekip başparmakları geriye çevir.",
+          "details": "Bandı göz hizasında bir direğe sabitle ve dengeli bir adım duruşuna geç. Nefes verirken dirsekleri omuz hizasında tutup elleri alnına çek, başparmakları geriye doğru dışa çevir. 1 saniye sıkıp kontrollü bırak. Beli geriye bükmekten veya dirsekleri aşağı düşürmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "feet-elevated-australian-pull-ups",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["upper_back", "lats", "rear_delts", "biceps"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "australian_pullups",
+      "defaultMax": { "low": 8, "medium": 16, "high": 28 },
+      "ladder": { "minus1": "australian-pull-ups", "plus1": "suspension-single-arm-row" },
+      "text": {
+        "ru": {
+          "name": "Feet-Elevated Australian Pull-Ups",
+          "cue": "Пятки на скамейке или ступеньке стенки, корпус горизонтален, тяни грудь к грифу.",
+          "details": "Возьмись за низкую перекладину прямым хватом на ширине плеч и поставь пятки на низкую скамейку или перекладину шведской стенки на высоте рук. Выстрой тело в жёсткую горизонтальную линию без провисания таза. На выдохе подтяни грудь к перекладине, сводя лопатки, на вдохе опустись за 2 секунды. Частая ошибка — недоведение груди и сгибание в тазу."
+        },
+        "en": {
+          "name": "Feet-Elevated Australian Pull-Ups",
+          "cue": "Heels on bench or stall bar, horizontal body line, pull chest all the way to bar.",
+          "details": "Grip a low bar overhand at shoulder-width and place your heels on a low bench or stall bar matching hand height. Lock your hips and core into a straight horizontal plank. Exhale to pull your chest to the bar by squeezing your shoulder blades together, then inhale down for two seconds. Avoid cutting the range short or letting the hips sag."
+        },
+        "tr": {
+          "name": "Ayaklar Yüksekte Avustralya Barfiks",
+          "cue": "Topuklar bankta veya duvarda, gövde yatay ve düz, göğsü bara değdir.",
+          "details": "Alçak barı omuz genişliğinde üstten kavra ve topuklarını ellerle aynı yükseklikteki bank veya bar basamağına yerleştir. Kalçayı sıkarak vücudu düz bir yatay hatta kilitle. Nefes verirken kürek kemiklerini sıkıştırarak göğsünü bara çek, nefes alırken 2 saniyede in. Yarım çekişlerden ve kalça sarkmasından kaçın."
+        }
+      }
+    },
+    {
+      "id": "split-stance-explosive-band-row",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 4,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["bands"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["lats", "upper_back", "rear_delts", "obliques", "core"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "band_row",
+      "defaultMax": { "low": 10, "medium": 18, "high": 28 },
+      "ladder": { "minus1": "band-row", "plus1": "suspension-single-arm-row" },
+      "text": {
+        "ru": {
+          "name": "Split-Stance Explosive Single-Arm Band Row",
+          "cue": "Разножка, резинка под стопой или на стойке: взрывной рывок одной рукой без скручивания спины.",
+          "details": "Встань в устойчивую полуприседущую разножку (дома резинка под передней стопой, на площадке — на шведской стенке на уровне пояса), свободная рука напряжена для баланса. Жёстко зафиксируй кор от разворота корпуса. На резком выдохе мощно рвани локоть назад к нижнему ребру за 0.5 секунды, затем плавно верни руку вперёд за 2 секунды. Частая ошибка — скручивание поясницы вслед за рывком и завал плеча вперёд в конце фазы."
+        },
+        "en": {
+          "name": "Split-Stance Explosive Single-Arm Band Row",
+          "cue": "Split stance, band under front foot or post: explosive one-arm pull with zero torso twist.",
+          "details": "Set into a low athletic split stance with the band anchored under your front foot at home or on a stall bar outdoors. Brace your abs and obliques tightly to block rotational twist. Exhale sharply to drive one elbow explosively back to your lower ribcage in half a second, then control the return for two seconds. Avoid whipping the lower back or letting the shoulder snap forward."
+        },
+        "tr": {
+          "name": "Hamle Duruşunda Patlayıcı Tek Kol Bant Çekişi",
+          "cue": "Dengeli hamle duruşu, beli hiç döndürmeden tek kolla patlayıcı çekiş ve yavaş dönüş.",
+          "details": "Evde bandı ön ayağın altına, dışarıda bel hizasındaki direğe sabitleyip alçak bir hamle duruşuna geç. Gövdenin dönmesini engellemek için karın ve yan karın kaslarını kilitle. Keskin bir nefesle dirseği yarım saniyede kaburgaya doğru patlayıcı biçimde çek ve 2 saniyede kontrollü uzat. Beli bükmekten ve omzu öne bırakmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "suspension-single-arm-row",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 5,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor"],
+      "equipment": ["suspension"],
+      "posture": ["standing"],
+      "stability": "unstable",
+      "targetMuscles": ["lats", "upper_back", "obliques", "core", "biceps"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "australian_pullups",
+      "defaultMax": { "low": 5, "medium": 10, "high": 16 },
+      "ladder": { "minus1": "suspension-row" },
+      "text": {
+        "ru": {
+          "name": "Single-Arm Suspension Row",
+          "cue": "Одной рукой в петле, плечи и таз строго параллельны земле — ноль разворота корпуса.",
+          "details": "Собери обе рукояти в одну петлю или держись одной рукой, поставив ноги шире плеч или в разножку на пятках для анти-ротации. Вторая рука касается плеча или вытянута вдоль корпуса. На выдохе подтяни грудь к рабочей кисти, не давая противоположному плечу провалиться вниз, на вдохе плавно опустись. Частая ошибка — сильное скручивание грудного отдела при усталости."
+        },
+        "en": {
+          "name": "Single-Arm Suspension Row",
+          "cue": "One hand in the strap, keep shoulders and hips square with zero torso rotation.",
+          "details": "Hold one suspension handle with feet wide or staggered on your heels to resist twisting, keeping your free hand at your side. Exhale to pull your chest up toward the working hand while keeping both shoulders level. Inhale to lower smoothly without rotating open at the bottom. Avoid twisting your torso to cheat the top of the rep."
+        },
+        "tr": {
+          "name": "Tek Kol Askı Kayışı Çekişi",
+          "cue": "Tek el kayışta, omuzlar ve kalça yere paralel, gövdeyi hiç döndürmeden çek.",
+          "details": "Tek tutamacı kavra, dönmeyi önlemek için ayaklarını omuzdan geniş veya çapraz şekilde topuklara yerleştir. Nefes verirken serbest omzu aşağı düşürmeden göğsünü çalışan ele doğru çek. Nefes alırken kontrollü biçimde başlangıca in. Üst noktada gövdeyi döndürerek hile yapmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "scapular-pull-ups",
+      "pattern": "pull_v",
+      "family": "pull_vertical",
+      "rank": 1,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["lats", "upper_back", "forearms"],
+      "antagonistMuscles": ["chest", "shoulder_press"],
+      "svgKey": "dead_hang",
+      "defaultMax": { "low": 8, "medium": 16, "high": 28 },
+      "ladder": { "plus1": "negative-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Scapular Pull-Ups",
+          "cue": "Руки полностью прямые, движение только за счёт опускания лопаток вниз от ушей.",
+          "details": "Повисни на турнике прямым хватом на ширине плеч, ноги чуть спереди («лодочка»), локти абсолютно прямые. На выдохе опусти лопатки вниз и слегка назад, поднимая грудь на 5–10 см вверх и удерживая паузу на 1 секунду. На вдохе плавно вернись в пассивный вис. Частая ошибка — сгибание локтей и прогиб в пояснице."
+        },
+        "en": {
+          "name": "Scapular Pull-Ups",
+          "cue": "Keep elbows locked straight, lift body purely by depressing shoulder blades down.",
+          "details": "Hang from a pull-up bar with an overhand shoulder-width grip, legs slightly in front, and elbows completely straight. Exhale to pull your shoulder blades down and back, lifting your chest 5–10 cm for a one-second pause. Inhale smoothly back into a controlled hang. Avoid bending your elbows or arching your lower back."
+        },
+        "tr": {
+          "name": "Kürek Kemiği Barfiksi",
+          "cue": "Dirsekler tamamen düz, sadece kürek kemiklerini aşağı bastırarak göğsü yükselt.",
+          "details": "Barfikse omuz genişliğinde üstten asıl, bacakları hafif önde tut ve dirsekleri hiç bükme. Nefes verirken omuzları kulaklardan uzaklaştırıp kürek kemiklerini aşağı çek, 1 saniye bekle. Nefes alırken kontrollü asılışa dön. Dirsekleri bükmekten ve beli çukurlaştırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "negative-pull-ups",
+      "pattern": "pull_v",
+      "family": "pull_vertical",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["lats", "biceps", "forearms"],
+      "antagonistMuscles": ["chest", "triceps"],
+      "svgKey": "pullups",
+      "defaultMax": { "low": 4, "medium": 8, "high": 14 },
+      "ladder": { "minus1": "scapular-pull-ups", "plus1": "strict-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Negative Pull-Ups",
+          "cue": "Подъём со скамейки или стенки подбородком над грифом, плавное опускание за 4–5 секунд.",
+          "details": "Используй низкую скамейку или ступеньку шведской стенки, чтобы без рывка занять верхнюю позицию подбородком выше перекладины, грудь подтянута, ноги выведены чуть вперёд. Зафиксируй верх на 1 секунду и на медленном вдохе опускайся вниз ровно 4–5 секунд до выпрямления рук. Частая ошибка — быстрый «провал» в нижней половине амплитуды."
+        },
+        "en": {
+          "name": "Negative Pull-Ups",
+          "cue": "Step from bench or stall bar to chin-over-bar, lower smoothly over 4–5 seconds.",
+          "details": "Use a low bench or stall bar step to enter the top pull-up position smoothly with your chin above the bar and core braced. Pause one second at the top, then inhale while lowering yourself steadily over 4–5 seconds to near full arm extension. Avoid dropping fast through the bottom half of the descent."
+        },
+        "tr": {
+          "name": "Negatif Barfiks",
+          "cue": "Banktan veya duvar barından çeneyi barın üstüne al, 4–5 saniyede yavaşça in.",
+          "details": "Alçak bank veya basamaktan destek alarak çenen barın üzerinde olacak şekilde üst pozisyona çık ve gövdeyi sık. Tepede 1 saniye bekle, ardından nefes alarak kollar neredeyse düzleşene dek 4–5 saniyede kontrollü in. İnişin alt yarısında hızlanıp kendini bırakmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "band-assisted-pull-ups",
+      "pattern": "pull_v",
+      "family": "pull_vertical",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars", "bands"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["lats", "biceps", "upper_back"],
+      "antagonistMuscles": ["chest", "triceps"],
+      "svgKey": "pullups",
+      "defaultMax": { "low": 6, "medium": 12, "high": 20 },
+      "ladder": { "minus1": "scapular-pull-ups", "plus1": "strict-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Band-Assisted Pull-Ups",
+          "cue": "Резинка петлёй на турнике под стопу или колено, тяни грудь вверх без раскачки.",
+          "details": "Перекинь длинную резинку петлёй через перекладину и заправь под одну стопу (или согнутое колено), вторую ногу скрести сверху для надёжной фиксации. Сначала опусти лопатки, затем на выдохе подтяни подбородок выше грифа с ровным корпусом. На вдохе плавно опустись за 2 секунды. Частая ошибка — расслабление пресса и раскачка на резинке."
+        },
+        "en": {
+          "name": "Band-Assisted Pull-Ups",
+          "cue": "Loop band over bar under foot or knee, pull chest upward with zero swinging.",
+          "details": "Girth-hitch a resistance band to the bar and step one foot or knee securely into the loop, crossing your other ankle over it. Depress your shoulder blades first, then exhale and pull your chin over the bar with a braced core. Inhale to lower smoothly over two seconds. Avoid letting the band swing your legs forward."
+        },
+        "tr": {
+          "name": "Bant Destekli Barfiks",
+          "cue": "Bandı bara bağlayıp ayağının veya dizinin altına al, sallanmadan yukarı çek.",
+          "details": "Direnç bandını barfiks demirine geçir ve bir ayağını ya da dizini halkaya sabitleyip diğer bileğini üzerine kilitle. Önce kürek kemiklerini aşağı çek, sonra nefes vererek çeneni barın üzerine çıkar. Nefes alırken 2 saniyede kontrollü in. Karın kaslarını bırakıp bacaklarla sallanmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "chin-ups",
+      "pattern": "pull_v",
+      "family": "pull_vertical",
+      "rank": 3,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["lats", "biceps", "forearms"],
+      "antagonistMuscles": ["chest", "triceps"],
+      "svgKey": "pullups",
+      "defaultMax": { "low": 4, "medium": 10, "high": 18 },
+      "ladder": { "minus1": "negative-pull-ups", "plus1": "chest-to-bar-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Chin-Ups",
+          "cue": "Обратный хват на ширине плеч, тяни локти вниз к рёбрам, грудь к перекладине.",
+          "details": "Возьмись за турник обратным хватом (ладони к себе) на ширине плеч или чуть уже, тело в лёгкой «лодочке». На выдохе опусти лопатки и тяни грудь к грифу, направляя локти вниз перед собой до выхода подбородка выше перекладины. На вдохе плавно опустись за 2 секунды без скручивания плеч. Частая ошибка — уход подбородка вперёд и «дотягивание» шеей."
+        },
+        "en": {
+          "name": "Chin-Ups",
+          "cue": "Underhand shoulder-width grip, drive elbows down toward ribs, chest to the bar.",
+          "details": "Grip the bar palms-facing-you at shoulder width or slightly narrower with legs slightly forward and core braced. Exhale to depress your shoulder blades and drive your elbows straight down until your chin clears the bar. Inhale to lower smoothly over two seconds without rounding your shoulders forward. Avoid craning your neck upward to reach the bar."
+        },
+        "tr": {
+          "name": "Ters Tutuş Barfiks (Chin-Up)",
+          "cue": "Avuçlar sana dönük omuz genişliğinde tut, dirsekleri kaburgalara çek.",
+          "details": "Barı omuz genişliğinde avuç içleri sana bakacak şekilde kavra ve karnını sık. Nefes verirken omuzları aşağı bastırıp dirsekleri gövdene doğru çekerek çeneni barın üzerine çıkar. Nefes alırken omuzları öne düşürmeden 2 saniyede in. Çeneyi ulaştırmak için boynu öne uzatmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "chest-to-bar-pull-ups",
+      "pattern": "pull_v",
+      "family": "pull_vertical",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["lats", "upper_back", "biceps", "forearms"],
+      "antagonistMuscles": ["chest", "triceps"],
+      "svgKey": "pullups",
+      "defaultMax": { "low": 3, "medium": 7, "high": 14 },
+      "ladder": { "minus1": "strict-pull-ups", "plus1": "archer-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Chest-to-Bar Pull-Ups",
+          "cue": "Мощный старт лопатками, слегка отклонись назад и коснись перекладины грудью.",
+          "details": "Возьмись за турник прямым хватом чуть шире плеч, напряги кор и ягодицы. На резком выдохе взорвись вверх за счёт широчайших, в верхней трети чуть отклоняя грудь назад и сводя лопатки до лёгкого касания грифом ключиц. На вдохе подконтрольно опустись за 2 секунды. Частая ошибка — завал плеч вперёд и «кипинг» рывком ног."
+        },
+        "en": {
+          "name": "Chest-to-Bar Pull-Ups",
+          "cue": "Explosive scapular drive, lean back slightly at top to touch sternum to bar.",
+          "details": "Grip the bar just outside shoulder-width with a braced hollow body. Exhale forcefully to pull explosively upward, leaning your torso slightly back in the top third and pinching shoulder blades until your upper chest touches the bar. Inhale to lower strictly over two seconds. Avoid rolling your shoulders forward or kipping with the legs."
+        },
+        "tr": {
+          "name": "Göğüsten Bara Barfiks",
+          "cue": "Güçlü kürek kemiği çekişiyle yüksel, üstte hafif geriye yaslanıp göğsü bara değdir.",
+          "details": "Barı omuzlardan biraz geniş üstten kavra ve gövdeyi sıkı tut. Güçlü bir nefesle patlayıcı biçimde yukarı çek, üst bölümde gövdeyi hafifçe geriye alıp kürek kemiklerini sıkarak üst göğsü bara değdir. Nefes alırken 2 saniyede kontrollü in. Omuzları öne düşürmekten ve bacaklarla savrulmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "archer-pull-ups",
+      "pattern": "pull_v",
+      "family": "pull_vertical",
+      "rank": 5,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["lats", "biceps", "upper_back", "forearms", "core"],
+      "antagonistMuscles": ["chest", "triceps"],
+      "svgKey": "pullups",
+      "defaultMax": { "low": 2, "medium": 5, "high": 10 },
+      "ladder": { "minus1": "chest-to-bar-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Archer Pull-Ups",
+          "cue": "Широкий хват, тянись грудью к одной кисти, вторая рука вытянута вдоль перекладины.",
+          "details": "Возьмись за перекладину значительно шире плеч, напряги корпус. На выдохе подтяни плечо к одной из ладоней, позволяя противоположной руке скользить выпрямленной в сторону вдоль грифа в качестве лёгкой опоры. На вдохе плавно вернись в ровный вис. Частая ошибка — резкое падение вниз и сгибание прямой вспомогательной руки."
+        },
+        "en": {
+          "name": "Archer Pull-Ups",
+          "cue": "Wide grip, pull chest toward one hand while keeping the assist arm straight.",
+          "details": "Grip the bar well outside shoulder-width with your core braced. Exhale to pull your chest up toward one hand while keeping the opposite arm extended straight along the bar for minimal assistance. Inhale and lower smoothly back to the dead-hang midline. Avoid dropping abruptly or bending the straight assist arm."
+        },
+        "tr": {
+          "name": "Okçu Barfiksi",
+          "cue": "Geniş tutuş, göğsü tek ele doğru çekip diğer kolu bar boyunca düz uzat.",
+          "details": "Barı omuzlardan oldukça geniş kavra ve gövdeyi sabitle. Nefes verirken göğsünü bir eline doğru yukarı çek, karşı kolu bar boyunca düz tutarak sadece hafif destek al. Nefes alırken ortaya kontrollü in. Hızlı düşmekten veya düz destek kolunu bükmekten kaçın."
+        }
+      }
+    }
+  ]
+}

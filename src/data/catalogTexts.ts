@@ -1,11 +1,15 @@
 import { CatalogText } from '../domain/catalog/types';
 import type { Locale } from '../i18n';
+import { CATALOG_TEXT_EN } from './catalogText.en';
 import { CATALOG_TEXT_RU } from './catalogText.ru';
+import { CATALOG_TEXT_TR } from './catalogText.tr';
 
-// Catalog texts by language. English and Turkish arrive in step 4; until
-// then every exercise falls back to Russian.
+// Catalog texts by language. Exercises from the first catalog (v2) are in
+// Russian only and fall back to it.
 const CATALOG_TEXTS: Partial<Record<Locale, Record<string, CatalogText>>> = {
   ru: CATALOG_TEXT_RU,
+  en: CATALOG_TEXT_EN,
+  tr: CATALOG_TEXT_TR,
 };
 
 const FALLBACK_CHAIN: Record<Locale, Locale[]> = {

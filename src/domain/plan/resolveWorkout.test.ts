@@ -41,8 +41,10 @@ describe('conditions filter', () => {
 
 describe('ladder', () => {
   it('uses the explicit link first', () => {
-    expect(ladderNeighbour(CATALOG, 'bulgarian-split-squat', -1)?.id).toBe('reverse-lunges');
+    // Customer decision: Bulgarian split squat −1 = air squats (ARCHITECTURE §12).
+    expect(ladderNeighbour(CATALOG, 'bulgarian-split-squat', -1)?.id).toBe('air-squats');
     expect(ladderNeighbour(CATALOG, 'floor-push-ups', 1)?.id).toBe('parallel-bar-dips');
+    expect(ladderNeighbour(CATALOG, 'strict-pull-ups', -1)?.id).toBe('negative-pull-ups');
   });
 
   it('falls back to the family when the link is not available', () => {
@@ -52,13 +54,15 @@ describe('ladder', () => {
   });
 
   it('returns undefined when nothing fits', () => {
-    expect(ladderNeighbour(CATALOG, 'strict-pull-ups', -1)).toBeUndefined();
+    // Box squats are the bottom of the knee-dominant family.
+    expect(ladderNeighbour(CATALOG, 'box-squats', -1)).toBeUndefined();
     expect(ladderNeighbour(CATALOG, 'unknown', 1)).toBeUndefined();
   });
 
   it('picks the nearest rank for a pattern, easier on a tie', () => {
     expect(pickForPattern(CATALOG, 'push_h', 3)?.id).toBe('floor-push-ups');
-    expect(pickForPattern(CATALOG, 'push_h', 5)?.id).toBe('parallel-bar-dips');
+    expect(pickForPattern(CATALOG, 'push_h', 4)?.id).toBe('parallel-bar-dips');
+    expect(pickForPattern(CATALOG, 'push_h', 5)?.id).toBe('archer-push-ups');
     expect(pickForPattern(CATALOG, 'pull_v', 3, { environment: 'home' })).toBeUndefined();
   });
 });
@@ -96,10 +100,11 @@ describe('resolveWorkout', () => {
   });
 
   it('an unavailable pinned exercise is replaced within its pattern, target scaled by maxima', () => {
-    // Dips (max 23) at home → floor push-ups (max 35): 15 × 35 / 23 ≈ 23.
+    // Dips (rank 4, max 23) at home → the same rank there, feet-elevated push-ups:
+    // the target is scaled by the ratio of maxima.
     const plan = { items: [{ exerciseId: 'parallel-bar-dips', target: 15 }] };
     const [r] = resolveWorkout(plan, { ...ctx, conditions: { environment: 'home' } });
-    expect(r).toMatchObject({ exerciseId: 'floor-push-ups', target: 23, substitutedFrom: 'parallel-bar-dips' });
+    expect(r).toMatchObject({ exerciseId: 'feet-elevated-push-ups', target: 12, substitutedFrom: 'parallel-bar-dips' });
   });
 
   it('NO TOUCH swaps a floor exercise of the same pattern', () => {

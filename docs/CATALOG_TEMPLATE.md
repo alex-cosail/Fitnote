@@ -72,7 +72,7 @@
 | `text.ru` | да | `name`, `cue`, `details` | Название, подсказка (одно предложение до 140 символов, читается на площадке), описание техники (3–5 предложений) |
 | `text.en`, `text.tr` | нет | то же | Английский и турецкий; при отсутствии показывается русский |
 
-**Свои упражнения, которые переходят в каталог.** Сейчас у вас есть три своих упражнения от тренера: `air-squats` (Air Squats), `single-leg-rdl` (Single-Leg Romanian Deadlift), `hanging-knee-raises` (Hanging Knee Raises). Если добавлять их в каталог, берите именно эти id. После обновления приложения своё упражнение с таким id само станет упражнением каталога: ваш максимум сохранится, планы и журнал продолжат на него ссылаться, дубля не будет.
+**Свои упражнения, которые переходят в каталог.** Если упражнение уже есть у вас как «своё» (от тренера), берите его id: после обновления приложения оно само станет упражнением каталога — максимум сохранится, планы и журнал продолжат на него ссылаться. Так уже перешли `air-squats`, `single-leg-rdl`, `hanging-knee-raises` (партия 2, 25.11).
 
 **Теги мышц:** `lats`, `biceps`, `chest`, `triceps`, `front_delts`, `rear_delts`, `upper_back`, `quads`, `glutes`, `hamstrings`, `hip_flexors`, `obliques`, `core`, `lower_back`, `forearms`, `spine_decompression`, `shoulder_press`. Новый тег допустим, но проверка предупредит: для него нужно русское название в `src/domain/catalog/muscles.ts`.
 
@@ -132,12 +132,26 @@
 
 Верни ТОЛЬКО JSON вида {"exercises": [ ... ]} без пояснений. Каждое упражнение —
 объект с полями:
-- id: латиница в нижнем регистре и дефисы, например "air-squats"; для этих
-  упражнений используй ровно такие id: air-squats (Air Squats), single-leg-rdl
-  (Single-Leg Romanian Deadlift), hanging-knee-raises (Hanging Knee Raises); не повторяй
-  существующие id: strict-pull-ups, parallel-bar-dips, australian-pull-ups,
-  floor-push-ups, bulgarian-split-squat, single-leg-glute-bridge, side-plank,
-  dead-hang, pallof-press, romanian-deadlift, band-row, reverse-lunges, pike-push-ups;
+- id: латиница в нижнем регистре и дефисы, например "air-squats"; не повторяй
+  существующие id (уже в каталоге):
+  strict-pull-ups, parallel-bar-dips, australian-pull-ups, floor-push-ups,
+  bulgarian-split-squat, single-leg-glute-bridge, side-plank, dead-hang,
+  pallof-press, romanian-deadlift, band-row, reverse-lunges, pike-push-ups,
+  knee-push-ups, incline-push-ups, feet-elevated-push-ups, banded-push-ups,
+  suspension-push-ups, archer-push-ups, scapular-wall-slides,
+  incline-pike-push-ups, band-overhead-press, half-kneeling-db-press,
+  elevated-pike-push-ups, wall-handstand-hold, prone-ywt-raises, seated-band-row,
+  single-arm-db-row, suspension-row, band-face-pull,
+  feet-elevated-australian-pull-ups, split-stance-explosive-band-row,
+  suspension-single-arm-row, scapular-pull-ups, negative-pull-ups,
+  band-assisted-pull-ups, chin-ups, chest-to-bar-pull-ups, archer-pull-ups,
+  box-squats, air-squats, goblet-squat, cossack-squat, single-leg-bench-squat,
+  split-squats, bench-step-ups, side-lunges, skater-squats,
+  suspension-pistol-squat, glute-bridge, band-good-morning, db-romanian-deadlift,
+  single-leg-rdl, nordic-curl-negatives, dead-bug, bird-dog, high-plank,
+  hanging-knee-raises, hollow-body-hold, suspension-fallout, hanging-leg-raises,
+  l-sit-hold, suitcase-march, copenhagen-plank-short, swedish-wall-side-hold,
+  plank-shoulder-taps, split-stance-band-anti-rotation;
 - pattern: push_h | pull_h | push_v | pull_v | squat | hinge | lunge | core;
 - family: семейство лестницы прогрессий. Существующие: push_horizontal,
   push_vertical, pull_horizontal, pull_vertical, legs_knee (присед и выпады),

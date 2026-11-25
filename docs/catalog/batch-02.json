@@ -1,0 +1,942 @@
+{
+  "exercises": [
+    {
+      "id": "box-squats",
+      "pattern": "squat",
+      "family": "legs_knee",
+      "rank": 1,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["quads", "glutes"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "generic_strength",
+      "defaultMax": { "low": 15, "medium": 30, "high": 50 },
+      "ladder": { "plus1": "air-squats" },
+      "text": {
+        "ru": {
+          "name": "Bench Box Squats",
+          "cue": "Присед до лёгкого касания скамейки или дивана без плюхания, колени по носкам.",
+          "details": "Встань спиной в шаге от низкой скамейки или дивана, стопы на ширине плеч, носки чуть наружу. На вдохе отведи таз назад и плавно опустись до лёгкого касания опоры, не расслабляя мышцы ног и спины. На выдохе уверенно встань через всю стопу, направляя колени по линии носков. Частая ошибка — падение на опору с расслаблением корпуса и завал коленей внутрь."
+        },
+        "en": {
+          "name": "Bench Box Squats",
+          "cue": "Squat down to lightly tap the bench or couch without plopping, knees track toes.",
+          "details": "Stand a small step in front of a low bench or couch with feet shoulder-width apart and toes turned slightly out. Inhale to sit your hips back and lower under control until you lightly tap the support without relaxing tension. Exhale and drive up evenly through your feet while keeping your knees aligned over your toes. Avoid dropping onto the seat or letting your knees cave inward."
+        },
+        "tr": {
+          "name": "Bank Dokunuşlu Squat",
+          "cue": "Oturup gevşemeden banka veya koltuğa hafifçe dokun, dizler ayak ucunu izlesin.",
+          "details": "Alçak bankın veya koltuğun bir adım önünde dur, ayakları omuz genişliğinde açıp parmak uçlarını hafif dışa çevir. Nefes alırken kalçayı geriye vererek desteğe hafifçe değene dek kontrollü in. Nefes verirken dizleri içe düşürmeden ayak tabanlarıyla güçlüce kalk. Koltuğa kendini bırakmaktan ve dizleri içe kırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "air-squats",
+      "pattern": "squat",
+      "family": "legs_knee",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["quads", "glutes"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "generic_strength",
+      "defaultMax": { "low": 15, "medium": 30, "high": 55 },
+      "ladder": { "minus1": "box-squats", "plus1": "reverse-lunges" },
+      "text": {
+        "ru": {
+          "name": "Air Squats",
+          "cue": "Пятки прижаты, грудь раскрыта, приседай до параллели бёдер с полом.",
+          "details": "Поставь стопы чуть шире таза, носки слегка разверни наружу, взгляд вперёд, пресс подтянут. На вдохе одновременно сгибай колени и отводи таз назад, опускаясь минимум до параллели бёдер с землёй и вытягивая руки вперёд для баланса. На выдохе мощно вытолкни себя вверх пятками, не отрывая их от опоры. Частая ошибка — округление поясницы внизу и отрыв пяток."
+        },
+        "en": {
+          "name": "Air Squats",
+          "cue": "Heels planted, chest proud, squat smoothly to at least thigh parallel.",
+          "details": "Stand with feet slightly wider than hip-width, toes angled out, and core lightly braced. Inhale to hinge your hips back and bend your knees until thighs reach parallel while extending your arms forward for balance. Exhale and press evenly through midfoot and heels to stand tall. Avoid rounding your lower back at the bottom or lifting your heels."
+        },
+        "tr": {
+          "name": "Vücut Ağırlığı Squat",
+          "cue": "Topuklar yerde, göğüs açık, uyluklar yere paralel olana dek in.",
+          "details": "Ayakları kalça genişliğinden biraz açık koy, parmak uçlarını hafif dışa çevir ve karnı sık. Nefes alırken kalçayı geriye verip dizleri bükerek uyluklar yere paralel olana kadar alçal, denge için kolları öne uzat. Nefes verirken topukları yerden kaldırmadan yukarı it. Altta beli yuvarlamaktan ve topukları kaldırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "goblet-squat",
+      "pattern": "squat",
+      "family": "legs_knee",
+      "rank": 3,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["weights"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["quads", "glutes", "core"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "generic_strength",
+      "defaultMax": { "low": 10, "medium": 20, "high": 35 },
+      "ladder": { "minus1": "air-squats", "plus1": "bulgarian-split-squat" },
+      "text": {
+        "ru": {
+          "name": "Goblet Squat",
+          "cue": "Держи гантель вертикально у груди, локти стремятся между коленей внизу.",
+          "details": "Возьми гантель или гирю двумя руками перед грудью, прижав локти к корпусу и расправив плечи. На вдохе садись глубоко вниз с прямой спиной, направляя локти к внутренней поверхности коленей и разводя их строго по носкам. На выдохе поднимись через всю стопу, сохраняя корпус вертикальным. Частая ошибка — завал груди вперёд и отведение веса от себя."
+        },
+        "en": {
+          "name": "Goblet Squat",
+          "cue": "Hold weight tight at chest, guide elbows inside knees at the bottom.",
+          "details": "Cup one dumbbell or kettlebell vertically against your sternum with elbows tucked down and shoulders packed. Inhale to squat deep between your heels while guiding your elbows inside your knees to keep them tracking outward. Exhale and drive tall through your midfoot without letting your torso collapse forward. Avoid holding the weight away from your chest."
+        },
+        "tr": {
+          "name": "Goblet Squat",
+          "cue": "Ağırlığı göğsüne yakın tut, altta dirseklerini dizlerinin iç kısmına yönlendir.",
+          "details": "Dambılı veya giryayı göğüs kemiğine dayalı dikey biçimde iki elinle tut, omuzları aşağıda sabitle. Nefes alırken dik sırtla aşağı inip dirseklerinle dizleri hafifçe dışa yönlendir. Nefes verirken gövdeyi öne düşürmeden ayakların ortasından iterek kalk. Ağırlığı göğüsten uzaklaştırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "cossack-squat",
+      "pattern": "squat",
+      "family": "legs_knee",
+      "rank": 4,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["quads", "glutes", "hamstrings"],
+      "antagonistMuscles": ["hip_flexors"],
+      "svgKey": "reverse_lunges",
+      "defaultMax": { "low": 6, "medium": 12, "high": 22 },
+      "ladder": { "minus1": "side-lunges", "plus1": "single-leg-bench-squat" },
+      "text": {
+        "ru": {
+          "name": "Cossack Squat",
+          "cue": "Широкая стойка, глубокий присед на одну ногу, вторая прямая на пятке носком вверх.",
+          "details": "Поставь ноги максимально широко, носки развёрнуты в стороны на 30–45°. На вдохе смести вес и присядь глубоко на одну ногу, сохраняя опорную пятку прижатой, а свободную ногу выпрями, поставив на пятку с носком вверх. На выдохе плавно вытолкни себя в исходную стойку без перекоса спины. Частая ошибка — отрыв пятки опорной ноги и завал колена внутрь."
+        },
+        "en": {
+          "name": "Cossack Squat",
+          "cue": "Wide stance, sit deep onto one heel while keeping the opposite leg straight, toes up.",
+          "details": "Take a very wide stance with toes turned out 30–45°. Inhale as you shift your weight laterally and sink deep onto one side, keeping the working heel flat while extending the opposite leg straight onto its heel with toes pointing up. Exhale and press back smoothly to center. Avoid lifting the working heel or letting the knee collapse inward."
+        },
+        "tr": {
+          "name": "Kazak Squat (Cossack Squat)",
+          "cue": "Geniş duruşta tek bacağa derin in, diğer bacak topuk üzerinde düz ve parmak yukarıda.",
+          "details": "Ayaklarını oldukça geniş açıp parmak uçlarını 30–45° dışa çevir. Nefes alırken ağırlığı tek tarafa kaydırıp çalışan topuğu yerden kaldırmadan derin çök, diğer bacağı topuğu üzerinde düz tutup parmağı yukarı çevir. Nefes verirken kontrollü biçimde merkeze it. Çalışan topuğu kaldırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "single-leg-bench-squat",
+      "pattern": "squat",
+      "family": "legs_knee",
+      "rank": 5,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["quads", "glutes", "core"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "bulgarian_split_squat",
+      "defaultMax": { "low": 4, "medium": 9, "high": 16 },
+      "ladder": { "minus1": "bulgarian-split-squat" },
+      "text": {
+        "ru": {
+          "name": "Single-Leg Bench Squat",
+          "cue": "Присед на одной ноге до касания скамейки или дивана без плюхания, колено по носку.",
+          "details": "Встань на одну ногу перед низкой скамейкой или диваном, свободную ногу вытяни вперёд, руки спереди для баланса. На вдохе медленно опустись на опорной ноге за 3 секунды до лёгкого касания тазом опоры, удерживая колено строго по направлению стопы. На выдохе мощно встань на одной ноге без раскачки. Частая ошибка — падение в нижней точке и завал колена внутрь."
+        },
+        "en": {
+          "name": "Single-Leg Bench Squat",
+          "cue": "Lower on one leg over 3 seconds to tap bench or couch softly, knee over toes.",
+          "details": "Stand on one leg just ahead of a low bench or couch with the free leg extended forward and arms out for balance. Inhale to lower over three seconds until your hips lightly tap the surface without losing tension, keeping your knee aligned over your toes. Exhale and drive straight up on one leg without swinging. Avoid dropping down fast or letting your knee cave in."
+        },
+        "tr": {
+          "name": "Bank Üzerine Tek Bacak Squat",
+          "cue": "Tek bacakla 3 saniyede banka veya koltuğa hafifçe dokun, diz parmak hizasında.",
+          "details": "Alçak bankın veya koltuğun önünde tek ayak üzerinde dur, serbest bacağını ve kollarını denge için öne uzat. Nefes alırken dizini ayak ucuna paralel tutarak 3 saniyede kalçanı desteğe hafifçe değdir. Nefes verirken savrulmadan tek bacakla yukarı it. Son anda hızla oturmaktan ve dizi içe kırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "split-squats",
+      "pattern": "lunge",
+      "family": "legs_knee",
+      "rank": 2,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["quads", "glutes"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "reverse_lunges",
+      "defaultMax": { "low": 10, "medium": 20, "high": 35 },
+      "ladder": { "minus1": "box-squats", "plus1": "reverse-lunges" },
+      "text": {
+        "ru": {
+          "name": "Static Split Squats",
+          "cue": "Длинный шаг на месте, опускайся строго вертикально до угла 90° без касания земли коленом.",
+          "details": "Встань в устойчивый выпад на месте (стопы на ширине таза по рельсам, не в одну линию), задняя нога на носке. На вдохе опускайся вертикально вниз до параллели переднего бедра с землёй, оставляя 3–5 см до пола под задним коленом и вес на передней пятке. На выдохе вытолкнись передней ногой вверх. Частая ошибка — слишком узкая постановка стоп и перенос веса на носок спереди."
+        },
+        "en": {
+          "name": "Static Split Squats",
+          "cue": "Long staggered stance, drop straight down to 90° angles without slamming the back knee.",
+          "details": "Stand in a stable split stance with feet hip-width apart like railroad tracks and the rear heel lifted. Inhale to lower straight down until your front thigh is parallel to the ground, stopping the rear knee a few centimeters above the surface. Exhale and drive up through your front heel. Avoid stepping on a tightrope or shifting forward onto the front toes."
+        },
+        "tr": {
+          "name": "Sabit Split Squat",
+          "cue": "Geniş adım duruşunda dikey alçal, arka dizi yere vurmadan 90° açıya in.",
+          "details": "Ayaklarını tek çizgiye değil kalça genişliğinde iki ayrı ray gibi yerleştirip arka topuğu kaldır. Nefes alırken ön uyluk yere paralel olana dek dikey in ve arka dizi yere değdirmeden dur. Nefes verirken ön topuktan güç alarak yukarı çık. Ayakları tek hizada tutmaktan veya öne eğilmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "bench-step-ups",
+      "pattern": "lunge",
+      "family": "legs_knee",
+      "rank": 3,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["quads", "glutes"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "bulgarian_split_squat",
+      "defaultMax": { "low": 10, "medium": 20, "high": 32 },
+      "ladder": { "minus1": "split-squats", "plus1": "bulgarian-split-squat" },
+      "text": {
+        "ru": {
+          "name": "Low-Bench Step-Ups",
+          "cue": "Вся стопа на скамейке, поднимайся пяткой без отталкивания нижней ногой.",
+          "details": "Поставь одну стопу полностью на низкую скамейку или прочную ступеньку, слегка наклони ровный корпус вперёд. На выдохе вытолкни себя вверх усилием верхней ноги (нижний носок тяни на себя, не толкаясь от земли). На вдохе опускайся плавно за 2–3 секунды, удерживая колено от завала внутрь. Частая ошибка — прыжковый толчок задней ногой и быстрый спуск вниз."
+        },
+        "en": {
+          "name": "Low-Bench Step-Ups",
+          "cue": "Full foot on bench, drive up through top heel without pushing off the bottom leg.",
+          "details": "Plant your entire working foot firmly on a low bench with a slight forward lean of your flat torso. Exhale to step up using only the top leg while keeping your bottom toes pulled up to prevent pushing off the ground. Inhale to lower smoothly over 2–3 seconds without letting your knee collapse inward. Avoid bouncing off the bottom foot."
+        },
+        "tr": {
+          "name": "Alçak Banka Çıkış (Step-Up)",
+          "cue": "Tüm ayak bankta, alttaki ayakla itmeden sadece üst bacağın topuğuyla yüksel.",
+          "details": "Çalışan ayağını tam olarak alçak bankın üzerine yerleştir ve düz gövdeni hafifçe öne eğ. Nefes verirken alttaki ayak parmağını yukarı çekerek yerden sekmeden sadece üst bacakla yukarı çık. Nefes alırken dizi içe kaçırmadan 2–3 saniyede yavaşça in. Alttaki bacakla itiş yapmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "side-lunges",
+      "pattern": "lunge",
+      "family": "legs_knee",
+      "rank": 3,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["quads", "glutes", "hamstrings"],
+      "antagonistMuscles": ["hip_flexors"],
+      "svgKey": "reverse_lunges",
+      "defaultMax": { "low": 10, "medium": 18, "high": 30 },
+      "ladder": { "minus1": "split-squats", "plus1": "cossack-squat" },
+      "text": {
+        "ru": {
+          "name": "Lateral Lunges",
+          "cue": "Широкий шаг в сторону с отводом таза назад, опорная стопа полностью на полу.",
+          "details": "Встань прямо, стопы вместе. На вдохе сделай контролируемый широкий шаг в сторону и сразу отведи таз назад, сгибая шаговую ногу до параллели бедра, пока вторая остаётся прямой и прижатой к опоре. На выдохе мощно оттолкнись согнутой ногой обратно в центр. Частая ошибка — вынос колена далеко вперёд вместо отведения таза назад."
+        },
+        "en": {
+          "name": "Lateral Lunges",
+          "cue": "Wide step sideways while sitting hips back, keep both feet flat on the surface.",
+          "details": "Stand tall with feet together and core lightly braced. Inhale to step wide to the side while sitting your hips straight back over the stepping heel, keeping the trailing leg straight and flat. Exhale to drive powerfully back to the starting stance. Avoid shifting your knee forward over the toes without hinging your hips back."
+        },
+        "tr": {
+          "name": "Yana Hamle (Lateral Lunge)",
+          "cue": "Yana geniş adım atarken kalçayı geriye oturt, her iki ayak da yere tam bassın.",
+          "details": "Dik dur ve ayaklarını birleştir. Nefes alırken yana geniş bir adım at ve kalçayı geriye vererek adım attığın bacağa çökerken diğer bacağı düz tut. Nefes verirken bükülü bacaktan iterek merkeze dön. Kalçayı geriye vermeden dizi öne taşırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "skater-squats",
+      "pattern": "lunge",
+      "family": "legs_knee",
+      "rank": 5,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["floor_contact"],
+      "stability": "unilateral",
+      "targetMuscles": ["quads", "glutes", "core"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "bulgarian_split_squat",
+      "defaultMax": { "low": 4, "medium": 8, "high": 16 },
+      "ladder": { "minus1": "bulgarian-split-squat" },
+      "text": {
+        "ru": {
+          "name": "Skater Squats",
+          "cue": "Свободная нога согнута назад на весу, мягкое касание коленом коврика без удара.",
+          "details": "Встань на одну ногу, согни свободную ногу назад за спину, руки вытяни вперёд для противовеса. На вдохе подконтрольно приседай на опорной ноге, пока задняя голень или колено мягко не коснётся коврика (можно подложить подушку дивана для уменьшения глубины). На выдохе вытолкни себя вверх, не опуская свободную ногу на пол. Частая ошибка — жёсткий удар коленом и завал корпуса."
+        },
+        "en": {
+          "name": "Skater Squats",
+          "cue": "Hold rear foot off the floor behind you, lightly kiss the mat with the back knee.",
+          "details": "Balance on one leg with your free knee bent behind you and arms extended forward for counterbalance. Inhale to squat under strict control until the rear knee or shin lightly kisses your mat without resting weight. Exhale and drive upright on the standing leg. Avoid slamming the back knee down or twisting your hips."
+        },
+        "tr": {
+          "name": "Paten Squat (Skater Squat)",
+          "cue": "Arka ayağı havada geride tut, arka dizle mata çarpmadan hafifçe dokun ve kalk.",
+          "details": "Tek bacak üzerinde dengelen, diğer dizini arkada bükülü tutup kollarını denge için öne uzat. Nefes alırken arka diz mata yumuşakça dokunana kadar kontrollü çök. Nefes verirken ağırlığı arka ayağa vermeden tek bacakla yüksel. Dizi yere sert vurmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "suspension-pistol-squat",
+      "pattern": "lunge",
+      "family": "legs_knee",
+      "rank": 5,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor"],
+      "equipment": ["suspension"],
+      "posture": ["standing"],
+      "stability": "unstable",
+      "targetMuscles": ["quads", "glutes", "core"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "bulgarian_split_squat",
+      "defaultMax": { "low": 5, "medium": 10, "high": 18 },
+      "ladder": { "minus1": "bulgarian-split-squat" },
+      "text": {
+        "ru": {
+          "name": "Suspension Assisted Pistol Squat",
+          "cue": "Держись за петли лишь для баланса, приседай на одной ноге до конца с прямой спиной.",
+          "details": "Возьмись за рукояти подвесных петель перед собой, подними прямую свободную ногу вперёд. На вдохе плавно опустись вниз на опорной пятке, используя стропы только для лёгкой стабилизации без подтягивания себя руками. На выдохе мощно вытолкни корпус вверх ногой. Частая ошибка — заменять работу ног тягой руками за петли."
+        },
+        "en": {
+          "name": "Suspension Assisted Pistol Squat",
+          "cue": "Use straps strictly for light balance, squat full depth on one leg with flat back.",
+          "details": "Hold the suspension handles lightly in front of you and extend one leg straight forward. Inhale to descend smoothly onto your standing heel to full comfortable depth, keeping arms relaxed so your leg does the work. Exhale and press straight back up through your midfoot. Avoid pulling yourself upright with your arms."
+        },
+        "tr": {
+          "name": "Askı Destekli Tek Bacak Pistol Squat",
+          "cue": "Kayışları sadece hafif denge için tut, kollarla çekmeden tek bacakla tam çök.",
+          "details": "Askı kayışlarını göğüs önünde hafifçe tut ve bir bacağını düz şekilde öne uzat. Nefes alırken kollarla çekmeden, ağırlığı topukta tutarak tek bacakla derine in. Nefes verirken yalnızca bacak gücüyle yukarı it. Kendini kollarınla yukarı çekmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "glute-bridge",
+      "pattern": "hinge",
+      "family": "hinge",
+      "rank": 1,
+      "metric": "reps",
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["floor_contact"],
+      "stability": "bilateral",
+      "targetMuscles": ["glutes", "hamstrings"],
+      "antagonistMuscles": ["quads", "hip_flexors"],
+      "svgKey": "glute_bridge",
+      "defaultMax": { "low": 15, "medium": 30, "high": 50 },
+      "ladder": { "plus1": "single-leg-glute-bridge" },
+      "text": {
+        "ru": {
+          "name": "Glute Bridge",
+          "cue": "Толкай пол пятками, пауза 2 сек вверху со сжатием ягодиц, поясница без прогиба.",
+          "details": "Ляг спиной на коврик, согни колени и поставь пятки ближе к тазу на ширине бёдер, поясница слегка прижата. На выдохе надави пятками и подними таз до прямой линии от коленей до плеч, фиксируя паузу 2 секунды за счёт сжатия ягодиц. На вдохе плавно опустись. Частая ошибка — переразгибание поясницы выше горизонтали."
+        },
+        "en": {
+          "name": "Glute Bridge",
+          "cue": "Drive through your heels, pause 2 seconds squeezing glutes, zero lower-back arch.",
+          "details": "Lie on your back on the mat with knees bent, heels hip-width apart near your glutes, and ribs tucked down. Exhale to drive through your heels and raise your hips into a straight line from knees to shoulders, pausing two seconds to squeeze your glutes. Inhale smoothly back down. Avoid hyperextending your lower back above the line."
+        },
+        "tr": {
+          "name": "Kalça Köprüsü (Glute Bridge)",
+          "cue": "Topuklarla yere bas, tepede kalçayı sıkarak 2 saniye bekle, beli bükme.",
+          "details": "Matta sırtüstü yat, dizleri büküp ayakları kalçaya yakın ve kalça genişliğinde yerleştir. Nefes verirken topuklardan iterek dizlerden omuzlara düz bir hat oluşana dek kalçayı kaldır ve tepede 2 saniye kalçayı sık. Nefes alırken yavaşça indir. Beli aşırı yukarı büküp zorlamaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "band-good-morning",
+      "pattern": "hinge",
+      "family": "hinge",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bands"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["hamstrings", "glutes", "lower_back"],
+      "antagonistMuscles": ["quads", "core"],
+      "svgKey": "romanian_deadlift",
+      "defaultMax": { "low": 12, "medium": 24, "high": 40 },
+      "ladder": { "minus1": "glute-bridge", "plus1": "romanian-deadlift" },
+      "text": {
+        "ru": {
+          "name": "Band Good Morning",
+          "cue": "Резинка под стопами и на шее/плечах, отводи таз назад с идеально ровной спиной.",
+          "details": "Встань двумя стопами на нижний край резинки, а верхний накинь сзади на трапеции (не на шейный позвонок), колени чуть согнуты и зафиксированы. На вдохе отводи таз строго назад, наклоняя ровный корпус до натяжения бицепса бедра. На выдохе мощно верни таз вперёд сжатием ягодиц. Частая ошибка — округление спины и присед вместо наклона таза."
+        },
+        "en": {
+          "name": "Band Good Morning",
+          "cue": "Band under feet and across upper back, push hips straight back with a flat spine.",
+          "details": "Stand with both feet on a resistance band and loop the top across your upper traps (avoiding your neck) with knees softly unlocked. Inhale to hinge your hips straight back until your hamstrings feel a firm stretch while keeping your spine neutral. Exhale and snap your hips forward with your glutes. Avoid rounding your back or squatting."
+        },
+        "tr": {
+          "name": "Bantla Good Morning",
+          "cue": "Bant ayak altında ve üst sırtta, düz omurga ile kalçayı geriye it.",
+          "details": "İki ayağınla bandın alt ucuna bas, üst ucunu boynuna değil üst sırtına yerleştir ve dizleri hafif kilitle. Nefes alırken sırtını düz tutarak kalçanı geriye it ve arka bacakta gerginlik hissedene dek öne eğil. Nefes verirken kalçanı sıkarak doğrul. Sırtı yuvarlamaktan ve dizleri fazla büküp çömelmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "db-romanian-deadlift",
+      "pattern": "hinge",
+      "family": "hinge",
+      "rank": 3,
+      "metric": "reps",
+      "environments": ["outdoor", "home"],
+      "equipment": ["weights"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["hamstrings", "glutes", "lower_back"],
+      "antagonistMuscles": ["quads", "hip_flexors"],
+      "svgKey": "romanian_deadlift",
+      "defaultMax": { "low": 10, "medium": 20, "high": 32 },
+      "ladder": { "minus1": "band-good-morning", "plus1": "single-leg-rdl" },
+      "text": {
+        "ru": {
+          "name": "Dumbbell Romanian Deadlift",
+          "cue": "Снаряд скользит вплотную к бёдрам и голеням, отвод таза назад с нейтральной поясницей.",
+          "details": "Возьми гантель двумя руками перед бёдрами (или по краям), стопы на ширине таза, лопатки собраны, колени мягкие. На вдохе отводи таз строго назад, ведя вес вплотную вдоль ног до середины голени при полностью нейтральной спине. На выдохе вернись вверх за счёт ягодиц. Частая ошибка — увод снаряда вперёд от ног и округление грудного отдела."
+        },
+        "en": {
+          "name": "Dumbbell Romanian Deadlift",
+          "cue": "Keep weight brushing along thighs and shins, hinge hips back with a neutral spine.",
+          "details": "Hold a dumbbell horizontally in front of your thighs with feet hip-width apart, shoulder blades packed, and knees softly bent. Inhale to push your hips back while grazing the weight down along your legs to mid-shin depth without rounding. Exhale and squeeze your glutes to stand tall. Avoid letting the weight drift away from your legs."
+        },
+        "tr": {
+          "name": "Dambıl Romen Deadlift",
+          "cue": "Ağırlığı bacaklara sürterek indir, nötr sırtla kalçayı geriye it.",
+          "details": "Dambılı iki elinle uyluklarının önünde tut, ayakları kalça genişliğinde aç ve kürek kemiklerini sabitle. Nefes alırken kalçanı geriye itip ağırlığı bacaklarına yakın tutarak kaval kemiğinin ortasına dek in. Nefes verirken kalçanı sıkarak doğrul. Ağırlığı bacaklardan uzaklaştırmaktan ve sırtı bükmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "single-leg-rdl",
+      "pattern": "hinge",
+      "family": "hinge",
+      "rank": 4,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["hamstrings", "glutes", "core"],
+      "antagonistMuscles": ["quads", "hip_flexors"],
+      "svgKey": "romanian_deadlift",
+      "defaultMax": { "low": 8, "medium": 16, "high": 28 },
+      "ladder": { "minus1": "romanian-deadlift", "plus1": "nordic-curl-negatives" },
+      "text": {
+        "ru": {
+          "name": "Single-Leg Romanian Deadlift",
+          "cue": "Таз закрыт параллельно земле, свободная нога и корпус двигаются единой прямой «качелью».",
+          "details": "Встань на слегка согнутую опорную ногу, таз ровный. На вдохе наклоняй ровный корпус вперёд, одновременно поднимая прямую заднюю ногу до одной горизонтальной линии (при необходимости чуть придерживайся пальцем за стенку или диван). На выдохе вернись в стойку силой ягодицы опорной ноги. Частая ошибка — раскрытие таза свободной ноги вверх в сторону."
+        },
+        "en": {
+          "name": "Single-Leg Romanian Deadlift",
+          "cue": "Keep pelvis square to the ground, move torso and back leg together as one straight lever.",
+          "details": "Balance on a softly unlocked standing leg with hips level and core braced. Inhale to hinge forward while extending your back leg straight behind you like a seesaw, keeping both hip bones pointing downward. Exhale and drive your hips forward through your standing glute to return. Avoid opening your lifted hip upward to the side."
+        },
+        "tr": {
+          "name": "Tek Bacak Romen Deadlift",
+          "cue": "Kalça kemikleri yere paralel kalsın, gövde ve arka bacak tek bir düz hat gibi hareket etsin.",
+          "details": "Hafif bükülü tek bacak üzerinde dengelen, kalçayı düz tut. Nefes alırken sırtını bozmadan öne eğil ve arka bacağını gövdeyle aynı hizada geriye uzat; gerekirse bir parmakla duvardan hafif destek al. Nefes verirken basan kalçanın gücüyle dikel. Kalkan bacağın kalçasını yana açmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "nordic-curl-negatives",
+      "pattern": "hinge",
+      "family": "hinge",
+      "rank": 5,
+      "metric": "reps",
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["floor_contact"],
+      "stability": "bilateral",
+      "targetMuscles": ["hamstrings", "glutes", "core"],
+      "antagonistMuscles": ["quads"],
+      "svgKey": "romanian_deadlift",
+      "defaultMax": { "low": 3, "medium": 6, "high": 12 },
+      "ladder": { "minus1": "single-leg-rdl" },
+      "text": {
+        "ru": {
+          "name": "Nordic Hamstring Negatives",
+          "cue": "Пятки зафиксированы под диваном, корпус прямой от колен, тормози падение задней поверхностью.",
+          "details": "Встань коленями на сложенный коврик, надёжно зацепив пятки под тяжёлым диваном или опорой, таз полностью выпрямлен. Напряги ягодицы и пресс и на медленном вдохе наклоняй ровное тело вперёд как можно медленнее, тормозя бицепсом бедра. В конце мягко прими себя на ладони и оттолкнись обратно вверх. Частая ошибка — сгибание в тазобедренном суставе при падении."
+        },
+        "en": {
+          "name": "Nordic Hamstring Negatives",
+          "cue": "Anchor heels under couch, keep hips extended straight, resist the forward lean slowly.",
+          "details": "Kneel on a padded mat with your ankles wedged securely under a heavy couch edge and hips fully extended. Squeeze your glutes and abs tight, then inhale as you lower your straight body forward as slowly as possible using your hamstrings as brakes. Catch yourself smoothly on your hands and lightly push back up. Avoid folding at the hips."
+        },
+        "tr": {
+          "name": "Nordik Arka Bacak Negatif",
+          "cue": "Topuklar koltuk altında sabit, kalça düz, öne düşüşü arka bacakla olabildiğince yavaşlat.",
+          "details": "Dizlerinin altına katlı mat koy ve bileklerini ağır bir koltuğun altına sabitleyip kalçayı düz tut. Kalça ve karnı sıkarak nefes alırken gövdeni düz bir parça halinde arka bacak freniyle mümkün olduğunca yavaş öne indir. Altta ellerinle yumuşakça yakalayıp kendini başlangıca it. Kalçadan bükülmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "dead-bug",
+      "pattern": "core",
+      "family": "core_antiextension",
+      "rank": 1,
+      "metric": "reps",
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["floor_contact"],
+      "stability": "bilateral",
+      "targetMuscles": ["core", "hip_flexors"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "side_plank",
+      "defaultMax": { "low": 10, "medium": 20, "high": 36 },
+      "ladder": { "plus1": "high-plank" },
+      "text": {
+        "ru": {
+          "name": "Dead Bug",
+          "cue": "Поясница намертво прижата к коврику, опускай разноимённые руку и ногу на длинном выдохе.",
+          "details": "Ляг на спину, подними прямые руки к потолку и согни ноги под 90° в коленях и тазу, плотно прижав поясницу к коврику. На долгом выдохе медленно вытяни правую ногу почти до пола и уведи левую руку за голову, не допуская просвета под поясницей. На вдохе вернись и смени диагональ. Частая ошибка — отрыв поясницы при опускании ноги."
+        },
+        "en": {
+          "name": "Dead Bug",
+          "cue": "Press lower back flat into the mat, extend opposite arm and leg on a slow exhale.",
+          "details": "Lie on your back with arms reaching straight up and knees bent at 90° over your hips while pressing your lower back firmly into the mat. Exhale slowly as you extend one leg just above the floor and reach the opposite arm overhead without letting your lower back arch off the mat. Inhale to return and switch sides. Avoid letting your ribs flare."
+        },
+        "tr": {
+          "name": "Dead Bug (Ölü Böcek)",
+          "cue": "Belini mata tamamen yapıştır, yavaş nefes verirken çapraz kol ve bacağı uzat.",
+          "details": "Sırtüstü yat, kolları tavana kaldırıp dizleri kalça hizasında 90° bük ve bel boşluğunu tamamen kapat. Yavaşça nefes verirken beli yerden kaldırmadan bir bacağı yere yakın uzatıp karşı kolu başının gerisine götür. Nefes alırken merkeze dönüp taraf değiştir. Bacağı indirirken belin açılmasından kaçın."
+        }
+      }
+    },
+    {
+      "id": "bird-dog",
+      "pattern": "core",
+      "family": "core_antiextension",
+      "rank": 1,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["floor_contact"],
+      "stability": "unilateral",
+      "targetMuscles": ["core", "lower_back", "glutes"],
+      "antagonistMuscles": ["hip_flexors"],
+      "svgKey": "side_plank",
+      "defaultMax": { "low": 10, "medium": 18, "high": 30 },
+      "ladder": { "plus1": "high-plank" },
+      "text": {
+        "ru": {
+          "name": "Bird-Dog",
+          "cue": "Стоя на четвереньках, тяни разноимённые руку и ногу в горизонт без перекоса таза.",
+          "details": "Встань в упор на ладони под плечами и колени под тазом с нейтральной спиной. На выдохе плавно вытяни руку вперёд и противоположную ногу назад строго до горизонтальной линии, не прогибая поясницу и не задирая ногу выше таза; зафиксируй паузу на 1 секунду. На вдохе верни и повтори. Частая ошибка — перекос таза в сторону и запрокидывание головы."
+        },
+        "en": {
+          "name": "Bird-Dog",
+          "cue": "From all fours, reach opposite arm and leg straight out to horizontal with level hips.",
+          "details": "Set up on hands and knees with wrists under shoulders, knees under hips, and a neutral spine. Exhale to reach one arm forward and the opposite leg straight back to hip height, pausing one second without arching your lower back or rotating your pelvis. Inhale to return smoothly. Avoid kicking the heel above hip height or twisting."
+        },
+        "tr": {
+          "name": "Bird-Dog",
+          "cue": "Dört ayak pozisyonunda kalçayı hiç döndürmeden çapraz kol ve bacağı yatay uzat.",
+          "details": "Eller omuzların, dizler kalçanın altında ve omurga nötr olacak şekilde pozisyon al. Nefes verirken bir kolunu öne, karşı bacağını ise kalça hizasını geçmeden geriye uzatıp 1 saniye bekle. Nefes alırken kontrollü dön. Topuğu çok yukarı savurmaktan ve kalçayı yana devirmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "high-plank",
+      "pattern": "core",
+      "family": "core_antiextension",
+      "rank": 2,
+      "metric": "seconds",
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["hands_only"],
+      "stability": "bilateral",
+      "targetMuscles": ["core", "front_delts", "glutes"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "side_plank",
+      "defaultMax": { "low": 25, "medium": 50, "high": 90 },
+      "ladder": { "minus1": "dead-bug", "plus1": "hanging-knee-raises" },
+      "text": {
+        "ru": {
+          "name": "High Straight-Arm Plank",
+          "cue": "Упор на прямые руки на скамейке или коврике, ягодицы и пресс сжаты, дыши ровно.",
+          "details": "Поставь ладони под плечи на коврик или сиденье низкой скамейки (на площадке без касания земли локтями), вытяни ноги на носки. Подкрути таз слегка под себя, напряги ягодицы и пресс, активно выталкивая лопатки вверх от опоры. Дыши ровно и не задерживай вдох до конца таймера. Частая ошибка — проваливание поясницы вниз и сведение лопаток."
+        },
+        "en": {
+          "name": "High Straight-Arm Plank",
+          "cue": "Straight-arm support on bench or mat, tuck tailbone slightly, squeeze glutes and abs.",
+          "details": "Place your hands directly beneath your shoulders on a mat or low bench with feet back on your toes and elbows locked softly. Slightly tuck your pelvis, squeeze glutes and abs, and push the support away gently through your shoulder blades. Breathe evenly throughout the hold. Avoid letting your lower back sag or your shoulder blades collapse together."
+        },
+        "tr": {
+          "name": "Düz Kol Plank",
+          "cue": "Eller bankta veya matta düz, kalça ve karın sıkı, düzenli nefesle pozisyonu koru.",
+          "details": "Ellerini omuzlarının tam altına yerleştir (dışarıda alçak bankta, evde matta), ayak parmaklarına basıp dirsekleri dik tut. Kalçanı hafifçe içeri toplayıp karın ve kalçayı sık, omuzlarla desteği hafifçe it. Süre boyunca düzenli nefes al. Belin sarkmasından ve kürek kemiklerinin çökmesinden kaçın."
+        }
+      }
+    },
+    {
+      "id": "hanging-knee-raises",
+      "pattern": "core",
+      "family": "core_antiextension",
+      "rank": 3,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["core", "hip_flexors", "forearms"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "dead_hang",
+      "defaultMax": { "low": 8, "medium": 16, "high": 28 },
+      "ladder": { "minus1": "high-plank", "plus1": "hanging-leg-raises" },
+      "text": {
+        "ru": {
+          "name": "Hanging Knee Raises",
+          "cue": "Подкручивай таз вверх к груди на выдохе, опускайся без раскачки на турнике или стенке.",
+          "details": "Повисни на турнике прямым хватом (или у шведской стенки, прижав спину к перекладинам), плечи слегка оттянуты от ушей. На выдохе подними колени выше пояса, обязательно подкручивая таз вверх, чтобы работал именно пресс. На вдохе плавно опусти ноги до контроля. Частая ошибка — подъём одних бёдер с раскачкой без скручивания таза."
+        },
+        "en": {
+          "name": "Hanging Knee Raises",
+          "cue": "Curl your pelvis up toward your chest on the exhale, lower with zero bar swinging.",
+          "details": "Hang from a pull-up bar (or against stall bars for extra stability) with shoulders slightly engaged away from your ears. Exhale to lift your knees past hip height while actively curling your tailbone upward so your abs drive the motion. Inhale to lower smoothly without swinging. Avoid stopping at hip level or using momentum."
+        },
+        "tr": {
+          "name": "Asılı Diz Çekişi",
+          "cue": "Nefes verirken dizlerle birlikte kalçayı da göğse doğru kıvır, sallanmadan indir.",
+          "details": "Barfiks barına asıl veya sırtını duvar barına yaslayıp omuzlarını hafif aktif tut. Nefes verirken yalnızca bacakları değil, kalçanı da yukarı kıvırarak dizleri göğüs hizasına çek. Nefes alırken sallanmaya izin vermeden yavaşça indir. İvme kullanmaktan ve kalçayı kıvırmayı unutmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "hollow-body-hold",
+      "pattern": "core",
+      "family": "core_antiextension",
+      "rank": 4,
+      "metric": "seconds",
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["floor_contact"],
+      "stability": "bilateral",
+      "targetMuscles": ["core", "hip_flexors"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "side_plank",
+      "defaultMax": { "low": 15, "medium": 35, "high": 60 },
+      "ladder": { "minus1": "high-plank", "plus1": "l-sit-hold" },
+      "text": {
+        "ru": {
+          "name": "Hollow Body Hold",
+          "cue": "Лопатки и прямые ноги на весу, поясница плотно вжата в коврик — форма «лодочки».",
+          "details": "Ляг на спину на коврик, втяни живот и плотно прижми поясницу к полу. Оторви лопатки и вытянутые вместе ноги на 15–20 см от пола, вытягивая руки вдоль корпуса или за головой (подбирай угол ног так, чтобы поясница не отрывалась). Дыши короткими ровными циклами. Частая ошибка — просвет под поясницей при слишком низких ногах."
+        },
+        "en": {
+          "name": "Hollow Body Hold",
+          "cue": "Shoulder blades and straight legs hovering, lower back glued firmly to the mat.",
+          "details": "Lie supine on your mat and press your lower back flush into the floor by drawing your ribs toward your pelvis. Lift your shoulder blades and straight legs together into a shallow banana shape, adjusting leg height so your lower back never peels off the mat. Keep breathing smoothly throughout the hold. Avoid lowering your legs past the point of lower-back control."
+        },
+        "tr": {
+          "name": "Hollow Body Tutuşu",
+          "cue": "Kürek kemikleri ve düz bacaklar havada, bel mata sımsıkı yapışık kalsın.",
+          "details": "Mat üzerine sırtüstü yat ve kaburgalarını kalçana yaklaştırıp belini yere tam bastır. Kürek kemiklerini ve bitişik düz bacaklarını yerden hafifçe kaldırarak muz şekli oluştur; bacak yüksekliğini belin yerden açılmayacağı açıda tut. Süre boyunca akıcı nefes al. Bacakları bel kontrolünü kaybedecek kadar indirmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "suspension-fallout",
+      "pattern": "core",
+      "family": "core_antiextension",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["suspension"],
+      "posture": ["standing"],
+      "stability": "unstable",
+      "targetMuscles": ["core", "lats", "front_delts"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 6, "medium": 12, "high": 20 },
+      "ladder": { "minus1": "high-plank", "plus1": "l-sit-hold" },
+      "text": {
+        "ru": {
+          "name": "Standing Suspension Fallout",
+          "cue": "Стоя на ногах, руки в петлях вытягивай вперёд, сохраняя жёсткий пресс без прогиба.",
+          "details": "Встань лицом от опоры на носках, держа рукояти подвесных петель на уровне груди, тело в прямой наклонной планке. На вдохе подконтрольно вытяни прямые руки вперёд-вверх над головой, ощущая мощное растяжение и работу пресса без прогиба поясницы. На выдохе верни руки к груди. Частая ошибка — проваливание в пояснице при выведении рук вперёд."
+        },
+        "en": {
+          "name": "Standing Suspension Fallout",
+          "cue": "Standing plank in straps, extend arms overhead while bracing abs with zero spine sag.",
+          "details": "Stand on your toes facing away from the anchor with handles held in front of your shoulders in an angled plank. Inhale to reach your straight arms forward overhead while squeezing glutes and abs hard to prevent your lower back from arching. Exhale to pull your arms back under your shoulders. Avoid letting your hips drop as your arms reach out."
+        },
+        "tr": {
+          "name": "Ayakta Askı Kayışı İleri Uzatma (Fallout)",
+          "cue": "Ayakta eğik plank pozisyonunda kolları baş önüne uzatırken beli hiç çukurlaştırma.",
+          "details": "Yüzün askı noktasına ters yönde, ayak parmakların üzerinde durarak kayışları göğüs önünde tut ve eğik plank kur. Nefes alırken karın ve kalçayı sertçe sıkıp düz kolları başın üzerine doğru uzat. Nefes verirken kolları kontrollü biçimde omuz altına geri çek. Kollar uzarken belin aşağı sarkmasından kaçın."
+        }
+      }
+    },
+    {
+      "id": "hanging-leg-raises",
+      "pattern": "core",
+      "family": "core_antiextension",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["core", "hip_flexors", "forearms"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "dead_hang",
+      "defaultMax": { "low": 5, "medium": 10, "high": 18 },
+      "ladder": { "minus1": "hanging-knee-raises", "plus1": "l-sit-hold" },
+      "text": {
+        "ru": {
+          "name": "Hanging Straight-Leg Raises",
+          "cue": "Прямые ноги в висе, поднимай стопы до перекладины на выдохе без маха спиной.",
+          "details": "Повисни на турнике (или спиной к шведской стенке) с выпрямленными в коленях ногами и активными плечами. На выдохе плавно подними прямые ноги к горизонту или выше к перекладине, подкручивая таз вверх. На вдохе медленно опусти ноги за 2 секунды без раскачки. Частая ошибка — бросание ног вниз с инерцией и сгибание колен."
+        },
+        "en": {
+          "name": "Hanging Straight-Leg Raises",
+          "cue": "Straight legs in a controlled hang, lift toes up on the exhale with zero swinging.",
+          "details": "Hang from a pull-up bar (or supported against stall bars) with knees locked straight and shoulders lightly packed. Exhale to raise your straight legs smoothly to hip height or higher toward the bar by curling your pelvis upward. Inhale to lower over two seconds under full control. Avoid dropping your legs fast or bending your knees."
+        },
+        "tr": {
+          "name": "Asılı Düz Bacak Kaldırma",
+          "cue": "Dizler düz asılı pozisyonda, sallanmadan nefes vererek bacakları yukarı kaldır.",
+          "details": "Barfiks barına asıl ve omuzlarını hafifçe aktif tutup bacaklarını dizlerden düzleştir. Nefes verirken kalçayı da yukarı kıvırarak düz bacakları yatay hizaya veya bara doğru kontrollü kaldır. Nefes alırken 2 saniyede sallanmadan indir. Bacakları hızla aşağı bırakmaktan ve dizleri bükmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "l-sit-hold",
+      "pattern": "core",
+      "family": "core_antiextension",
+      "rank": 5,
+      "metric": "seconds",
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["core", "hip_flexors", "triceps", "quads"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "dips",
+      "defaultMax": { "low": 10, "medium": 20, "high": 35 },
+      "ladder": { "minus1": "hanging-leg-raises" },
+      "text": {
+        "ru": {
+          "name": "Parallel Bar L-Sit Hold",
+          "cue": "Упор на брусьях с опущенными плечами, удерживай прямые ноги строго горизонтально.",
+          "details": "Встань в жёсткий упор на брусья, выпрями руки и сильно опусти плечи вниз от ушей. Напряги пресс и квадрицепсы, подняв прямые ноги вместе строго до угла 90° к корпусу (носки вытянуты). Дыши ровно мелкими вдохами без проваливания между плеч. Частая ошибка — сгорбленные к ушам плечи и опускание пяток ниже горизонтали."
+        },
+        "en": {
+          "name": "Parallel Bar L-Sit Hold",
+          "cue": "Strong dip-bar support with shoulders pressed down, hold straight legs horizontal.",
+          "details": "Press into a straight-arm support on parallel bars, driving your shoulders firmly down away from your ears. Brace your abs and squeeze your quads to hold both straight legs horizontal at a 90° angle to your torso. Breathe in steady shallow cycles throughout the hold. Avoid shrugging into your shoulders or letting your heels dip below horizontal."
+        },
+        "tr": {
+          "name": "Paralel Barda L-Sit Tutuşu",
+          "cue": "Paralel barda omuzları aşağı bastır, düz bacakları yere tam paralel tut.",
+          "details": "Paralel barlara düz kollarla bas ve omuzlarını kulaklarından olabildiğince aşağı it. Karın ve ön bacak kaslarını sıkarak bitişik düz bacaklarını gövdene 90° açıyla yatayda sabitle. Tutuş boyunca kontrollü nefes al. Omuzların içine çökmekten ve topukları düşürmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "suitcase-march",
+      "pattern": "core",
+      "family": "core_lateral",
+      "rank": 3,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["weights"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["obliques", "core", "forearms", "glutes"],
+      "antagonistMuscles": ["obliques"],
+      "svgKey": "side_plank",
+      "defaultMax": { "low": 12, "medium": 24, "high": 40 },
+      "ladder": { "plus1": "copenhagen-plank-short" },
+      "text": {
+        "ru": {
+          "name": "Single-Arm Suitcase March",
+          "cue": "Гантель в одной руке как чемодан, шагай на месте высоко с абсолютно ровными плечами.",
+          "details": "Возьми гантель в одну руку чуть в стороне от бедра, вытяни макушку вверх и выровняй оба плеча и таз. Медленно поочерёдно поднимай колени до высоты пояса, фиксируя верх на 1 секунду и сопротивляясь любому наклону корпуса в сторону веса. Дыши ровно. Частая ошибка — перекос плеча вниз к гантели и торопливый бег на месте."
+        },
+        "en": {
+          "name": "Single-Arm Suitcase March",
+          "cue": "Hold dumbbell in one hand at your side, march steadily with completely level shoulders.",
+          "details": "Hold a dumbbell in one hand slightly clear of your hip while keeping your spine tall and both shoulders completely level. March slowly in place by lifting each knee to hip height for a one-second pause without leaning toward or away from the weight. Breathe evenly throughout. Avoid dipping your loaded shoulder or rushing the steps."
+        },
+        "tr": {
+          "name": "Tek El Bavul Yürüyüşü (Suitcase March)",
+          "cue": "Dambıl tek elde yanda, omuzları ve kalçayı hiç eğmeden yerinde kontrollü diz çek.",
+          "details": "Dambılı bir elinde kalçandan hafif açıkta tut, başını yukarı uzatıp iki omzunu eşit hizada sabitle. Yükün olduğu tarafa veya tersine hiç yatmadan dizlerini sırayla kalça hizasına kaldırıp 1 saniye bekle. Düzenli nefes al. Ağırlık taşıyan omzu düşürmekten ve acele etmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "copenhagen-plank-short",
+      "pattern": "core",
+      "family": "core_lateral",
+      "rank": 4,
+      "metric": "seconds",
+      "isPaired": true,
+      "environments": ["home"],
+      "equipment": ["bodyweight"],
+      "posture": ["floor_contact"],
+      "stability": "unilateral",
+      "targetMuscles": ["obliques", "core", "quads"],
+      "antagonistMuscles": ["obliques"],
+      "svgKey": "side_plank",
+      "defaultMax": { "low": 15, "medium": 30, "high": 50 },
+      "ladder": { "minus1": "side-plank", "plus1": "swedish-wall-side-hold" },
+      "text": {
+        "ru": {
+          "name": "Short-Lever Copenhagen Plank",
+          "cue": "Боковой упор на предплечье, верхнее колено на диване, удерживай ровную линию таза.",
+          "details": "Встань в боковую планку на предплечье у дивана: локоть строго под плечом, верхнюю согнутую ногу положи коленом и голенью на край дивана, нижнюю ногу приподними с коврика. Вытолкни таз в одну прямую линию и держи без скручивания. Дыши ровно. Частая ошибка — провисание таза вниз и завал верхнего плеча вперёд."
+        },
+        "en": {
+          "name": "Short-Lever Copenhagen Plank",
+          "cue": "Side forearm plank with top bent knee resting on couch, hold a crisp straight hip line.",
+          "details": "Set into a side plank on your forearm beside a couch, elbow directly under your shoulder, resting the inside of your bent top knee on the cushion while lifting the bottom leg off the mat. Press your hips into a straight horizontal line without twisting. Breathe steadily throughout the hold. Avoid letting your hips drop or your top shoulder roll forward."
+        },
+        "tr": {
+          "name": "Kısa Kol Kopenhag Plank",
+          "cue": "Yan ön kol plankta üst diz koltuk üzerinde, kalçayı düz bir çizgide havada tut.",
+          "details": "Koltuk yanında dirsek omuz altında yan plank kur; bükülü üst dizini ve kaval kemiğini koltuk kenarına yerleştirip alttaki bacağı yerden kaldır. Kalçanı öne arkaya döndürmeden düz bir yatay hatta sabitle. Süre boyunca düzenli nefes al. Kalçayı aşağı bırakmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "swedish-wall-side-hold",
+      "pattern": "core",
+      "family": "core_lateral",
+      "rank": 5,
+      "metric": "seconds",
+      "isPaired": true,
+      "environments": ["outdoor"],
+      "equipment": ["pullup_bars"],
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["obliques", "core", "lats", "shoulder_press"],
+      "antagonistMuscles": ["obliques"],
+      "svgKey": "side_plank",
+      "defaultMax": { "low": 10, "medium": 20, "high": 35 },
+      "ladder": { "minus1": "copenhagen-plank-short" },
+      "text": {
+        "ru": {
+          "name": "Swedish Wall Side Tuck Hold",
+          "cue": "Боком к шведской стенке: верхняя рука тянет, нижняя толкает перекладину, таз горизонтально.",
+          "details": "Встань боком к шведской стенке, возьмись верхней рукой за перекладину над головой, а нижней рукой упрись прямым предплечьем/ладонью в перекладину на уровне таза (локти прямые). Оторви стопы, подтянув колени к груди или вытянув вбок в боковую складку, и удерживай корпус строго сбоку. Частая ошибка — сгибание нижней толкающей руки."
+        },
+        "en": {
+          "name": "Swedish Wall Side Tuck Hold",
+          "cue": "Sideways on stall bars: top hand pulls, bottom straight arm pushes, hold tucked hips level.",
+          "details": "Stand sideways to the stall bars, grip an overhead rung with your top hand and press your straight bottom arm firmly against a hip-level rung. Lift your feet with knees tucked toward your chest to hold your torso horizontal sideways without twisting. Keep breathing evenly throughout the hold. Avoid bending the bottom pushing elbow."
+        },
+        "tr": {
+          "name": "Duvar Barında Yan Tutuş (Side Hold)",
+          "cue": "Duvar barına yan dur: üst el çekerken alt düz kol iter, dizleri toplayıp yan gövdeyi tut.",
+          "details": "Duvar barına yan dur, üst elinle baş üstündeki barı kavra ve alt düz kolunla kalça hizasındaki bara sağlamca bas. Ayaklarını yerden kesip dizlerini göğse toplayarak gövdeni yana dönmeden yatay pozisyonda tut. Süre boyunca düzenli nefes al. Alttaki iten dirseği bükmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "plank-shoulder-taps",
+      "pattern": "core",
+      "family": "core_antirotation",
+      "rank": 2,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["outdoor", "home"],
+      "equipment": ["bodyweight"],
+      "posture": ["hands_only"],
+      "stability": "unilateral",
+      "targetMuscles": ["core", "obliques", "front_delts"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "side_plank",
+      "defaultMax": { "low": 10, "medium": 20, "high": 36 },
+      "ladder": { "plus1": "pallof-press" },
+      "text": {
+        "ru": {
+          "name": "Plank Shoulder Taps",
+          "cue": "Стопы чуть шире плеч, на выдохе медленно коснись противоположного плеча без качания таза.",
+          "details": "Прими высокую планку на прямых руках на коврике или низкой скамейке (на площадке без касания земли), поставь стопы шире плеч для устойчивости. На выдохе перенеси контроль на одну руку и плавно коснись противоположного плеча второй ладонью с паузой 1 секунду. На вдохе верни ладонь и смени сторону. Частая ошибка — переваливание таза из стороны в сторону."
+        },
+        "en": {
+          "name": "Plank Shoulder Taps",
+          "cue": "Feet slightly wide, slowly tap the opposite shoulder on exhale with zero hip sway.",
+          "details": "Set into a straight-arm plank on a mat or low bench with feet slightly wider than shoulder-width for stability. Exhale to brace your core and lift one hand to tap your opposite shoulder for a one-second pause while keeping hips completely still. Inhale to place the hand softly and alternate. Avoid rocking your pelvis side to side."
+        },
+        "tr": {
+          "name": "Plankta Omuza Dokunuş",
+          "cue": "Ayaklar biraz açık, kalçayı hiç sallamadan nefes vererek karşı omza yavaşça dokun.",
+          "details": "Mat veya alçak bank üzerinde düz kol plank kur ve denge için ayaklarını omuzlardan biraz geniş aç. Nefes verirken kalçanı hiç oynatmadan bir elini kaldırıp karşı omzuna 1 saniye dokun. Nefes alırken elini yumuşakça koy ve taraf değiştir. Kalçayı sağa sola savurmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "split-stance-band-anti-rotation",
+      "pattern": "core",
+      "family": "core_antirotation",
+      "rank": 4,
+      "metric": "seconds",
+      "isPaired": true,
+      "environments": ["outdoor"],
+      "equipment": ["bands"],
+      "posture": ["standing"],
+      "stability": "unstable",
+      "targetMuscles": ["obliques", "core", "glutes"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "pallof_press",
+      "defaultMax": { "low": 15, "medium": 30, "high": 50 },
+      "ladder": { "minus1": "pallof-press" },
+      "text": {
+        "ru": {
+          "name": "Split-Stance Band Anti-Rotation Hold",
+          "cue": "Низкая разножка боком к стойке, удерживай прямые руки с резинкой строго по оси груди.",
+          "details": "Закрепи резинку на шведской стенке на уровне груди, встань боком в низкую устойчивую разножку на полусогнутых ногах и отойди до сильного натяжения. Выжми резинку на прямых руках строго вперёд по центру груди и удерживай без скручивания корпуса, можно добавлять лёгкие пульсации руками вперёд-назад. Дыши ровно. Частая ошибка — смещение кистей в сторону крепления резинки."
+        },
+        "en": {
+          "name": "Split-Stance Band Anti-Rotation Hold",
+          "cue": "Low athletic split stance sideways to post, hold straight arms centered against pull.",
+          "details": "Anchor the band to a stall bar at chest height, step out sideways into a low staggered split stance with knees softly bent, and create strong tension. Press your arms straight out along the midline of your chest and hold firm against rotational pull, optionally adding small controlled pulses. Keep breathing evenly. Avoid letting your hands drift toward the anchor."
+        },
+        "tr": {
+          "name": "Hamle Duruşunda Bantla Dönüş Önleme Tutuşu",
+          "cue": "Direğe yan alçak hamle duruşunda dur, gergin bandı düz kollarla göğüs merkezinde tut.",
+          "details": "Bandı göğüs hizasında duvar barına sabitle, direğe yan dönüp dizler hafif bükülü alçak bir hamle duruşu al ve güçlü gerginlik oluştur. Kollarını göğüs tam ortasından düz öne uzat ve dönme kuvvetine karşı merkezde tut. Süre boyunca düzenli nefes al. Ellerin sabit noktaya doğru kaymasına izin vermekten kaçın."
+        }
+      }
+    }
+  ]
+}

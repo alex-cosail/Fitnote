@@ -1,0 +1,806 @@
+{
+  "exercises": [
+    {
+      "id": "gym-machine-chest-press",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "machine",
+      "supportType": "full_support",
+      "progression": { "repMin": 8, "repMax": 12, "weightStepKg": 5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["chest", "triceps", "front_delts"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 8, "medium": 10, "high": 12 },
+      "ladder": { "plus1": "gym-incline-db-press" },
+      "text": {
+        "ru": {
+          "name": "Machine Chest Press",
+          "cue": "Лопатки прижаты к спинке тренажёра, рукояти на уровне середины груди, плечи не уходят вперёд.",
+          "details": "Настрой сиденье так, чтобы рукояти находились на уровне нижней-средней трети груди, прижми лопатки и затылок к спинке. На выдохе выжми рычаги вперёд без отрыва плеч от подушки и полного замыкания локтей. На вдохе плавно верни вес за 2 секунды до комфортного растяжения грудных. Частая ошибка — уход плеч вперёд в конце жима и отрыв поясницы."
+        },
+        "en": {
+          "name": "Machine Chest Press",
+          "cue": "Shoulder blades pinned to backrest, handles at mid-chest height, keep shoulders packed.",
+          "details": "Adjust the seat so handles align with mid-to-lower chest and pin your shoulder blades firmly against the pad. Exhale to press forward smoothly without letting your shoulders roll off the pad or snapping elbows locked. Inhale to lower over two seconds to a comfortable stretch. Avoid protracting your shoulders forward at lockout."
+        },
+        "tr": {
+          "name": "Makinede Göğüs İtiş (Chest Press)",
+          "cue": "Kürek kemikleri sırtlığa yaslı, kollar orta göğüs hizasında, omuzları öne bırakma.",
+          "details": "Koltuğu tutamaçlar orta göğüs hizasına gelecek şekilde ayarla ve kürek kemiklerini mindere sabitle. Nefes verirken omuzları minderden ayırmadan ve dirsekleri sert kilitlemeden ileri it. Nefes alırken 2 saniyede kontrollü geri getir. İtiş sonunda omuzları öne yuvarlamaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-incline-db-press",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 3,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "dumbbell_kb",
+      "supportType": "full_support",
+      "progression": { "repMin": 8, "repMax": 12, "weightStepKg": 2 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["chest", "front_delts", "triceps"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 8, "medium": 10, "high": 12 },
+      "ladder": { "minus1": "gym-machine-chest-press", "plus1": "gym-barbell-bench-press" },
+      "text": {
+        "ru": {
+          "name": "Incline Dumbbell Press",
+          "cue": "Скамья под углом 30°, локти под 45° к корпусу, своди гантели по дуге без удара.",
+          "details": "Установи спинку скамьи под углом 30°, стопы плотно в пол, лопатки сведены и опущены. На вдохе опусти гантели по бокам груди с предплечьями строго вертикально и локтями под 45°. На выдохе выжми вес вверх над верхней третью груди, не соударяя гантели. Частая ошибка — слишком крутой угол скамьи (45–60°) и разведение локтей в линию плеч."
+        },
+        "en": {
+          "name": "Incline Dumbbell Press",
+          "cue": "Bench at 30°, elbows tucked 45°, press dumbbells along a smooth arc without clanking.",
+          "details": "Set an incline bench to 30°, plant feet firmly, and pull shoulder blades down and back into the pad. Inhale to lower the dumbbells beside your upper chest with vertical forearms and elbows angled 45°. Exhale to press back up over your upper chest without banging the weights together. Avoid setting the bench too steep or flaring elbows straight out."
+        },
+        "tr": {
+          "name": "Eğimli Sehpada Dambıl Pres (30°)",
+          "cue": "Sehpa 30° eğimde, dirsekler gövdeye 45°, dambılları tepede birbirine vurmadan it.",
+          "details": "Sehpayı 30° açıya getir, ayaklarını yere sağlam bas ve kürek kemiklerini sehpaya sabitle. Nefes alırken ön kollar dik ve dirsekler 45° açıda olacak şekilde dambılları göğüs yanına indir. Nefes verirken üst göğüs hizasında birbirine çarpmadan yukarı it. Sehpayı aşırı dikleştirmekten ve dirsekleri yana açmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-barbell-bench-press",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "barbell",
+      "supportType": "full_support",
+      "progression": { "repMin": 6, "repMax": 10, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["chest", "triceps", "front_delts"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pushups",
+      "defaultMax": { "low": 6, "medium": 8, "high": 10 },
+      "ladder": { "minus1": "gym-incline-db-press" },
+      "text": {
+        "ru": {
+          "name": "Barbell Bench Press",
+          "cue": "Лопатки собраны в скамью, предплечья вертикальны, плавное касание нижней трети груди.",
+          "details": "Ляг на горизонтальную скамью, сведи и опусти лопатки, упри стопы в пол, возьми гриф чуть шире плеч закрытым хватом. На вдохе подконтрольно опусти штангу к нижней части груди с локтями под 45°. На выдохе выжми гриф вверх по лёгкой дуге к плечевым суставам. Частая ошибка — отбив грифа от груди и отрыв таза от скамьи."
+        },
+        "en": {
+          "name": "Barbell Bench Press",
+          "cue": "Pack shoulder blades into bench, keep forearms vertical, touch lower chest under control.",
+          "details": "Lie on a flat bench, retract and depress your shoulder blades, drive feet into the floor, and take a closed grip slightly outside shoulder-width. Inhale to lower the bar under control to your lower chest with elbows at 45°. Exhale and press smoothly back over your shoulders. Avoid bouncing the bar off your chest or lifting your glutes."
+        },
+        "tr": {
+          "name": "Düz Sehpada Halter Göğüs İtiş (Bench Press)",
+          "cue": "Kürek kemikleri sehpada kilitli, ön kollar dik, barı alt göğse kontrollü değdir.",
+          "details": "Düz sehpaya yat, kürek kemiklerini sıkıştırıp aşağı çek ve ayaklarını yere sağlam bas. Nefes alırken dirsekleri 45° açıyla tutarak barı alt göğsüne kontrollü indir. Nefes verirken omuz hizasına doğru güçlüce it. Barı göğüsten sektirmekten ve kalçayı sehpadan kaldırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-single-arm-cable-press",
+      "pattern": "push_h",
+      "family": "push_horizontal",
+      "rank": 3,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "cable",
+      "supportType": "standing_free",
+      "progression": { "repMin": 10, "repMax": 15, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["chest", "core", "obliques", "front_delts"],
+      "antagonistMuscles": ["upper_back", "rear_delts"],
+      "svgKey": "pallof_press",
+      "defaultMax": { "low": 10, "medium": 12, "high": 15 },
+      "ladder": { "minus1": "gym-machine-chest-press", "plus1": "gym-barbell-bench-press" },
+      "text": {
+        "ru": {
+          "name": "Single-Arm Standing Cable Press",
+          "cue": "Стойка в разножке спиной к блоку, жми вперёд без разворота таза и плеча.",
+          "details": "Выстави ролик блока на высоту груди, возьми рукоять одной рукой и встань спиной к блоку в устойчивую разножку. Жёстко зафиксируй пресс и косые мышцы от скручивания корпуса. На выдохе выжми рукоять строго вперёд перед центром груди, на вдохе верни кисть до уровня плеча. Частая ошибка — перекручивание корпуса назад при отведении руки."
+        },
+        "en": {
+          "name": "Single-Arm Standing Cable Press",
+          "cue": "Split stance facing away from cable, press straight forward with zero torso twist.",
+          "details": "Set a cable pulley to chest height, grasp one handle, and step forward into an athletic split stance facing away from the stack. Brace your core and obliques firmly to resist rotational pull. Exhale to press straight forward along your midline, then inhale back to chest level under control. Avoid letting the cable yank your shoulder backward."
+        },
+        "tr": {
+          "name": "Ayakta Tek Kol Kablo Göğüs İtiş",
+          "cue": "Sırtın kabloya dönük hamle duruşunda dur, gövdeyi döndürmeden düz ileri it.",
+          "details": "Kablo makarasını göğüs hizasına ayarla, tek elle tutamacı kavra ve öne adım atarak dengeli hamle duruşuna geç. Dönme kuvvetini durdurmak için karnı ve yan karın kaslarını kilitle. Nefes verirken elini göğsünün ön merkezine düz it, nefes alırken kontrollü geri getir. Omzunun geriye çekilmesine izin vermekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-seated-shoulder-press",
+      "pattern": "push_v",
+      "family": "push_vertical",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "dumbbell_kb",
+      "supportType": "full_support",
+      "progression": { "repMin": 8, "repMax": 12, "weightStepKg": 2 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["front_delts", "shoulder_press", "triceps"],
+      "antagonistMuscles": ["lats", "rear_delts"],
+      "svgKey": "pike_pushups",
+      "defaultMax": { "low": 8, "medium": 10, "high": 12 },
+      "ladder": { "plus1": "gym-landmine-single-arm-press" },
+      "text": {
+        "ru": {
+          "name": "Seated Shoulder Press (Machine / DB)",
+          "cue": "Спина прижата, локти выведены чуть вперёд (30°), жми вверх без разведения в линию.",
+          "details": "Сядь в тренажёр или на скамью со спинкой 75–85°, прижми поясницу и лопатки, удерживай гантели или рукояти на уровне ушей с локтями чуть впереди в плоскости лопаток. На выдохе выжми вес вверх почти до выпрямления рук без задирания плеч. На вдохе плавно опусти к подбородку/ушам. Частая ошибка — развод локтей строго в стороны и прогиб в пояснице."
+        },
+        "en": {
+          "name": "Seated Shoulder Press (Machine / DB)",
+          "cue": "Back pressed to pad, elbows angled 30° forward in scapular plane, press overhead smoothly.",
+          "details": "Sit on an upright 75–85° bench or shoulder press machine with your lower back supported and elbows angled 30° forward in the scapular plane. Exhale to press overhead just short of harsh elbow lockout while keeping shoulders down away from ears. Inhale smoothly back to ear level. Avoid flaring elbows directly sideways or arching off the pad."
+        },
+        "tr": {
+          "name": "Oturarak Omuz Pres (Makine / Dambıl)",
+          "cue": "Sırt mindere dayalı, dirsekler 30° önde, omuzları kaldırmadan yukarı it.",
+          "details": "75–85° açılı sehpaya veya omuz pres makinesine oturup bel ve sırtını yasla; dirsekleri 30° öne alarak ağırlığı kulak hizasında tut. Nefes verirken omuzları kulaklara çekmeden başın üzerine doğru it. Nefes alırken kontrollü biçimde başlangıca indir. Dirsekleri tam yana açmaktan ve beli minderden ayırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-landmine-single-arm-press",
+      "pattern": "push_v",
+      "family": "push_vertical",
+      "rank": 3,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "barbell",
+      "supportType": "standing_free",
+      "progression": { "repMin": 8, "repMax": 12, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["front_delts", "shoulder_press", "triceps", "core"],
+      "antagonistMuscles": ["lats", "rear_delts"],
+      "svgKey": "pike_pushups",
+      "defaultMax": { "low": 8, "medium": 10, "high": 12 },
+      "ladder": { "minus1": "gym-seated-shoulder-press", "plus1": "gym-standing-kb-ohp" },
+      "text": {
+        "ru": {
+          "name": "Landmine Single-Arm Press",
+          "cue": "Стойка в разножке или полуколено, жми край грифа по естественной дуге вперёд-вверх.",
+          "details": "Установи свободный конец грифа в упор «мина» (или в угол), возьми втулку одной рукой у плеча, встав в устойчивую разножку. Напряги ягодицы и пресс, исключая наклон назад. На выдохе выжми гриф по дуге вперёд и вверх, позволяя лопатке свободно скользить по грудной клетке, на вдохе плавно верни к плечу. Частая ошибка — перегиб поясницы вместо работы плеча."
+        },
+        "en": {
+          "name": "Landmine Single-Arm Press",
+          "cue": "Split stance or half-kneeling, press the barbell sleeve along a natural forward-upward arc.",
+          "details": "Anchor one end of a barbell in a landmine sleeve, hold the working end at shoulder height, and step into a braced split stance. Squeeze glutes and core to keep your ribs stacked over your pelvis. Exhale to press forward and upward in a natural arc while allowing smooth scapular upward rotation, then inhale back. Avoid leaning back through the lower spine."
+        },
+        "tr": {
+          "name": "Landmine Tek Kol Omuz Pres",
+          "cue": "Hamle duruşunda barın ucunu omzundan öne ve yukarı doğal bir yayla it.",
+          "details": "Halterin bir ucunu landmine yuvasına sabitle, diğer ucunu tek elinle omuz hizasında kavrayıp dengeli bir adım duruşuna geç. Karın ve kalçayı sıkarak geriye yaslanmayı önle. Nefes verirken barı öne-yukarı doğal yay boyunca it ve nefes alırken omza indir. Beli geriye bükmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-standing-kb-ohp",
+      "pattern": "push_v",
+      "family": "push_vertical",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "dumbbell_kb",
+      "supportType": "standing_free",
+      "progression": { "repMin": 6, "repMax": 10, "weightStepKg": 2 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["shoulder_press", "front_delts", "triceps", "core"],
+      "antagonistMuscles": ["lats", "forearms"],
+      "svgKey": "pike_pushups",
+      "defaultMax": { "low": 6, "medium": 8, "high": 10 },
+      "ladder": { "minus1": "gym-landmine-single-arm-press" },
+      "text": {
+        "ru": {
+          "name": "Standing Overhead Press (DB / KB)",
+          "cue": "Стоя на жёстких ногах и ягодицах, жми снаряды строго над макушкой с опущенными рёбрами.",
+          "details": "Встань со стопами на ширине таза, напряги квадрицепсы, ягодицы и пресс («стальной корсет»), удерживай гантели или гири у ключиц с локтями чуть спереди. На выдохе выжми вес вертикально над головой без подседа ногами, на вдохе подконтрольно опусти к плечам. Частая ошибка — провал поясницы и толчок ногами."
+        },
+        "en": {
+          "name": "Standing Overhead Press (DB / KB)",
+          "cue": "Brace legs, glutes, and ribs tight while pressing weights strictly overhead.",
+          "details": "Stand feet hip-width apart with quads, glutes, and abs braced firmly, holding dumbbells or kettlebells racked at collarbone height with elbows slightly forward. Exhale to press strictly overhead without leg drive, then inhale back under control. Avoid flaring your ribs or leaning back through the lower spine."
+        },
+        "tr": {
+          "name": "Ayakta Baş Üstü Pres (Dambıl / Girya)",
+          "cue": "Bacaklar, kalça ve karın kilitli; ağırlığı bacak desteği almadan başın üzerine dik it.",
+          "details": "Ayakları kalça genişliğinde açıp bacak, kalça ve karnı sertçe sık; ağırlıkları dirsekler hafif önde olacak biçimde omuz önünde tut. Nefes verirken bacaklardan sekmeden tam başının üzerine dik it, nefes alırken kontrollü indir. Kaburgaları açmaktan ve beli bükmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-chest-supported-row",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "machine",
+      "supportType": "full_support",
+      "progression": { "repMin": 8, "repMax": 12, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["upper_back", "lats", "rear_delts", "biceps"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "band_row",
+      "defaultMax": { "low": 8, "medium": 10, "high": 12 },
+      "ladder": { "plus1": "gym-seated-cable-row" },
+      "text": {
+        "ru": {
+          "name": "Chest-Supported Row (Machine / DB)",
+          "cue": "Грудь плотно прижата к подушке или наклонной скамье, тяни локти назад со сведением лопаток.",
+          "details": "Упрись грудью в переднюю подушку тренажёра (или ляг животом на скамью под углом 30° с гантелями), полностью разгрузив поясницу. На выдохе сведи лопатки и потяни локти назад к корпусу с 1-секундной паузой в пике. На вдохе полностью вытяни лопатки вперёд под контролем. Частая ошибка — отрыв груди от упора рывком спины."
+        },
+        "en": {
+          "name": "Chest-Supported Row (Machine / DB)",
+          "cue": "Keep chest pinned to pad or incline bench, drive elbows back and squeeze shoulder blades.",
+          "details": "Press your chest firmly against a machine pad or a 30° incline bench with dumbbells to completely unload your lower back. Exhale to retract your shoulder blades and drive your elbows back for a one-second peak pause. Inhale to let your shoulder blades glide forward under control. Avoid peeling your chest off the pad with momentum."
+        },
+        "tr": {
+          "name": "Göğüs Destekli Çekiş (Makine / Dambıl)",
+          "cue": "Göğüs mindere veya eğimli sehpaya yapışık, beli zorlamadan dirsekleri geriye çek.",
+          "details": "Bel yükünü sıfırlamak için göğsünü makine yastığına veya 30° eğimli sehpanın üzerine tam yasla. Nefes verirken kürek kemiklerini birleştirip dirsekleri geriye çek ve 1 saniye sık. Nefes alırken omuzları öne salarak kontrollü uzat. Göğsünü destekten savurarak kaldırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-seated-cable-row",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 3,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "cable",
+      "supportType": "bench_partial",
+      "progression": { "repMin": 8, "repMax": 12, "weightStepKg": 5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["upper_back", "lats", "rear_delts", "biceps"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "band_row",
+      "defaultMax": { "low": 8, "medium": 10, "high": 12 },
+      "ladder": { "minus1": "gym-chest-supported-row", "plus1": "gym-barbell-bent-over-row" },
+      "text": {
+        "ru": {
+          "name": "Seated Cable Row",
+          "cue": "Спина вертикальна, колени чуть согнуты, тяни рукоять к животу без раскачки назад.",
+          "details": "Сядь в тренажёр нижнего блока, упри стопы в платформу, слегка согни колени и выпрями поясницу. На выдохе сведи лопатки и потяни рукоять к низу груди/верхней части живота, удерживая плечи опущенными от ушей. На вдохе плавно верни руки вперёд, не округляя поясницу. Частая ошибка — сильное отклонение корпуса назад как на качелях."
+        },
+        "en": {
+          "name": "Seated Cable Row",
+          "cue": "Torso upright with soft knees, row handle to lower ribs without leaning back.",
+          "details": "Sit upright at a seated cable row station with feet planted, knees softly unlocked, and spine neutral. Exhale to pull your shoulder blades back and bring the handle toward your upper abdomen while keeping shoulders down. Inhale to return smoothly without rounding your lower back. Avoid swinging your torso backward to pull the stack."
+        },
+        "tr": {
+          "name": "Oturarak Kablo Çekişi (Seated Cable Row)",
+          "cue": "Gövde dik, dizler hafif bükülü, geriye sallanmadan tutamacı alt kaburgalara çek.",
+          "details": "Kablo istasyonuna dik otur, ayakları platforma dayayıp dizleri hafif bükülü ve beli düz tut. Nefes verirken omuzları kaldırmadan kürek kemiklerini yaklaştır ve tutamacı karnının üst kısmına çek. Nefes alırken beli bükmeden öne uzat. Gövdeyi geriye salıncak gibi savurmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-split-stance-cable-row",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 4,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "cable",
+      "supportType": "standing_free",
+      "progression": { "repMin": 10, "repMax": 15, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["lats", "upper_back", "obliques", "core", "biceps"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "band_row",
+      "defaultMax": { "low": 10, "medium": 12, "high": 15 },
+      "ladder": { "minus1": "gym-seated-cable-row" },
+      "text": {
+        "ru": {
+          "name": "Split-Stance Single-Arm Cable Row",
+          "cue": "Разножка перед блоком, мощный взрывной подрыв локтя к рёбрам и плавный возврат с анти-ротацией.",
+          "details": "Выстави ролик на уровень пояса/груди, возьми D-рукоять одной рукой и встань в низкую устойчивую разножку лицом к блоку. Напряги кор, удерживая плечи и таз строго фронтально. На резком выдохе мощно протяни локоть назад к нижнему ребру за 0.5 секунды, затем подконтрольно верни руку за 2 секунды. Частая ошибка — разворот поясницы вслед за весом."
+        },
+        "en": {
+          "name": "Split-Stance Single-Arm Cable Row",
+          "cue": "Low split stance facing cable, explosive one-arm pull to ribs and slow anti-rotation return.",
+          "details": "Set a cable pulley between waist and chest height, grasp a single handle, and sink into a stable athletic split stance. Lock your hips and shoulders square with a tight core. Exhale sharply to pull the elbow explosively to your lower ribs in half a second, then control the return over two seconds. Avoid twisting your lower back as the stack pulls."
+        },
+        "tr": {
+          "name": "Hamle Duruşunda Tek Kol Kablo Çekişi",
+          "cue": "Alçak hamle duruşunda kaburgalara patlayıcı tek kol çekiş ve bel dönmeden 2 sn geri dönüş.",
+          "details": "Kablo makarasını bel-göğüs arasına ayarla, tek el tutamacı kavra ve kabloya dönük alçak hamle duruşuna geç. Omuzları ve kalçayı kare biçimde kilitle. Keskin nefesle dirseği yarım saniyede kaburga yanına patlayıcı çek, 2 saniyede kontrollü bırak. Kablonun gövdeni öne döndürmesine izin vermekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-barbell-bent-over-row",
+      "pattern": "pull_h",
+      "family": "pull_horizontal",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "barbell",
+      "supportType": "standing_free",
+      "progression": { "repMin": 6, "repMax": 10, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "teenAllowed": false,
+      "targetMuscles": ["upper_back", "lats", "lower_back", "rear_delts"],
+      "antagonistMuscles": ["chest", "front_delts"],
+      "svgKey": "romanian_deadlift",
+      "defaultMax": { "low": 6, "medium": 8, "high": 10 },
+      "ladder": { "minus1": "gym-seated-cable-row" },
+      "text": {
+        "ru": {
+          "name": "Barbell Bent-Over Row",
+          "cue": "Наклон 45° с отведённым тазом и нейтральной спиной, тяни гриф к пупку.",
+          "details": "Возьми штангу на ширине плеч, отведи таз назад в наклон около 45°, удерживая поясницу абсолютно ровной и жёсткий пресс. На выдохе потяни гриф вдоль бёдер к нижней части живота, сводя лопатки без подъёма корпуса вверх. На вдохе плавно опусти вес. Частая ошибка — округление поясницы и «дёрганье» весом за счёт разгибания спины."
+        },
+        "en": {
+          "name": "Barbell Bent-Over Row",
+          "cue": "Hinge 45° with hips back and neutral spine, row bar cleanly toward your navel.",
+          "details": "Grip a barbell at shoulder-width, push your hips back into a 45° hinge with a flat spine and braced abs. Exhale to row the bar along your thighs toward your lower abdomen by driving elbows back without bobbing your torso. Inhale to lower smoothly under control. Avoid rounding your lower back or jerking upright with momentum."
+        },
+        "tr": {
+          "name": "Eğilerek Halter Çekişi (Bent-Over Row)",
+          "cue": "Kalça geride ve sırt düz 45° eğimde, barı gövdeyi oynatmadan göbek hizasına çek.",
+          "details": "Halteri omuz genişliğinde kavra, kalçanı geriye iterek düz bir sırtla 45° eğil ve karnı kilitle. Nefes verirken gövdeni yukarı kaldırmadan barı uyluk boyunca göbek deliğine doğru çek. Nefes alırken ağırlığı kontrollü indir. Beli bükmekten ve momentumla sırtı savurmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-lat-pulldown",
+      "pattern": "pull_v",
+      "family": "pull_vertical",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "cable",
+      "supportType": "full_support",
+      "progression": { "repMin": 8, "repMax": 12, "weightStepKg": 5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["lats", "biceps", "upper_back"],
+      "antagonistMuscles": ["chest", "shoulder_press"],
+      "svgKey": "pullups",
+      "defaultMax": { "low": 8, "medium": 10, "high": 12 },
+      "ladder": { "plus1": "gym-weighted-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Lat Pulldown (Neutral / Wide)",
+          "cue": "Бёдра зафиксированы валиками, на выдохе опусти лопатки и тяни рукоять к ключицам.",
+          "details": "Зафиксируй бёдра под валиками, возьми широкую или нейтральную рукоять, чуть раскрой грудь вверх (не заваливаясь сильно назад). На выдохе начни движение с опускания лопаток и потяни локти вниз к верхней трети груди. На вдохе плавно верни руки вверх. Частая ошибка — тяга за голову (опасно для плеч) и раскачка спиной назад."
+        },
+        "en": {
+          "name": "Lat Pulldown (Neutral / Wide)",
+          "cue": "Thighs locked under pads, depress shoulder blades first and pull bar to upper chest.",
+          "details": "Lock your thighs snugly beneath the pads, grip a wide or neutral bar, and lift your chest slightly without leaning way back. Exhale to depress your shoulder blades first, then drive elbows downward until the bar reaches collarbone level. Inhale smoothly back to full stretch. Avoid pulling behind the neck or rocking backward."
+        },
+        "tr": {
+          "name": "Üstten Çekiş (Lat Pulldown)",
+          "cue": "Bacaklar ped altında sabit, önce omuzları aşağı basıp barı üst göğse çek.",
+          "details": "Uyluklarını pedin altına kilitle, geniş veya nötr barı kavrayıp göğsünü hafifçe yukarı aç. Nefes verirken önce kürek kemiklerini aşağı çek, ardından dirsekleri yere yönlendirerek barı köprücük kemiğine indir. Nefes alırken kontrollü uzat. Enseye çekmekten ve aşırı geriye yaslanmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-single-arm-cable-pulldown",
+      "pattern": "pull_v",
+      "family": "pull_vertical",
+      "rank": 3,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "cable",
+      "supportType": "standing_free",
+      "progression": { "repMin": 10, "repMax": 12, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["lats", "biceps", "core", "obliques"],
+      "antagonistMuscles": ["shoulder_press", "chest"],
+      "svgKey": "pullups",
+      "defaultMax": { "low": 10, "medium": 11, "high": 12 },
+      "ladder": { "minus1": "gym-lat-pulldown", "plus1": "gym-weighted-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Single-Arm Cable Pulldown",
+          "cue": "В разножке или на колене перед верхним блоком, тяни локоть к тазу без наклона корпуса.",
+          "details": "Возьми D-рукоять верхнего блока одной рукой, встань в устойчивую разножку (или на одно колено) с прямой спиной и напряжённым прессом. На выдохе опусти плечо и тяни локоть вдоль бока к тазу с паузой внизу на 1 секунду. На вдохе плавно вытяни руку вверх. Частая ошибка — боковой наклон в сторону тянущей руки."
+        },
+        "en": {
+          "name": "Single-Arm Cable Pulldown",
+          "cue": "Split stance or half-kneeling under high pulley, drive elbow to hip without side bending.",
+          "details": "Grasp a single high-pulley handle and set into a tall split stance or half-kneeling position with your core braced against lateral tilt. Exhale to pack your shoulder blade down and drive your elbow cleanly into your side for a one-second squeeze. Inhale smoothly back into an overhead stretch. Avoid leaning sideways toward the working arm."
+        },
+        "tr": {
+          "name": "Tek Kol Üstten Kablo Çekişi",
+          "cue": "Yüksek makara önünde dik hamle duruşunda dur, yana eğilmeden dirseği kalçaya çek.",
+          "details": "Tekli D-tutamacı kavra ve yüksek makara önünde dik bir adım veya yarı diz duruşu al; karnını sık. Nefes verirken omzu aşağı bastırarak dirseği yan gövdene doğru çekip 1 saniye sık. Nefes alırken kolu kontrollü uzat. Çalışan kol tarafına yana eğilmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-weighted-pull-ups",
+      "pattern": "pull_v",
+      "family": "pull_vertical",
+      "rank": 5,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["pullup_bars", "weights"],
+      "loadType": "barbell",
+      "supportType": "standing_free",
+      "progression": { "repMin": 6, "repMax": 10, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["lats", "biceps", "upper_back", "forearms"],
+      "antagonistMuscles": ["chest", "triceps"],
+      "svgKey": "pullups",
+      "defaultMax": { "low": 6, "medium": 8, "high": 10 },
+      "ladder": { "minus1": "strict-pull-ups" },
+      "text": {
+        "ru": {
+          "name": "Weighted Pull-Ups",
+          "cue": "Вес на поясе или гантель между стоп, чистая вертикальная тяга без рывка и прогиба.",
+          "details": "Закрепи блин на атлетическом поясе (или плотно зажми лёгкую гантель между скрещённых лодыжек), возьмись чуть шире плеч. Напряги кор, чтобы вес не раскачивался. На выдохе начни движение с опускания лопаток и подтяни грудь вверх до выхода подбородка выше грифа, на вдохе опустись за 2 секунды. Частая ошибка — раскачка груза и неполное опускание."
+        },
+        "en": {
+          "name": "Weighted Pull-Ups",
+          "cue": "Load attached on dip belt or between ankles, strict vertical pull with zero swinging.",
+          "details": "Secure weight on a dip belt (or pinch a light dumbbell between crossed ankles) and take an overhand grip just outside shoulder-width. Brace your core tightly so the load stays still. Exhale to depress your shoulder blades and pull cleanly until your chin clears the bar, then inhale down over two seconds. Avoid swinging the weight or cutting the bottom short."
+        },
+        "tr": {
+          "name": "Ağırlıklı Barfiks",
+          "cue": "Ağırlık kemerde veya ayak bilekleri arasında sabit, sallanmadan temiz dikey çekiş.",
+          "details": "Ağırlığı kemere tak veya hafif dambılı çapraz ayak bileklerinle sıkıştırıp barı omuzdan biraz geniş kavra. Yükün sallanmaması için karnını sıkı kilitle. Nefes verirken kürek kemiklerini aşağı bastırıp çeneni barın üzerine çıkar, nefes alırken 2 saniyede tam kontrollü in. Sallanmaktan ve yarım inmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-leg-press",
+      "pattern": "squat",
+      "family": "legs_knee",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "machine",
+      "supportType": "full_support",
+      "progression": { "repMin": 8, "repMax": 15, "weightStepKg": 10 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["quads", "glutes"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "generic_strength",
+      "defaultMax": { "low": 10, "medium": 12, "high": 15 },
+      "ladder": { "plus1": "gym-barbell-squat" },
+      "text": {
+        "ru": {
+          "name": "Leg Press Machine",
+          "cue": "Таз и поясница намертво прижаты к спинке, колени идут по носкам и не замыкаются вверху.",
+          "details": "Поставь стопы на середину платформы на ширине плеч, плотно прижми крестец и поясницу к сиденью, возьмись за боковые ручки. На вдохе опусти платформу до угла около 90° в коленях, останавливаясь до отрыва таза от спинки. На выдохе выжми платформу пятками, оставляя колени слегка мягкими вверху. Частая ошибка — подкручивание таза вверх в нижней точке и жёсткое замыкание коленей."
+        },
+        "en": {
+          "name": "Leg Press Machine",
+          "cue": "Tailbone and lower back glued to pad, track knees over toes, never snap knees locked.",
+          "details": "Place feet shoulder-width in the middle of the sled, grip the side handles, and anchor your lower back and glutes firmly into the seat. Inhale to lower the platform to roughly 90° knee bend, stopping before your tailbone peels off the pad. Exhale to drive through your heels just short of locking your knees. Avoid rounding your lower back at the bottom."
+        },
+        "tr": {
+          "name": "Leg Press Makinesi",
+          "cue": "Kalça ve bel koltukta sabit, dizler ayak ucunu izlesin ve tepede sert kilitlenmesin.",
+          "details": "Ayakları plakanın ortasına omuz genişliğinde bas, yan tutamaçları sıkıca tutarak belini koltuğa yapıştır. Nefes alırken kalçan koltuktan kalkmadan yaklaşık 90° diz bükülmesine dek indir. Nefes verirken topuklardan iterek dizleri tam kilitlemeden kaldır. Altta kalçanın yukarı kalkmasından kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-barbell-squat",
+      "pattern": "squat",
+      "family": "legs_knee",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "barbell",
+      "supportType": "standing_free",
+      "progression": { "repMin": 5, "repMax": 10, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "teenAllowed": false,
+      "targetMuscles": ["quads", "glutes", "core", "lower_back"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "generic_strength",
+      "defaultMax": { "low": 5, "medium": 8, "high": 10 },
+      "ladder": { "minus1": "gym-leg-press" },
+      "text": {
+        "ru": {
+          "name": "Barbell Back / Front Squat",
+          "cue": "Устойчивая опора на три точки стопы, вдох в живот, присед с ровной спиной и контролем коленей.",
+          "details": "Расположи гриф на трапециях или на передних дельтах, отойди на два шага от стоек, стопы чуть шире таза. Набери воздух в живот («корсет»), на вдохе опускайся вниз, равномерно сгибая таз и колени до параллели бёдер при нейтральной пояснице. На выдохе вставай через середину стопы. Частая ошибка — сведение коленей внутрь и «клевок» тазом внизу."
+        },
+        "en": {
+          "name": "Barbell Back / Front Squat",
+          "cue": "Rooted midfoot stance, brace breath into belly, descend smoothly with neutral spine.",
+          "details": "Set the bar securely on your upper traps or front delts, step back two paces with feet just outside hip-width. Brace 360° around your waist, then inhale to descend evenly until thighs reach parallel while keeping knees aligned over toes. Exhale and drive powerfully through your midfoot. Avoid knees caving inward or lower-back rounding at the bottom."
+        },
+        "tr": {
+          "name": "Halter Squat (Back / Front)",
+          "cue": "Ayaklar yere köklü, karın nefesiyle kilitle, nötr omurgayla paralel hizaya in.",
+          "details": "Barı üst trapezlerine veya ön omuzlarına yerleştir, iki adım geri çıkıp ayakları kalçadan biraz geniş aç. Göbeğe nefes alarak beli kilitle, nefes alırken dizleri ayak ucu yönünde tutarak uyluklar yere paralel olana dek in. Nefes verirken ayak ortasından güçlüce kalk. Dizlerin içe çökmesinden kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-weighted-bulgarian-split-squat",
+      "pattern": "lunge",
+      "family": "legs_knee",
+      "rank": 4,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "dumbbell_kb",
+      "supportType": "bench_partial",
+      "progression": { "repMin": 8, "repMax": 12, "weightStepKg": 2 },
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["quads", "glutes", "core"],
+      "antagonistMuscles": ["hamstrings"],
+      "svgKey": "bulgarian_split_squat",
+      "defaultMax": { "low": 8, "medium": 10, "high": 12 },
+      "ladder": { "minus1": "reverse-lunges" },
+      "text": {
+        "ru": {
+          "name": "Weighted Bulgarian Split Squat",
+          "cue": "Гантели вдоль бедра или в одной руке, подъём задней стопы на скамье, упор на переднюю пятку.",
+          "details": "Возьми гантели в опущенные руки (или одну гирю в противоположную ноге руку), положи подъём задней стопы на скамью. Слегка наклони ровный корпус вперёд и на вдохе опустись до параллели переднего бедра с полом без провала в пояснице. На выдохе выжми себя пяткой передней ноги. Частая ошибка — перенос веса на заднюю ногу и завал колена внутрь."
+        },
+        "en": {
+          "name": "Weighted Bulgarian Split Squat",
+          "cue": "Dumbbells at sides or contralateral, rear instep on bench, drive up through front heel.",
+          "details": "Hold dumbbells at your sides (or one weight in the opposite hand) with the top of your back foot resting on a bench. Maintain a slight forward torso lean as you inhale to lower until your front thigh hits parallel. Exhale and drive smoothly up through your front heel. Avoid pushing primarily with the rear leg or letting the front knee cave in."
+        },
+        "tr": {
+          "name": "Ağırlıklı Bulgar Split Squat",
+          "cue": "Dambıllar yanlarda, arka ayak üstü sehpada, ön topuktan iterek kalk.",
+          "details": "İki elinde dambılla (veya tek ağırlığı karşı elde tutarak) arka ayağının üstünü sehpaya yerleştir. Düz gövdeyi hafif öne eğip nefes alırken ön uyluk yere paralel olana dek in. Nefes verirken ön topukla yukarı it. Ağırlığı arka bacağa vermekten ve ön dizi içe düşürmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-leg-curl",
+      "pattern": "hinge",
+      "family": "hinge",
+      "rank": 1,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "machine",
+      "supportType": "full_support",
+      "progression": { "repMin": 10, "repMax": 15, "weightStepKg": 5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["hamstrings"],
+      "antagonistMuscles": ["quads"],
+      "svgKey": "romanian_deadlift",
+      "defaultMax": { "low": 10, "medium": 12, "high": 15 },
+      "ladder": { "plus1": "gym-weighted-back-extension" },
+      "text": {
+        "ru": {
+          "name": "Leg Curl Machine (Seated / Lying)",
+          "cue": "Таз прижат к подушке, валик над ахиллом, плавное сгибание и медленный возврат за 3 сек.",
+          "details": "Настрой тренажёр так, чтобы ось вращения совпадала с коленным суставом, а валик располагался чуть выше пяток; плотно прижми таз и бёдра. На выдохе мощно согни голени, фиксируя пиковое сокращение бицепса бедра на 1 секунду. На вдохе разгибай ноги плавно за 2–3 секунды. Частая ошибка — отрыв таза от скамьи при сгибании."
+        },
+        "en": {
+          "name": "Leg Curl Machine (Seated / Lying)",
+          "cue": "Hips pinned firmly to pad, roller just above heels, curl smoothly and lower for 3 seconds.",
+          "details": "Align your knee joint with the machine pivot, set the roller just above your ankles, and pin your hips firmly down. Exhale to curl smoothly to full comfortable contraction and pause one second. Inhale to extend back slowly over 2–3 seconds without letting the stack slam. Avoid lifting your hips off the pad to finish the rep."
+        },
+        "tr": {
+          "name": "Leg Curl Makinesi (Oturarak / Yatarak)",
+          "cue": "Kalça mindere sabit, ped topuk üstünde, bük ve 3 saniyede yavaşça uzat.",
+          "details": "Diz eklemini makinenin eksenine hizala, pedi ayak bileklerinin hemen üzerine getir ve kalçanı mindere bastır. Nefes verirken bacakları kontrollü büküp tepede 1 saniye sık. Nefes alırken ağırlığı çarpmadan 2–3 saniyede uzat. Bükme sırasında kalçayı minderden kaldırmaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-weighted-back-extension",
+      "pattern": "hinge",
+      "family": "hinge",
+      "rank": 2,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "dumbbell_kb",
+      "supportType": "bench_partial",
+      "progression": { "repMin": 10, "repMax": 15, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "targetMuscles": ["glutes", "hamstrings", "lower_back"],
+      "antagonistMuscles": ["core", "hip_flexors"],
+      "svgKey": "glute_bridge",
+      "defaultMax": { "low": 10, "medium": 12, "high": 15 },
+      "ladder": { "minus1": "gym-leg-curl", "plus1": "gym-barbell-rdl" },
+      "text": {
+        "ru": {
+          "name": "Weighted 45° Back Extension",
+          "cue": "Подушка ниже тазовых косточек, движение в тазобедренном суставе до прямой линии, без перегиба.",
+          "details": "Отрегулируй упор гиперэкстензии строго ниже сгиба бедра (чтобы таз свободно вращался), прижми блин или гантель к груди. На вдохе с ровной спиной опустись вниз до растяжения задней поверхности. На выдохе за счёт сжатия ягодиц поднимись строго до прямой линии тела с ногами. Частая ошибка — переразгибание поясницы выше прямой линии вверху."
+        },
+        "en": {
+          "name": "Weighted 45° Back Extension",
+          "cue": "Pad set below hip crease, hinge strictly at the hips and stop at a straight body line.",
+          "details": "Set the pad just below your hip crease so your pelvis pivots freely, hugging a plate or dumbbell against your chest. Inhale to fold downward with a flat spine until your hamstrings feel a stretch. Exhale and squeeze your glutes to rise strictly to a straight line with your legs. Avoid hyperextending past neutral at the top."
+        },
+        "tr": {
+          "name": "Ağırlıklı 45° Hiperekstansiyon",
+          "cue": "Ped kalça kıvrımının altında, hareket kalçadan gelsin ve bacaklarla düz hatta dur.",
+          "details": "Sehpanın pedini kalça kıvrımının hemen altına ayarla ve plakayı veya dambılı göğsüne yasla. Nefes alırken sırtını düz tutarak arka bacak gerilene dek öne katlan. Nefes verirken kalçayı sıkarak bacaklarla aynı düz hizaya kadar yüksel. Tepede beli aşırı geriye bükmekten kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-barbell-rdl",
+      "pattern": "hinge",
+      "family": "hinge",
+      "rank": 4,
+      "metric": "reps",
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "barbell",
+      "supportType": "standing_free",
+      "progression": { "repMin": 6, "repMax": 12, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "bilateral",
+      "teenAllowed": false,
+      "targetMuscles": ["hamstrings", "glutes", "lower_back", "forearms"],
+      "antagonistMuscles": ["quads", "hip_flexors"],
+      "svgKey": "romanian_deadlift",
+      "defaultMax": { "low": 6, "medium": 9, "high": 12 },
+      "ladder": { "minus1": "romanian-deadlift" },
+      "text": {
+        "ru": {
+          "name": "Barbell Romanian Deadlift",
+          "cue": "Гриф скользит впритык по бёдрам и голеням, отвод таза назад, нейтральная спина до голени.",
+          "details": "Сними штангу со стоек, стопы на ширине таза, лопатки собраны и опущены, колени слегка согнуты и зафиксированы. На вдохе отводи таз строго назад, ведя гриф вплотную к ногам до середины голени при идеальной нейтрали спины. На выдохе верни таз вперёд мощным сжатием ягодиц. Частая ошибка — округление поясницы при попытке опустить штангу слишком низко."
+        },
+        "en": {
+          "name": "Barbell Romanian Deadlift",
+          "cue": "Keep bar grazing thighs and shins, push hips straight back with a rock-solid flat spine.",
+          "details": "Unrack the bar with feet hip-width apart, shoulder blades packed, and knees softly unlocked at a fixed angle. Inhale to hinge your hips straight back while sliding the bar smoothly along your legs to mid-shin depth without losing spinal neutrality. Exhale and drive your hips forward with your glutes. Avoid rounding your lower back for extra depth."
+        },
+        "tr": {
+          "name": "Halter Romen Deadlift",
+          "cue": "Barı bacaklara yapışık indir, nötr omurgayla kalçayı geriye it ve kalçayla doğrul.",
+          "details": "Halteri raftan al, ayakları kalça genişliğinde açıp kürek kemiklerini kilitle ve dizleri hafif sabit tut. Nefes alırken kalçanı geriye itip barı bacaklara sürterek kaval kemiğinin ortasına dek düz sırtla indir. Nefes verirken kalçayı sıkarak dikel. Daha derine inmek için beli yuvarlamaktan kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-cable-pallof-press",
+      "pattern": "core",
+      "family": "core_antirotation",
+      "rank": 3,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "cable",
+      "supportType": "standing_free",
+      "progression": { "repMin": 10, "repMax": 15, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["core", "obliques"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "pallof_press",
+      "defaultMax": { "low": 10, "medium": 12, "high": 15 },
+      "ladder": { "plus1": "gym-cable-woodchopper" },
+      "text": {
+        "ru": {
+          "name": "Cable Pallof Press",
+          "cue": "Боком к блоку на уровне груди, выпрямляй руки строго по центру с паузой 2 сек против скручивания.",
+          "details": "Установи ролик на высоту груди, возьми рукоять двумя руками и отойди боком от блока до натяжения, колени чуть согнуты. Прижми кисти к центру груди и выровняй плечи. На выдохе выжми руки строго вперёд по центральной оси тела на 2 секунды, сопротивляясь тяге блока вбок, на вдохе верни. Частая ошибка — перекос плеч и увод кистей в сторону блока."
+        },
+        "en": {
+          "name": "Cable Pallof Press",
+          "cue": "Stand sideways to chest-high cable, press arms straight out midline and hold 2 seconds.",
+          "details": "Set a cable pulley to chest height, hold the handle with both hands, and step out sideways into an athletic stance with soft knees. Anchor your hands at center chest with shoulders level. Exhale to press straight forward along your midline for a two-second hold against rotational pull, then inhale back. Avoid letting hands drift toward the pulley."
+        },
+        "tr": {
+          "name": "Kablo Pallof Pres",
+          "cue": "Göğüs hizasındaki kabloya yan dur, elleri tam merkezden öne uzatıp 2 saniye tut.",
+          "details": "Makaranı göğüs hizasına al, tutamacı iki elle kavrayıp yana adım at ve dizleri hafif bük. Elleri göğüs merkezinde tut, omuzları hizala. Nefes verirken dönme kuvvetine direnerek kolları tam öne uzatıp 2 saniye bekle, nefes alırken geri çek. Ellerin makaraya doğru kaymasından kaçın."
+        }
+      }
+    },
+    {
+      "id": "gym-cable-woodchopper",
+      "pattern": "core",
+      "family": "core_antirotation",
+      "rank": 4,
+      "metric": "reps",
+      "isPaired": true,
+      "environments": ["gym"],
+      "equipment": ["weights"],
+      "loadType": "cable",
+      "supportType": "standing_free",
+      "progression": { "repMin": 10, "repMax": 15, "weightStepKg": 2.5 },
+      "posture": ["standing"],
+      "stability": "unilateral",
+      "targetMuscles": ["obliques", "core", "glutes", "front_delts"],
+      "antagonistMuscles": ["lower_back"],
+      "svgKey": "pallof_press",
+      "defaultMax": { "low": 10, "medium": 12, "high": 15 },
+      "ladder": { "minus1": "gym-cable-pallof-press" },
+      "text": {
+        "ru": {
+          "name": "Standing Cable Woodchopper",
+          "cue": "Вращение идёт грудным отделом и тазом вместе при жёстком коре — не крути одну поясницу.",
+          "details": "Установи ролик на уровне плеча или выше, встань боком в широкую устойчивую стойку, держа рукоять почти прямыми руками. На выдохе мощно проведи рукоять по диагонали вниз к противоположному бедру, вращаясь всем корпусом как единый блок с подкручиванием задней стопы. На вдохе плавно верни вес за 2 секунды. Частая ошибка — скручивание поясницы при неподвижном тазе."
+        },
+        "en": {
+          "name": "Standing Cable Woodchopper",
+          "cue": "Rotate torso and hips together as one braced unit—never twist solely through the lower back.",
+          "details": "Set a cable pulley at or above shoulder height, stand sideways in a wide athletic stance, and hold the handle with nearly straight arms. Exhale to sweep the handle diagonally down across to the opposite hip while pivoting your rear heel and rotating hips and chest together. Inhale back smoothly over two seconds. Avoid locking your hips while twisting the lumbar spine."
+        },
+        "tr": {
+          "name": "Ayakta Kablo Woodchopper",
+          "cue": "Sadece beli bükmeden göğüs ve kalçayı tek parça halinde çapraz döndür.",
+          "details": "Makaranı omuz hizasında veya biraz üstünde ayarla, yana geniş adım açıp tutamacı neredeyse düz kollarla tut. Nefes verirken arka topuğu hafifçe çevirerek kalça ve gövdeyi tek blok gibi döndürüp kablo kolunu karşı kalçaya çapraz indir. Nefes alırken 2 saniyede geri dön. Kalçayı kilitleyip yalnızca beli burkmaktan kaçın."
+        }
+      }
+    }
+  ]
+}
