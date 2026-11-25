@@ -84,14 +84,15 @@ function reorder(plan: WorkoutPlan, priorities: number[]): WorkoutPlan {
 export function accentPlan(
   gw: GeneratedWorkout,
   profile: GeneratorProfile,
-  ctx: GeneratorContext,
-  minutes?: number
+  ctx: Pick<GeneratorContext, 'catalog'>,
+  minutes?: number,
+  times: { warmupMinutes: number; cooldownMinutes: number } = { warmupMinutes: WARMUP_MIN.short, cooldownMinutes: COOLDOWN_MIN.short }
 ): { plan: WorkoutPlan; dropped: MovementPattern[] } {
   const catalogById = new Map(ctx.catalog.map((c) => [c.id, c]));
   const prio = itemPriorities(gw, profile);
   const pairs = pairItems(gw.plan.items, prio);
   const keep = new Set(pairs.map((_, i) => i));
-  const opts = { warmupMinutes: WARMUP_MIN.short, cooldownMinutes: COOLDOWN_MIN.short };
+  const opts = times;
   const build = (rounds = gw.plan.rounds) => {
     const idx = [...keep].flatMap((p) => pairs[p].items).sort((a, b) => a - b);
     return {

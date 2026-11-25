@@ -1,6 +1,10 @@
 export type MetricType = 'reps' | 'seconds';
 
-export type ReadinessLevel = 'green' | 'yellow' | 'red';
+// The day's mode chosen before a workout (GENERATOR_RULES §3.2); the old
+// traffic-light values stay so older logs read the same:
+// green = standard · yellow = short (⅔ rounds) · accent = focus pairs under
+// the minutes given · red = no energy (mobility only).
+export type ReadinessLevel = 'green' | 'yellow' | 'accent' | 'red';
 
 export type RirValue = '2+' | '1' | '0';
 
@@ -210,6 +214,8 @@ export interface FitnoteData {
   activeSession: ActiveSession | null;
   // ISO time of the last saved backup file (absent = never).
   lastBackupAt?: string;
+  // Minutes for the accent mode (absent = 20).
+  accentMinutes?: number;
   // Last answer to "When is the next workout?" (calendar reminder).
   reminder?: { daysAhead: 0 | 1 | 2 | 3; time: string };
   // Interface language (absent = Russian; the switcher arrives in step 4).

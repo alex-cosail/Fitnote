@@ -14,3 +14,5 @@ export { pickExercise, pickScore } from './pick';
 export { DEFAULT_PROFILE } from './defaults';
 export { runGenerator, toWorkoutPlans, replaceGenerated, DEFAULT_REQUEST, LEVEL_TO_HEALTH } from './app';
 export type { GenPeriod, GenLevel, GenRequest, GenResult } from './app';
+export { dayPlan, dayTimes, DEFAULT_ACCENT_MINUTES, ACCENT_MINUTES } from './day';
+export type { DayPlan, DayOptions } from './day';

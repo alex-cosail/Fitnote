@@ -9,14 +9,15 @@ export function calcAgt30(exercise: Pick<Exercise, 'checkup_max' | 'metric'>): n
   return Math.max(1, Math.round(raw));
 }
 
-// Rounds actually played for a readiness level:
-// green = plan, yellow = 70% (min 1), red = 2-round mobility block.
+// Rounds actually played for the day's mode:
+// standard = plan, short = ⅔ (min 1; 3 → 2, 15 → 10), red = 2-round mobility
+// block; accent keeps the plan's rounds (cut to its minutes in dayPlan).
 export function getEffectiveRounds(
   planRounds: number,
   readiness: ReadinessLevel
 ): number {
   if (readiness === 'red') return 2;
-  if (readiness === 'yellow') return Math.max(1, Math.round(planRounds * 0.7));
+  if (readiness === 'yellow') return Math.max(1, Math.round((planRounds * 2) / 3));
   return planRounds;
 }
 

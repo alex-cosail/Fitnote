@@ -18,7 +18,10 @@ import { getMuscleLabel } from '../domain/catalog/muscles';
 import { formatMetricTarget } from '../domain/format';
 import { CATALOG } from '../data/catalog';
 import { ResolvedItem, resolveWorkout } from '../domain/plan/resolveWorkout';
-import { getEffectiveRounds, targetStep } from '../domain/plan/targets';
+import { targetStep } from '../domain/plan/targets';
+import { ACCENT_MINUTES, DEFAULT_ACCENT_MINUTES, dayPlan, dayTimes, estimateSeconds } from '../domain/generator';
+import { useT } from '../i18n';
+import type { TranslationKey } from '../i18n/ru';
 import {
   ActiveSession,
   Exercise,
@@ -32,12 +35,14 @@ interface WorkoutPreviewTabProps {
   exercises: Exercise[];
   selectedWorkoutId: string;
   readiness: ReadinessLevel;
+  accentMinutes?: number;
   warmupMinutes: number;
   activeSession: ActiveSession | null;
   onSelectWorkout: (id: string) => void;
   onDeleteWorkout: (id: string) => void;
   onUpdateWorkout: (plan: WorkoutPlan) => void;
   onChangeReadiness: (level: ReadinessLevel) => void;
+  onChangeAccentMinutes: (minutes: number) => void;
   onChangeWarmupMinutes: (mins: number) => void;
   onStartWorkout: () => void;
   onResumeWorkout: () => void;
@@ -55,17 +60,20 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   exercises,
   selectedWorkoutId,
   readiness,
+  accentMinutes = DEFAULT_ACCENT_MINUTES,
   warmupMinutes,
   activeSession,
   onSelectWorkout,
   onDeleteWorkout,
   onUpdateWorkout,
   onChangeReadiness,
+  onChangeAccentMinutes,
   onChangeWarmupMinutes,
   onStartWorkout,
   onResumeWorkout,
   onDiscardActiveSession,
 }) => {
+  const { t } = useT();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const selectedPlan =
@@ -97,7 +105,15 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   const getExercise = (id: string) =>
     exercises.find((ex) => ex.id === id) ?? exercises[0];
 
-  const effectiveRounds = getEffectiveRounds(selectedPlan.rounds, readiness);
+  // The plan actually played today for the chosen mode (same as the start).
+  const times = dayTimes(readiness, warmupMinutes);
+  const today = dayPlan(selectedPlan, readiness, {
+    catalog: CATALOG,
+    accentMinutes,
+    ...times,
+  });
+  const todayPlan = today.plan;
+  const effectiveRounds = readiness === 'red' ? 2 : todayPlan.rounds;
 
   // What will actually be played: plan slots resolved for this user (same
   // engine as the workout start), or the fixed red-day mobility block.
@@ -108,19 +124,14 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           exerciseId: it.exerciseId,
           target: it.target,
         }))
-      : resolveWorkout(selectedPlan, { catalog: CATALOG, exercises });
+      : resolveWorkout(todayPlan, { catalog: CATALOG, exercises });
 
+  const catalogById = new Map(CATALOG.map((c) => [c.id, c]));
   const estimatedMinutes =
     readiness === 'red'
       ? 20
       : Math.round(
-          warmupMinutes +
-            5 +
-            effectiveRounds *
-              displayedItems.length *
-              (0.55 + selectedPlan.restBetweenExercises / 60) +
-            Math.max(0, effectiveRounds - 1) *
-              (selectedPlan.restBetweenRounds / 60)
+          estimateSeconds(todayPlan, catalogById, times) / 60
         );
 
   const headerFormatText =
@@ -134,8 +145,9 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   const firstExerciseName = displayedItems[0]
     ? getExercise(displayedItems[0].exerciseId)?.name
     : undefined;
-  const warmupPlan = getWarmupPlan(warmupMinutes, firstExerciseName);
+  const warmupPlan = getWarmupPlan(times.warmupMinutes, firstExerciseName);
 
+  // The day's mode (GENERATOR_RULES §3.2), formerly the readiness traffic light.
   const readinessOptions: {
     id: ReadinessLevel;
     label: string;
@@ -146,33 +158,49 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   }[] = [
     {
       id: 'green',
-      label: 'Зелёный',
-      sub: '100% объёма',
+      label: t('mode.standard'),
+      sub: t('mode.standard.sub'),
       dotColor: 'bg-[#16A34A]',
       activeBorder: 'border-[#16A34A] dark:border-[#22C55E]',
       activeBg: 'bg-[#F0FDF4] dark:bg-[#052E16]/55',
     },
     {
       id: 'yellow',
-      label: 'Жёлтый',
-      sub: '70% кругов',
+      label: t('mode.short'),
+      sub: t('mode.short.sub'),
       dotColor: 'bg-[#D97706]',
       activeBorder: 'border-[#D97706] dark:border-[#F59E0B]',
       activeBg: 'bg-[#FFFBEB] dark:bg-[#451A03]/55',
     },
     {
+      id: 'accent',
+      label: t('mode.accent'),
+      sub: t('mode.accent.sub', { min: accentMinutes }),
+      dotColor: 'bg-[#0B5F73]',
+      activeBorder: 'border-[#0B5F73] dark:border-[#5EC4D8]',
+      activeBg: 'bg-[#ECFAFC] dark:bg-[#0B2E36]/60',
+    },
+    {
       id: 'red',
-      label: 'Красный',
-      sub: 'Мобильность 20м',
+      label: t('mode.off'),
+      sub: t('mode.off.sub'),
       dotColor: 'bg-[#DC2626]',
       activeBorder: 'border-[#DC2626] dark:border-[#EF4444]',
       activeBg: 'bg-[#FEF2F2] dark:bg-[#450A0A]/60',
     },
   ];
 
+  const changeAccent = (delta: number) =>
+    onChangeAccentMinutes(
+      Math.min(ACCENT_MINUTES.max, Math.max(ACCENT_MINUTES.min, accentMinutes + delta))
+    );
+  const patternNames = (ps: string[]) =>
+    ps.map((p) => t(('pattern.' + p) as TranslationKey)).join(', ');
+
   // Manual tuning of the coach's numbers ("couch tuning"): hidden for the red
   // mobility block and for AGT plans, where targets come from the Check-Up.
-  const canTune = readiness !== 'red' && !selectedPlan.useAgt30;
+  // Hidden for the accent too: its rounds and order differ from the plan.
+  const canTune = (readiness === 'green' || readiness === 'yellow') && !selectedPlan.useAgt30;
   const MAX_ROUNDS = 20;
 
   const withOriginal = (plan: WorkoutPlan): WorkoutPlan =>
@@ -313,8 +341,8 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 План тренировки ({workouts.length})
               </span>
               <span className="font-mono-num text-xs text-gray-500 dark:text-gray-400">
-                Отдых: {selectedPlan.restBetweenExercises}с /{' '}
-                {selectedPlan.restBetweenRounds}с
+                Отдых: {todayPlan.restBetweenExercises}с /{' '}
+                {todayPlan.restBetweenRounds}с
               </span>
             </div>
             <div className="grid max-h-[126px] grid-cols-3 gap-1.5 overflow-y-auto pr-0.5 sm:gap-2">
@@ -343,9 +371,9 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
 
           <div>
             <span className="mb-1.5 block text-xs font-semibold text-gray-500 dark:text-gray-400">
-              Светофор готовности
+              {t('mode.title')}
             </span>
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-4 gap-1 sm:gap-2">
               {readinessOptions.map((opt) => {
                 const active = readiness === opt.id;
                 return (
@@ -387,9 +415,9 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
               <div className="flex items-center gap-2">
                 <span className="font-mono-num text-xs font-semibold text-gray-500 dark:text-gray-400">
                   Отдых:{' '}
-                  {readiness === 'red' ? 20 : selectedPlan.restBetweenExercises}
+                  {readiness === 'red' ? 20 : todayPlan.restBetweenExercises}
                   с /{' '}
-                  {readiness === 'red' ? 45 : selectedPlan.restBetweenRounds}с
+                  {readiness === 'red' ? 45 : todayPlan.restBetweenRounds}с
                 </span>
 
                 {isCustomWorkout && readiness !== 'red' && (
@@ -426,6 +454,42 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 : selectedPlan.subtitle}
             </p>
 
+            {readiness === 'accent' && (
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                    {t('mode.accent.minutes')}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => changeAccent(-ACCENT_MINUTES.step)}
+                    disabled={accentMinutes <= ACCENT_MINUTES.min}
+                    className={stepBtnClass}
+                    aria-label={t('mode.accent.less')}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="font-mono-num min-w-[4.5rem] text-center text-base font-bold text-[#111827] dark:text-[#F3F4F6]">
+                    {t('mode.accent.value', { min: accentMinutes })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => changeAccent(ACCENT_MINUTES.step)}
+                    disabled={accentMinutes >= ACCENT_MINUTES.max}
+                    className={stepBtnClass}
+                    aria-label={t('mode.accent.more')}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+                {today.dropped.length > 0 && (
+                  <p className="rounded-xl border border-[#0B5F73]/30 bg-[#ECFAFC] p-2 text-[11px] leading-snug text-[#0B5F73] dark:border-[#5EC4D8]/30 dark:bg-[#0B2E36]/60 dark:text-[#5EC4D8] lg:text-xs">
+                    {t('mode.accent.dropped', { list: patternNames(today.dropped) })}
+                  </p>
+                )}
+              </div>
+            )}
+
             {readiness === 'red' && (
               <div className="mt-2 flex items-start gap-2 rounded-xl border border-gray-200 bg-white p-2 text-[11px] text-gray-700 dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-gray-200 lg:text-xs">
                 <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#DC2626] dark:text-[#F87171]" />
@@ -450,10 +514,10 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           </div>
         </section>
 
-        {/* RIGHT COLUMN (Landscape): "Состояние" heading + 3 readiness states with descriptions */}
+        {/* RIGHT COLUMN (Landscape): the day's mode, 4 options with descriptions */}
         <div className="hidden min-h-0 flex-col landscape:flex">
           <span className="mb-1.5 px-0.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
-            Состояние
+            {t('mode.title')}
           </span>
           <div className="flex flex-1 flex-col gap-1.5">
             {readinessOptions.map((opt) => {
@@ -499,6 +563,11 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 Warm-Up (Разминка)
               </h2>
             </div>
+            {times.warmupMinutes !== warmupMinutes ? (
+              <span className="font-mono-num rounded-xl bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-600 dark:bg-[#131A26] dark:text-gray-300">
+                {times.warmupMinutes}м
+              </span>
+            ) : (
             <div className="flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-100 p-1 dark:border-[#263248] dark:bg-[#131A26]">
               {warmupOptions.map((mins) => (
                 <button
@@ -515,6 +584,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 </button>
               ))}
             </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-2.5 landscape:gap-2">
@@ -569,7 +639,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 : `Основной блок · ${effectiveRounds} ${
                     effectiveRounds === 1 ? 'круг' : 'круга'
                   }`}
-              {readiness === 'yellow' && (
+              {(readiness === 'yellow' || readiness === 'accent') && todayPlan.rounds !== selectedPlan.rounds && (
                 <span className="ml-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
                   (по плану {selectedPlan.rounds})
                 </span>
@@ -621,7 +691,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
               const ex = getExercise(item.exerciseId);
               const plannedTarget = item.target;
               const planTarget =
-                selectedPlan.items[item.slotIndex]?.target ?? item.target;
+                todayPlan.items[item.slotIndex]?.target ?? item.target;
 
               return (
                 <article

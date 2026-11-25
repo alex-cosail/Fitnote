@@ -20,7 +20,7 @@ import { CATALOG } from './data/catalog';
 import { catalogTextsFor } from './data/catalogTexts';
 import { CATALOG_IDS, RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
 import { resolveExercises } from './domain/catalog/resolve';
-import { replaceGenerated } from './domain/generator';
+import { dayPlan, dayTimes, replaceGenerated } from './domain/generator';
 import { recordMax } from './domain/catalog/userMaxes';
 import { resolveWorkout } from './domain/plan/resolveWorkout';
 import { applyImport, ImportPayload } from './domain/plan/importPlan';
@@ -142,7 +142,15 @@ export default function App() {
     const readiness: ReadinessLevel = data.readiness;
     const isRed = readiness === 'red';
 
-    const effectiveRounds = getEffectiveRounds(plan.rounds, readiness);
+    // The plan actually played today for the chosen mode (short ⅔ rounds,
+    // accent focus pairs under the minutes); red plays the mobility block.
+    const times = dayTimes(readiness, data.warmupMinutes);
+    const today = dayPlan(plan, readiness, {
+      catalog: CATALOG,
+      accentMinutes: data.accentMinutes,
+      ...times,
+    }).plan;
+    const effectiveRounds = getEffectiveRounds(today.rounds, readiness === 'yellow' ? 'green' : readiness);
 
     const sessionItems = isRed
       ? RED_MOBILITY_EXERCISES.map((item) => ({
@@ -150,16 +158,16 @@ export default function App() {
           target: item.target,
           plannedTarget: item.target,
         }))
-      : resolveWorkout(plan, { catalog: CATALOG, exercises }).map((r) => ({
+      : resolveWorkout(today, { catalog: CATALOG, exercises }).map((r) => ({
           exerciseId: r.exerciseId,
           target: r.target,
           plannedTarget: r.target,
         }));
 
-    const isRoundFlow = !isRed && (Boolean(plan.useAgt30) || plan.rounds >= 8);
+    const isRoundFlow = !isRed && (Boolean(today.useAgt30) || today.rounds >= 8);
 
-    const warmupSec = data.warmupMinutes * 60;
-    const initialWarmupSteps = getWarmupPlan(data.warmupMinutes).steps;
+    const warmupSec = times.warmupMinutes * 60;
+    const initialWarmupSteps = getWarmupPlan(times.warmupMinutes).steps;
 
     const newSession: ActiveSession = {
       id: `sess-${Date.now()}`,
@@ -170,7 +178,7 @@ export default function App() {
       currentRound: 1,
       currentItemIndex: 0,
       phase: 'warmup',
-      warmupMinutes: data.warmupMinutes,
+      warmupMinutes: times.warmupMinutes,
       warmupStepIndex: 0,
       warmupStepRemainingSec: initialWarmupSteps[0]?.durationSeconds ?? warmupSec,
       preCountdownSec: 5,
@@ -181,8 +189,8 @@ export default function App() {
       items: sessionItems,
       logs: [],
       startedAt: new Date().toISOString(),
-      restBetweenExercises: isRed ? 20 : plan.restBetweenExercises,
-      restBetweenRounds: isRed ? 45 : plan.restBetweenRounds,
+      restBetweenExercises: isRed ? 20 : today.restBetweenExercises,
+      restBetweenRounds: isRed ? 45 : today.restBetweenRounds,
       isMobilityOnly: isRed,
       isRoundFlow,
     };
@@ -482,6 +490,7 @@ export default function App() {
             exercises={exercises}
             selectedWorkoutId={data.selectedWorkoutId}
             readiness={data.readiness}
+            accentMinutes={data.accentMinutes}
             warmupMinutes={data.warmupMinutes}
             activeSession={data.activeSession}
             onSelectWorkout={(id) =>
@@ -495,6 +504,9 @@ export default function App() {
                 readiness,
                 warmupMinutes: readiness === 'red' ? 8 : prev.warmupMinutes,
               }))
+            }
+            onChangeAccentMinutes={(accentMinutes) =>
+              setData((prev) => ({ ...prev, accentMinutes }))
             }
             onChangeWarmupMinutes={(warmupMinutes) =>
               setData((prev) => ({ ...prev, warmupMinutes }))

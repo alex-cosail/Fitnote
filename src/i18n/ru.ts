@@ -65,6 +65,20 @@ export const ru = {
   'pattern.hinge': "тазовый шарнир",
   'pattern.lunge': "выпад",
   'pattern.core': "кор",
+  'mode.title': "Режим",
+  'mode.standard': "Стандарт",
+  'mode.standard.sub': "все круги",
+  'mode.short': "Короткая",
+  'mode.short.sub': "⅔ кругов",
+  'mode.accent': "Акцент",
+  'mode.accent.sub': "{min} мин",
+  'mode.off': "Нет сил",
+  'mode.off.sub': "мобильность",
+  'mode.accent.minutes': "Время на всё",
+  'mode.accent.value': "{min} мин",
+  'mode.accent.less': "Меньше минут",
+  'mode.accent.more': "Больше минут",
+  'mode.accent.dropped': "Сегодня не будет: {list}. 10 минут в свободное время закроют неделю.",
 };
 
 export type Dict = Record<keyof typeof ru, string>;

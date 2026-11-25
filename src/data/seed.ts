@@ -75,11 +75,20 @@ export function getWarmupPlan(
   minutes: number,
   firstExerciseName?: string
 ): { label: string; steps: MobilityStep[] } {
+  // 5 min: the short warm-up of the short and accent modes (GENERATOR_RULES §3.3).
+  const is5 = minutes <= 5;
   const is8 = minutes <= 8;
   const is12 = minutes >= 12 && minutes < 15;
   const isFull = minutes >= 12;
 
-  const durations = is8
+  const durations = is5
+    ? {
+        joint: { label: '2 мин', sec: 120 },
+        pulse: { label: '1.5 мин', sec: 90 },
+        lunge: { label: '1.5 мин', sec: 90 },
+        primer: { label: '1.5 мин', sec: 90 },
+      }
+    : is8
     ? {
         joint: { label: '3 мин', sec: 180 },
         pulse: { label: '2 мин', sec: 120 },
@@ -140,6 +149,13 @@ export function getWarmupPlan(
       svgKey: 'warmup_primer',
     },
   ];
+
+  if (is5) {
+    return {
+      label: 'Короткая · 3 блока',
+      steps: baseSteps.filter((s) => s.id !== 'wu-lunge-reach'),
+    };
+  }
 
   if (!isFull) {
     return {

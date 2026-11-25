@@ -67,7 +67,7 @@ describe('targets', () => {
   it('effective rounds by readiness', () => {
     expect(getEffectiveRounds(3, 'green')).toBe(3);
     expect(getEffectiveRounds(3, 'yellow')).toBe(2);
-    expect(getEffectiveRounds(15, 'yellow')).toBe(11);
+    expect(getEffectiveRounds(15, 'yellow')).toBe(10);
     expect(getEffectiveRounds(1, 'yellow')).toBe(1);
     expect(getEffectiveRounds(15, 'red')).toBe(2);
   });

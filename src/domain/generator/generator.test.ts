@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CATALOG } from '../../data/catalog';
+import { INITIAL_WORKOUTS } from '../../data/seed';
 import { catalogTextsFor } from '../../data/catalogTexts';
 import { WorkoutLog } from '../../types';
 import { resolveExercises } from '../catalog/resolve';
@@ -8,7 +9,7 @@ import {
   DEFAULT_PROFILE, GeneratedWorkout, GeneratorContext, GeneratorProfile, HealthLevel,
   applyMode, buildMonth, buildWeek, calibrateMax, calibrateTempo, capMinutes, checkSession, deficitTemplate,
   estimateSeconds, fitRounds, hasSameDirectionInRow, historyFromLogs, nextTarget, orderRound, outcomeFromLog,
-  replaceGenerated, runGenerator, shortRounds, toWorkoutPlans, weekDebt, weekIsCovered,
+  dayPlan, replaceGenerated, runGenerator, shortRounds, toWorkoutPlans, weekDebt, weekIsCovered,
 } from '.';
 import { CAP_TOLERANCE, DELOAD } from './rules';
 
@@ -413,5 +414,41 @@ describe('generator screen glue', () => {
     const old = { ...coach, id: 'gen-old' };
     const plans = toWorkoutPlans(runGenerator({ period: 'week', level: 'full', perWeek: 2 }, input), label);
     expect(replaceGenerated([old, coach], plans).map((p) => p.id)).toEqual([...plans.map((p) => p.id), 'workout-a']);
+  });
+});
+
+describe('the plan played today (day mode on the Workout tab)', () => {
+  const coachA = INITIAL_WORKOUTS.find((w) => w.id === 'workout-a')!;
+  const opts = { catalog: CATALOG, warmupMinutes: 8, cooldownMinutes: 5 };
+
+  it('standard and no-energy keep the plan; short plays ⅔ of the rounds', () => {
+    expect(dayPlan(coachA, 'green', opts).plan).toBe(coachA);
+    expect(dayPlan(coachA, 'red', opts).plan).toBe(coachA);
+    const s = dayPlan(coachA, 'yellow', opts).plan;
+    expect(s.rounds).toBe(2);
+    expect(s.items).toEqual(coachA.items);
+  });
+
+  it('accent on a coach plan: focus pairs stay, the rest is reported', () => {
+    const d = dayPlan(coachA, 'accent', { ...opts, accentMinutes: 20 });
+    const ids = d.plan.items.map((it) => it.exerciseId);
+    // Coach A: Bulgarian split squat + glute bridge, Australian pull-ups + push-ups are the big movements.
+    expect(ids).toEqual(expect.arrayContaining(['bulgarian-split-squat', 'australian-pull-ups']));
+    expect(ids.length).toBeLessThan(coachA.items.length);
+    expect(d.dropped.length).toBeGreaterThan(0);
+    expect(d.plan.restBetweenRounds).toBeLessThanOrEqual(45);
+    expect(hasSameDirectionInRow(d.plan.items.map((it) => it.pattern!))).toBe(false);
+  });
+
+  it('more minutes keep more of the workout', () => {
+    const short = dayPlan(coachA, 'accent', { ...opts, accentMinutes: 15 }).plan;
+    const long = dayPlan(coachA, 'accent', { ...opts, accentMinutes: 60 }).plan;
+    expect(long.items.length * long.rounds).toBeGreaterThanOrEqual(short.items.length * short.rounds);
+  });
+
+  it('own exercises (not in the catalog) are always kept', () => {
+    const plan = { ...coachA, items: [...coachA.items, { exerciseId: 'custom-123', target: 10 }] };
+    const ids = dayPlan(plan, 'accent', { ...opts, accentMinutes: 15 }).plan.items.map((it) => it.exerciseId);
+    expect(ids).toContain('custom-123');
   });
 });

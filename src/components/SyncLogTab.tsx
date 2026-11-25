@@ -21,6 +21,14 @@ import {
 } from '../types';
 import { downloadFile, shareOrDownloadFile } from '../utils/download';
 
+// The day's mode of a logged workout (older logs: the traffic light).
+const READINESS_LABEL: Record<string, string> = {
+  green: 'Стандарт',
+  yellow: 'Короткая',
+  accent: 'Акцент',
+  red: 'Нет сил',
+};
+
 interface SyncLogTabProps {
   exercises: Exercise[];
   workouts: WorkoutPlan[];
@@ -1070,11 +1078,7 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
                           <span>{formatDate(w.date)}</span>
                           <span aria-hidden="true">·</span>
                           <span>
-                            {w.readiness === 'green'
-                              ? 'Зелёный'
-                              : w.readiness === 'yellow'
-                                ? 'Жёлтый'
-                                : 'Красный'}
+                            {READINESS_LABEL[w.readiness] ?? w.readiness}
                           </span>
                         </div>
                         <h3 className="mt-0.5 flex items-center gap-1.5 text-base font-bold text-[#111827] dark:text-[#F3F4F6]">
