@@ -22,6 +22,19 @@ export const SCENE_KEYS = [
   'l_sit_hold',
   'split_stance_anti_rotation',
   'glute_bridge_two_legs',
+  'negative_pull_ups',
+  'band_assisted_pull_ups',
+  'chin_ups',
+  'chest_to_bar_pull_ups',
+  'archer_pull_ups',
+  'prone_ywt_raises',
+  'suspension_row',
+  'feet_elevated_australian_pull_ups',
+  'suspension_single_arm_row',
+  'seated_band_row',
+  'single_arm_db_row',
+  'band_face_pull',
+  'split_stance_explosive_band_row',
 ] as const;
 
 export type SceneKey = (typeof SCENE_KEYS)[number];

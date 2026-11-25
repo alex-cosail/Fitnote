@@ -304,4 +304,177 @@ export const EXERCISE_SCENES: Record<SceneKey, () => React.ReactElement> = {
       <Arrow x1={76} y1={96} x2={76} y2={82} />
     </g>
   ),
+  // ——— pull-ups ———
+  negative_pull_ups: () => (
+    <g>
+      <line x1="25" y1="30" x2="135" y2="30" stroke={INK} strokeWidth="3.5" strokeLinecap="round" />
+      {/* start at the top, lower slowly */}
+      <Head x={80} y={19} />
+      <Limb points="64,30 60,46 74,42" color={RED} />
+      <Limb points="96,30 100,46 86,42" color={RED} />
+      <Body points="80,26 80,64" />
+      <Limb points="80,64 76,98" />
+      <Limb points="80,64 84,98" />
+      <line x1="118" y1="38" x2="118" y2="70" stroke={RED} strokeWidth="2" strokeDasharray="3 3" strokeLinecap="round" />
+      <polyline points="113,65 118,71 123,65" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+  ),
+  band_assisted_pull_ups: () => (
+    <g>
+      <line x1="25" y1="18" x2="135" y2="18" stroke={INK} strokeWidth="3.5" strokeLinecap="round" />
+      <Limb points="62,18 58,36 70,40" />
+      <Limb points="98,18 102,36 90,40" />
+      <Head x={80} y={27} />
+      <Body points="80,34 80,66" />
+      {/* one foot in the band loop */}
+      <Limb points="80,66 92,80 86,92" />
+      <Limb points="80,66 78,100" />
+      <path d="M74,18 Q62,70 86,94 Q96,60 86,18" fill="none" stroke={RED} strokeWidth="1.8" strokeDasharray="3.5 2.5" />
+      <Arrow x1={118} y1={58} x2={118} y2={36} />
+    </g>
+  ),
+  chin_ups: () => (
+    <g>
+      <line x1="25" y1="18" x2="135" y2="18" stroke={INK} strokeWidth="3.5" strokeLinecap="round" />
+      {/* narrow underhand grip, biceps work */}
+      <Limb points="72,18 64,32 74,40" color={RED} />
+      <Limb points="88,18 96,32 86,40" color={RED} />
+      <circle cx="72" cy="18" r="3" fill={RED} />
+      <circle cx="88" cy="18" r="3" fill={RED} />
+      <Head x={80} y={28} />
+      <Body points="80,35 80,68" />
+      <Limb points="80,68 76,102" />
+      <Limb points="80,68 84,102" />
+      <Arrow x1={116} y1={58} x2={116} y2={34} />
+    </g>
+  ),
+  chest_to_bar_pull_ups: () => (
+    <g>
+      <line x1="25" y1="38" x2="135" y2="38" stroke={INK} strokeWidth="3.5" strokeLinecap="round" />
+      {/* chest touches the bar, elbows drive down and back */}
+      <Head x={82} y={24} />
+      <Body points="80,31 80,66" />
+      <circle cx="81" cy="38" r="3.2" fill={RED} />
+      <Limb points="60,38 60,54 74,44" color={RED} />
+      <Limb points="102,38 102,54 88,44" color={RED} />
+      <Limb points="80,66 78,100" />
+      <Limb points="80,66 86,100" />
+      <Arrow x1={120} y1={74} x2={120} y2={50} />
+    </g>
+  ),
+  archer_pull_ups: () => (
+    <g>
+      <line x1="25" y1="18" x2="135" y2="18" stroke={INK} strokeWidth="3.5" strokeLinecap="round" />
+      {/* pull to one hand, the other arm long along the bar */}
+      <Limb points="108,18 112,34 98,40" color={RED} />
+      <Limb points="88,38 44,18" />
+      <Head x={96} y={30} />
+      <Body points="93,37 90,70" />
+      <Limb points="90,70 88,102" />
+      <Arrow x1={128} y1={60} x2={128} y2={36} />
+    </g>
+  ),
+  // ——— horizontal pulls ———
+  prone_ywt_raises: () => (
+    <g>
+      <Floor />
+      {/* face down, arms lift in a Y, then T, then W */}
+      <Body points="36,94 100,94" />
+      <Head x={108} y={91} />
+      <Limb points="98,93 128,80" color={RED} />
+      <Limb points="98,93 122,72" color={RED} />
+      <text x="112" y="56" fontSize="13" fontWeight="700" fill={RED} fontFamily="Arial, sans-serif">Y·T·W</text>
+    </g>
+  ),
+  suspension_row: () => (
+    <g>
+      <line x1="20" y1="105" x2="145" y2="105" stroke={FLOOR} strokeWidth="2" />
+      <Straps ax={76} ay={8} hx={70} hy={40} />
+      {/* leaning back, pull the chest to the handles */}
+      <Head x={48} y={56} />
+      <line x1="53" y1="60" x2="128" y2="103" stroke={INK} strokeWidth="3.4" strokeLinecap="round" />
+      <Limb points="64,66 58,52 70,40" color={RED} />
+      <Arrow x1={90} y1={62} x2={78} y2={46} />
+    </g>
+  ),
+  feet_elevated_australian_pull_ups: () => (
+    <g>
+      <line x1="20" y1="105" x2="145" y2="105" stroke={FLOOR} strokeWidth="2" />
+      <line x1="25" y1="36" x2="105" y2="36" stroke={INK} strokeWidth="3.2" strokeLinecap="round" />
+      <line x1="35" y1="36" x2="35" y2="105" stroke="#D1D5DB" strokeWidth="2.2" />
+      <Box x={114} y={68} w={28} h={37} />
+      {/* body level, feet on the box */}
+      <Head x={48} y={60} />
+      <line x1="54" y1="63" x2="130" y2="68" stroke={INK} strokeWidth="3.4" strokeLinecap="round" />
+      <Limb points="64,64 64,36" color={RED} />
+      <circle cx="64" cy="36" r="3" fill={RED} />
+      <Arrow x1={84} y1={58} x2={72} y2={44} />
+    </g>
+  ),
+  suspension_single_arm_row: () => (
+    <g>
+      <line x1="20" y1="105" x2="145" y2="105" stroke={FLOOR} strokeWidth="2" />
+      <Straps ax={76} ay={8} hx={70} hy={40} />
+      {/* one hand on the handle, the other free; the trunk does not twist */}
+      <Head x={48} y={56} />
+      <line x1="53" y1="60" x2="128" y2="103" stroke={INK} strokeWidth="3.4" strokeLinecap="round" />
+      <Limb points="64,66 58,52 70,40" color={RED} />
+      <Limb points="62,66 74,84" />
+      <Arrow x1={92} y1={62} x2={80} y2={46} />
+    </g>
+  ),
+  seated_band_row: () => (
+    <g>
+      <Floor />
+      {/* sitting, legs long, band around the feet, pull to the belly */}
+      <Head x={98} y={52} />
+      <Body points="98,59 98,94" />
+      <Limb points="98,94 44,96" />
+      <Limb points="98,66 112,74 92,76" color={RED} />
+      <line x1="44" y1="92" x2="92" y2="76" stroke={RED} strokeWidth="1.8" strokeDasharray="3.5 2.5" />
+      <Arrow x1={64} y1={60} x2={84} y2={60} />
+    </g>
+  ),
+  single_arm_db_row: () => (
+    <g>
+      <Floor />
+      <Box x={92} y={78} w={36} h={20} />
+      {/* bent over, one hand on the bench, row the dumbbell to the hip */}
+      <Head x={104} y={56} />
+      <Body points="50,58 96,60" />
+      <Limb points="94,60 102,78" />
+      <Limb points="86,60 76,50 82,70" color={RED} />
+      <rect x="76" y="70" width="12" height="6" rx="2" fill={GEAR} />
+      <Limb points="50,58 46,98" />
+      <Limb points="50,58 60,98" />
+      <Arrow x1={66} y1={86} x2={66} y2={66} />
+    </g>
+  ),
+  band_face_pull: () => (
+    <g>
+      <line x1="24" y1="18" x2="24" y2="104" stroke={GEAR} strokeWidth="3" strokeLinecap="round" />
+      {/* band from high up, hands to the face, elbows high */}
+      <line x1="24" y1="26" x2="94" y2="30" stroke={RED} strokeWidth="2" strokeDasharray="4 3" />
+      <Head x={106} y={24} />
+      <Body points="106,31 106,68" />
+      <Limb points="106,38 118,28 96,30" color={RED} />
+      <Limb points="106,68 98,86 96,104" />
+      <Limb points="106,68 114,86 116,104" />
+      <Arrow x1={72} y1={44} x2={90} y2={44} />
+    </g>
+  ),
+  split_stance_explosive_band_row: () => (
+    <g>
+      <line x1="24" y1="28" x2="24" y2="104" stroke={GEAR} strokeWidth="3" strokeLinecap="round" />
+      <line x1="24" y1="52" x2="90" y2="54" stroke={RED} strokeWidth="2.2" />
+      {/* split stance, one arm, fast pull */}
+      <Head x={102} y={26} />
+      <Body points="102,33 102,68" />
+      <Limb points="102,42 112,52 90,54" color={RED} />
+      <Limb points="102,68 90,86 84,104" />
+      <Limb points="102,68 116,86 124,104" />
+      <Arrow x1={68} y1={38} x2={86} y2={38} />
+      <Arrow x1={74} y1={30} x2={92} y2={30} />
+    </g>
+  ),
 };
