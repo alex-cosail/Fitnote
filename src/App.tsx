@@ -13,6 +13,9 @@ import { BackupSection } from './components/BackupSection';
 import { CatalogTab } from './components/CatalogTab';
 import { CheckUpTab } from './components/CheckUpTab';
 import { GeneratorPanel } from './components/GeneratorPanel';
+import { OnboardingWizard } from './components/OnboardingWizard';
+import { MePanel } from './components/MePanel';
+import { planLabel } from './components/generatorLabels';
 import { SyncLogTab } from './components/SyncLogTab';
 import { WorkoutPlayer } from './components/WorkoutPlayer';
 import { WorkoutPreviewTab } from './components/WorkoutPreviewTab';
@@ -20,7 +23,8 @@ import { CATALOG } from './data/catalog';
 import { catalogTextsFor } from './data/catalogTexts';
 import { CATALOG_IDS, RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
 import { resolveExercises } from './domain/catalog/resolve';
-import { dayPlan, dayTimes, replaceGenerated } from './domain/generator';
+import { dayPlan, dayTimes, replaceGenerated, runGenerator, toWorkoutPlans } from './domain/generator';
+import { UserProfile, requestFor, toGeneratorProfile } from './domain/profile/profile';
 import { recordMax } from './domain/catalog/userMaxes';
 import { resolveWorkout } from './domain/plan/resolveWorkout';
 import { applyImport, ImportPayload } from './domain/plan/importPlan';
@@ -95,9 +99,17 @@ export default function App() {
     [locale, data.maxes, data.customExercises]
   );
 
-  // Tabs follow the URL hash (#/workout, #/log, …). Routes reserved for later
-  // steps (onboarding, studio, shared workouts) show the Workout tab for now.
+  // The person as the generator sees them (defaults until the start wizard).
+  const genProfile = useMemo(
+    () => toGeneratorProfile(data.profile, data.favorites ?? []),
+    [data.profile, data.favorites]
+  );
+
+  // Tabs follow the URL hash (#/workout, #/log, …); #/onboarding is the start
+  // wizard. Routes reserved for later steps (studio, shared workouts) show the
+  // Workout tab for now.
   const [route, navigate] = useHashRoute();
+  const isOnboarding = route.name === 'onboarding';
   const activeTab: AppTab = route.name === 'tab' ? route.tab : 'workout';
   const setActiveTab = (tab: AppTab) => navigate({ name: 'tab', tab });
   const [isPlayerVisible, setIsPlayerVisible] = useState<boolean>(
@@ -148,6 +160,7 @@ export default function App() {
     const today = dayPlan(plan, readiness, {
       catalog: CATALOG,
       accentMinutes: data.accentMinutes,
+      profile: genProfile,
       ...times,
     }).plan;
     const effectiveRounds = getEffectiveRounds(today.rounds, readiness === 'yellow' ? 'green' : readiness);
@@ -303,6 +316,43 @@ export default function App() {
 
   // Generator: new generated plans replace the previous generated ones and
   // the first becomes the selected workout.
+  // A brand-new person (no profile, no journal) meets the app first.
+  useEffect(() => {
+    if (!data.profile && !data.onboardingDismissed && data.workoutLogs.length === 0 && !isOnboarding) {
+      navigate({ name: 'onboarding' });
+    }
+    // only on launch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Start wizard done: remember the person and build their week right away.
+  const handleCompleteProfile = (profile: UserProfile) => {
+    const result = runGenerator(
+      { ...requestFor(profile), period: 'week' },
+      {
+        catalog: CATALOG,
+        exercises,
+        logs: data.workoutLogs,
+        date: new Date().toISOString().slice(0, 10),
+        profile: toGeneratorProfile(profile, data.favorites ?? []),
+      }
+    );
+    const plans = toWorkoutPlans(result, (gw, week) => planLabel(t, gw, week));
+    setData((prev) => ({
+      ...prev,
+      profile,
+      workouts: replaceGenerated(prev.workouts, plans),
+      selectedWorkoutId: plans[0]?.id ?? prev.selectedWorkoutId,
+    }));
+    setActiveTab('workout');
+    window.scrollTo(0, 0);
+  };
+
+  const handleDismissOnboarding = () => {
+    setData((prev) => ({ ...prev, onboardingDismissed: true }));
+    setActiveTab('workout');
+  };
+
   const handleAddGenerated = (plans: WorkoutPlan[]) => {
     if (plans.length === 0) return;
     setData((prev) => ({
@@ -505,12 +555,34 @@ export default function App() {
 
       {/* Tab Content */}
       <main>
-        {activeTab === 'workout' && (
+        {isOnboarding && (
+          <OnboardingWizard
+            initial={data.profile}
+            onComplete={handleCompleteProfile}
+            onCancel={handleDismissOnboarding}
+          />
+        )}
+        {!isOnboarding && activeTab === 'workout' && !data.profile && (
+          <div className="mx-auto max-w-6xl px-5 pt-4">
+            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#0B5F73]/30 bg-[#ECFAFC] p-3 dark:border-[#5EC4D8]/30 dark:bg-[#0B2E36]/60">
+              <p className="min-w-0 flex-1 text-sm font-semibold text-[#0B5F73] dark:text-[#5EC4D8]">{t('wiz.banner')}</p>
+              <button
+                type="button"
+                onClick={() => navigate({ name: 'onboarding' })}
+                className="tap-scale min-h-[40px] rounded-xl bg-[#0B5F73] px-4 text-sm font-bold text-white"
+              >
+                {t('wiz.bannerBtn')}
+              </button>
+            </div>
+          </div>
+        )}
+        {!isOnboarding && activeTab === 'workout' && (
           <WorkoutPreviewTab
             workouts={data.workouts}
             exercises={exercises}
             selectedWorkoutId={data.selectedWorkoutId}
             readiness={data.readiness}
+            profile={genProfile}
             accentMinutes={data.accentMinutes}
             warmupMinutes={data.warmupMinutes}
             activeSession={data.activeSession}
@@ -538,7 +610,16 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'checkup' && (
+        {!isOnboarding && activeTab === 'checkup' && (
+          <MePanel
+            profile={data.profile}
+            exercises={exercises}
+            favorites={data.favorites ?? []}
+            onToggleFavorite={handleToggleFavorite}
+            onEdit={() => navigate({ name: 'onboarding' })}
+          />
+        )}
+        {!isOnboarding && activeTab === 'checkup' && (
           <CheckUpTab
             exercises={exercises}
             history={data.checkUpHistory}
@@ -547,9 +628,10 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'catalog' && (
+        {!isOnboarding && activeTab === 'catalog' && (
           <GeneratorPanel
             exercises={exercises}
+            profile={data.profile}
             logs={data.workoutLogs}
             favorites={data.favorites ?? []}
             onToggleFavorite={handleToggleFavorite}
@@ -557,14 +639,14 @@ export default function App() {
             onSaveOwn={handleSaveOwn}
           />
         )}
-        {activeTab === 'catalog' && (
+        {!isOnboarding && activeTab === 'catalog' && (
           <CatalogTab
             exercises={exercises}
             onAddExercise={handleAddExercise}
           />
         )}
 
-        {activeTab === 'sync' && (
+        {!isOnboarding && activeTab === 'sync' && (
           <SyncLogTab
             exercises={exercises}
             workouts={data.workouts}
@@ -594,6 +676,7 @@ export default function App() {
       {/* Portrait Mobile Fixed 4-Tab Bottom Navigation (lifted away from rounded bottom edges) */}
       <nav
         aria-label={t('nav.aria')}
+        hidden={isOnboarding}
         className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 z-40 rounded-2xl border border-gray-200 bg-white/95 shadow-lg shadow-black/5 backdrop-blur-md dark:border-[#1E293B] dark:bg-[#101622]/95 dark:shadow-black/50 landscape:hidden"
       >
         <div className="grid h-15 grid-cols-4 items-center px-1">

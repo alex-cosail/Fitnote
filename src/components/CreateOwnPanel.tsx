@@ -3,7 +3,7 @@ import { Check, Heart, Minus, Plus, ShieldAlert, X } from 'lucide-react';
 import { CATALOG } from '../data/catalog';
 import { formatMetricTarget } from '../domain/format';
 import {
-  COMPONENT, Component, DEFAULT_PROFILE, OwnZone, antagonistOptions, basketIssues, buildOwnPlan,
+  COMPONENT, Component, GeneratorProfile, OwnZone, antagonistOptions, basketIssues, buildOwnPlan,
   changeTarget, estimateSeconds, fixFor, ladderPosition, ownItem, stepRank, zoneCandidates,
 } from '../domain/generator';
 import { useT } from '../i18n';
@@ -14,6 +14,7 @@ import { ExerciseSvg } from './ExerciseSvg';
 
 interface CreateOwnPanelProps {
   exercises: Exercise[];
+  profile: GeneratorProfile;
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   component: Component;
@@ -38,7 +39,7 @@ const iconBtn =
  * basket counts time as it grows; «Готово» checks the coverage first.
  */
 export const CreateOwnPanel: React.FC<CreateOwnPanelProps> = ({
-  exercises, favorites, onToggleFavorite, component, onSave,
+  exercises, profile, favorites, onToggleFavorite, component, onSave,
 }) => {
   const { t, locale } = useT();
   const [zone, setZone] = useState<OwnZone | null>(null);
@@ -47,8 +48,8 @@ export const CreateOwnPanel: React.FC<CreateOwnPanelProps> = ({
   const [antagonistFor, setAntagonistFor] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
 
-  const cond = DEFAULT_PROFILE.usualConditions;
-  const level = DEFAULT_PROFILE.level;
+  const cond = profile.usualConditions;
+  const level = profile.level;
   const exById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
   const catalogById = useMemo(() => new Map(CATALOG.map((c) => [c.id, c])), []);
   const inBasket = items.map((it) => it.exerciseId!) as string[];

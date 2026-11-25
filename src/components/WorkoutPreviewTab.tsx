@@ -35,6 +35,7 @@ interface WorkoutPreviewTabProps {
   exercises: Exercise[];
   selectedWorkoutId: string;
   readiness: ReadinessLevel;
+  profile?: import('../domain/generator').GeneratorProfile;
   accentMinutes?: number;
   warmupMinutes: number;
   activeSession: ActiveSession | null;
@@ -60,6 +61,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   exercises,
   selectedWorkoutId,
   readiness,
+  profile,
   accentMinutes = DEFAULT_ACCENT_MINUTES,
   warmupMinutes,
   activeSession,
@@ -110,6 +112,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   const today = dayPlan(selectedPlan, readiness, {
     catalog: CATALOG,
     accentMinutes,
+    profile,
     ...times,
   });
   const todayPlan = today.plan;

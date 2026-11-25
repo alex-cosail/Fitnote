@@ -215,6 +215,10 @@ export interface FitnoteData {
   activeSession: ActiveSession | null;
   // ISO time of the last saved backup file (absent = never).
   lastBackupAt?: string;
+  // «Позже» on the start wizard: a new person is not sent there again on launch.
+  onboardingDismissed?: boolean;
+  // The person from the start wizard (absent = not met yet; generator uses defaults).
+  profile?: import('./domain/profile/profile').UserProfile;
   // Favorite exercise ids (♥ in the generator); the engine prefers them.
   favorites?: string[];
   // Minutes for the accent mode (absent = 20).

@@ -11,10 +11,12 @@ import { useT } from '../i18n';
 import type { TranslationKey } from '../i18n/ru';
 import { Exercise, WorkoutLog, WorkoutPlan } from '../types';
 import { CreateOwnPanel } from './CreateOwnPanel';
+import { UserProfile, requestFor, toGeneratorProfile } from '../domain/profile/profile';
 import { ExerciseStepCard } from './ExerciseStepCard';
 
 interface GeneratorPanelProps {
   exercises: Exercise[];
+  profile?: UserProfile;
   logs: WorkoutLog[];
   favorites: string[];
   onToggleFavorite: (id: string) => void;
@@ -45,18 +47,20 @@ export const iconBtn =
  * "Done — add to Workouts".
  */
 export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
-  exercises, logs, favorites, onToggleFavorite, onAdd, onSaveOwn,
+  exercises, profile, logs, favorites, onToggleFavorite, onAdd, onSaveOwn,
 }) => {
   const { t } = useT();
   const [tab, setTab] = useState<'base' | 'own'>('base');
-  const [req, setReq] = useState<GenRequest>(DEFAULT_REQUEST);
+  // The questions' defaults come from the person's profile.
+  const [req, setReq] = useState<GenRequest>(() => requestFor(profile));
+  const genProfile = useMemo(() => toGeneratorProfile(profile, favorites), [profile, favorites]);
   const [openWeeks, setOpenWeeks] = useState<Set<number>>(new Set([0]));
   const [draft, setDraft] = useState<WorkoutPlan[] | null>(null); // editing the base
   const date = todayIso();
 
   const result = useMemo(
-    () => runGenerator(req, { catalog: CATALOG, exercises, logs, date, profile: { favorites } }),
-    [req, exercises, logs, date, favorites]
+    () => runGenerator(req, { catalog: CATALOG, exercises, logs, date, profile: genProfile }),
+    [req, exercises, logs, date, genProfile]
   );
   const exById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises]);
   const catalogById = useMemo(() => new Map(CATALOG.map((c) => [c.id, c])), []);
@@ -81,7 +85,7 @@ export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
   };
   const edit = (i: number, fn: (p: WorkoutPlan) => WorkoutPlan) =>
     setDraft((d) => (d ?? generated).map((p, j) => (j === i ? fn(p) : p)));
-  const cond = DEFAULT_PROFILE.usualConditions;
+  const cond = genProfile.usualConditions;
 
   const showPerWeek = req.period !== 'single';
   const many = result.weeks.length > 1;
@@ -227,6 +231,7 @@ export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
       {tab === 'own' ? (
         <CreateOwnPanel
           exercises={exercises}
+          profile={genProfile}
           favorites={favorites}
           onToggleFavorite={onToggleFavorite}
           component={LEVEL_COMPONENT[req.level]}

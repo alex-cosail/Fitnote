@@ -8,7 +8,7 @@ import { moveClass, orderRound } from './order';
 import { pickExercise } from './pick';
 import {
   AGE_PCT_CAP, CAP_TOLERANCE, COMPONENT, F_MIN_ROUNDS, F_STEP_DOWN_BELOW_REPS, LEVEL_RANK, M_RANK, MAX_PLUSPLUS_ZONES,
-  S_ROUNDS_HIGH, S_STEP_DOWN_BELOW_REPS, S_WINDOW, TemplateSlot, ZONE_PATTERNS, ZONE_PRIORITY, ZONE_RANK_STEP,
+  S_ROUNDS_HIGH, S_STEP_DOWN_BELOW_REPS, S_WINDOW, SUBSTITUTE, TemplateSlot, ZONE_PATTERNS, ZONE_PRIORITY, ZONE_RANK_STEP,
 } from './rules';
 import {
   Component, GeneratedWorkout, GeneratorContext, GeneratorProfile, SessionKind, SlotSpec, Zone, ZoneMark,
@@ -146,7 +146,12 @@ export function buildSession(
   // High-priority slots pick first, so the goal and accents get the best fits.
   const pickOrder = slots.map((_, i) => i).sort((a, b) => slots[b].priority - slots[a].priority || a - b);
   for (const i of pickOrder) {
-    const c = pickExercise(slots[i], profile, ctx, { usedThisSession: used, usedThisWeek: opts.usedThisWeek, conditions: cond });
+    const pickOpts = { usedThisSession: used, usedThisWeek: opts.usedThisWeek, conditions: cond };
+    let c = pickExercise(slots[i], profile, ctx, pickOpts);
+    // Not possible here (vertical pull at home without a bar): the substitute
+    // pattern takes the slot (§11) — a band row instead of pull-ups.
+    const sub = SUBSTITUTE[slots[i].pattern];
+    if (!c && sub) c = pickExercise({ ...slots[i], pattern: sub, families: undefined }, profile, ctx, pickOpts);
     picks[i] = c;
     if (c) used.add(c.id);
   }
