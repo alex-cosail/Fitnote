@@ -216,7 +216,10 @@ export const RED_MOBILITY_EXERCISES: { exerciseId: string; target: number }[] = 
 ];
 
 export const DEFAULT_FITNOTE_DATA: FitnoteData = {
-  maxes: SEED_MAXES,
+  // A fresh install starts without anyone's maxima: defaults by the level from
+  // the start wizard, estimates after the first check-up (field test 26.11).
+  // The author's own maxima stay in SEED_MAXES (tests, examples).
+  maxes: {},
   customExercises: [],
   workouts: INITIAL_WORKOUTS,
   selectedWorkoutId: 'workout-a',

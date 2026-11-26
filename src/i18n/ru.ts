@@ -196,6 +196,19 @@ export const ru = {
   'me.favoritesEmpty': "Пока нет. Отмечайте ♥ в генераторе — генератор будет ставить их первыми.",
   'me.unfavorite': "Убрать из любимых: {name}",
   'me.checkup': "Check-Up — замеры максимумов",
+  'ready.eyebrow': "Готово",
+  'ready.title': "Ваша неделя готова",
+  'ready.sub': "Тренировок: {count}. Собрано под ваши ответы — всё можно поменять.",
+  'ready.start': "Начать первую тренировку",
+  'ready.edit': "Изменить в генераторе",
+  'ready.coach': "Обсудить с моим тренером",
+  'ready.copied': "скопировано",
+  'ready.shared': "отправлено",
+  'ready.calendar': "В календарь",
+  'ready.calendarSoon': "скоро — с днями недели",
+  'ready.personal': "Персональный тренер",
+  'ready.soon': "скоро",
+  'ready.shareHeader': "Моя неделя в Fitnote",
 };
 
 export type Dict = Record<keyof typeof ru, string>;

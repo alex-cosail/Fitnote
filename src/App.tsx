@@ -15,6 +15,7 @@ import { CheckUpTab } from './components/CheckUpTab';
 import { GeneratorPanel } from './components/GeneratorPanel';
 import { OnboardingWizard } from './components/OnboardingWizard';
 import { MePanel } from './components/MePanel';
+import { WeekReadyPanel } from './components/WeekReadyPanel';
 import { planLabel } from './components/generatorLabels';
 import { SyncLogTab } from './components/SyncLogTab';
 import { WorkoutPlayer } from './components/WorkoutPlayer';
@@ -23,6 +24,7 @@ import { CATALOG } from './data/catalog';
 import { catalogTextsFor } from './data/catalogTexts';
 import { CATALOG_IDS, RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
 import { resolveExercises } from './domain/catalog/resolve';
+import { baseCheckupIds, estimateMaxes } from './domain/catalog/estimate';
 import { dayPlan, dayTimes, replaceGenerated, runGenerator, toWorkoutPlans } from './domain/generator';
 import { UserProfile, requestFor, toGeneratorProfile } from './domain/profile/profile';
 import { recordMax } from './domain/catalog/userMaxes';
@@ -88,16 +90,24 @@ export default function App() {
   const t = makeT(locale);
 
   // Screens work with resolved exercises: catalog (code) + user maxima + custom.
-  const exercises = useMemo(
-    () =>
-      resolveExercises(
-        CATALOG,
-        catalogTextsFor(locale),
-        data.maxes,
-        data.customExercises
-      ),
-    [locale, data.maxes, data.customExercises]
-  );
+  // Unmeasured exercises get a max estimated from a measured one of the same
+  // ladder family (check-up with only the base tests, field test 26.11).
+  const level = data.profile?.level ?? 'medium';
+  const exercises = useMemo(() => {
+    const est = estimateMaxes(CATALOG, data.maxes, level);
+    const estimated = Object.fromEntries(
+      Object.entries(est)
+        .filter(([, e]) => e.source === 'estimated')
+        .map(([id, e]) => [id, { value: e.value }])
+    );
+    return resolveExercises(
+      CATALOG,
+      catalogTextsFor(locale),
+      { ...estimated, ...data.maxes },
+      data.customExercises,
+      level
+    );
+  }, [locale, data.maxes, data.customExercises, level]);
 
   // The person as the generator sees them (defaults until the start wizard).
   const genProfile = useMemo(
@@ -316,6 +326,9 @@ export default function App() {
 
   // Generator: new generated plans replace the previous generated ones and
   // the first becomes the selected workout.
+  // The week built at the end of the wizard, shown on «Ваша неделя готова».
+  const [readyPlans, setReadyPlans] = useState<WorkoutPlan[] | null>(null);
+
   // A brand-new person (no profile, no journal) meets the app first.
   useEffect(() => {
     if (!data.profile && !data.onboardingDismissed && data.workoutLogs.length === 0 && !isOnboarding) {
@@ -344,7 +357,8 @@ export default function App() {
       workouts: replaceGenerated(prev.workouts, plans),
       selectedWorkoutId: plans[0]?.id ?? prev.selectedWorkoutId,
     }));
-    setActiveTab('workout');
+    // Stay in the wizard and show the result (field test 26.11).
+    setReadyPlans(plans);
     window.scrollTo(0, 0);
   };
 
@@ -555,7 +569,23 @@ export default function App() {
 
       {/* Tab Content */}
       <main>
-        {isOnboarding && (
+        {isOnboarding && readyPlans && (
+          <WeekReadyPanel
+            plans={readyPlans}
+            exercises={exercises}
+            onStart={() => {
+              setReadyPlans(null);
+              setActiveTab('workout');
+              window.scrollTo(0, 0);
+            }}
+            onEdit={() => {
+              setReadyPlans(null);
+              setActiveTab('catalog');
+              window.scrollTo(0, 0);
+            }}
+          />
+        )}
+        {isOnboarding && !readyPlans && (
           <OnboardingWizard
             initial={data.profile}
             onComplete={handleCompleteProfile}
@@ -621,6 +651,7 @@ export default function App() {
         )}
         {!isOnboarding && activeTab === 'checkup' && (
           <CheckUpTab
+            baseIds={baseCheckupIds(CATALOG, genProfile.usualConditions)}
             exercises={exercises}
             history={data.checkUpHistory}
             isMuted={data.isMuted}

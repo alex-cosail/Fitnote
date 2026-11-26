@@ -11,6 +11,8 @@ import { ExerciseSvg } from './ExerciseSvg';
 
 interface CheckUpTabProps {
   exercises: Exercise[];
+  /** Base tests (one per pattern) shown first; the rest are estimated. */
+  baseIds?: string[];
   history: CheckUpEntry[];
   isMuted: boolean;
   onRecordCheckUp: (exerciseId: string, newMax: number) => void;
@@ -28,6 +30,7 @@ interface TimerState {
 
 export const CheckUpTab: React.FC<CheckUpTabProps> = ({
   exercises,
+  baseIds,
   history,
   isMuted,
   onRecordCheckUp,
@@ -47,6 +50,12 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
   >({});
 
   const [savedFlashId, setSavedFlashId] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const baseSet = new Set(baseIds ?? exercises.map((e) => e.id));
+  const baseList = (baseIds ?? []).map((id) => exercises.find((e) => e.id === id)).filter(Boolean) as Exercise[];
+  const others = baseIds ? exercises.filter((e) => !baseSet.has(e.id) && !e.isCustom) : [];
+  const custom = exercises.filter((e) => e.isCustom);
+  const visible = baseIds ? [...baseList, ...custom, ...(showAll ? others : [])] : exercises;
   const [timerState, setTimerState] = useState<TimerState | null>(null);
 
   const timerRef = useRef<TimerState | null>(null);
@@ -257,6 +266,9 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
           Check-Up
         </h1>
         <p className="mt-1 max-w-2xl text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
+          {baseIds
+            ? `Достаточно ${baseList.length} базовых упражнений — по одному на каждое движение. Остальные максимумы приложение рассчитает по лестнице. `
+            : ''}
           Нажмите на цифры таймера для отсчёта 5 секунд перед стартом; повторный
           тап остановит секундомер.
         </p>
@@ -264,7 +276,7 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
 
       <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-start">
         <div className="min-w-0 space-y-3 landscape:space-y-4 lg:col-span-8">
-          {exercises.map((ex, index) => {
+          {visible.map((ex, index) => {
             const draft = getDraft(ex);
             const isDirty = draft !== ex.checkup_max;
             const isFlashed = savedFlashId === ex.id;
@@ -348,6 +360,11 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
                     </p>
                     <h2 className="mt-0.5 break-words text-lg font-bold leading-tight text-[#111827] dark:text-[#F3F4F6]">
                       {ex.name}
+                      {!baseSet.has(ex.id) && !ex.lastCheckupDate && !ex.isCustom && (
+                        <span className="ml-2 align-middle rounded-md bg-gray-100 px-1.5 py-0.5 text-[11px] font-semibold text-gray-500 dark:bg-[#1A2333] dark:text-gray-400">
+                          расчётный
+                        </span>
+                      )}
                     </h2>
                   </div>
 
@@ -460,6 +477,17 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
               </article>
             );
           })}
+          {baseIds && others.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAll((s) => !s)}
+              className="tap-scale flex min-h-[50px] w-full items-center justify-center rounded-2xl border border-dashed border-gray-300 px-4 text-sm font-semibold text-gray-600 dark:border-[#334155] dark:text-gray-300"
+            >
+              {showAll
+                ? 'Скрыть остальные'
+                : `Остальные упражнения (${others.length}) — расчётные максимумы`}
+            </button>
+          )}
         </div>
 
         {/* Check-Up History Log */}
