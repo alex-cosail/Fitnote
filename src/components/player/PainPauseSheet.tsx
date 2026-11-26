@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { CareLevel, CareReason, JOINT_NAMES } from '../../domain/care/care';
+import { JointLevel, JOINT_NAMES } from '../../domain/care/care';
 import { JOINTS, Joint } from '../../domain/catalog/joints';
+import { JointLevelPicker } from '../care/JointLevelPicker';
 
 interface Props {
   exerciseName: string;
   /** Pre-selected: the joints this exercise loads. */
   suggested: Joint[];
-  onApply: (joints: Joint[], level: CareLevel, reason: CareReason) => void;
+  onApply: (joints: Joint[], level: JointLevel) => void;
   onClose: () => void;
 }
 
 /**
- * «Пауза: болит» (care brief §2): where and how, one tap each. Stop for
- * acute pain or injury, gentle for discomfort. The place goes to «Я → Берегу».
+ * Past the easiest step (care brief §0): lower the level of the joints this
+ * exercise loads. We do not ask about pain — the person chooses the state.
  */
 export const PainPauseSheet: React.FC<Props> = ({ exerciseName, suggested, onApply, onClose }) => {
   const [joints, setJoints] = useState<Joint[]>(suggested.slice(0, 1));
@@ -23,14 +24,14 @@ export const PainPauseSheet: React.FC<Props> = ({ exerciseName, suggested, onApp
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center dark:bg-black/70" onClick={onClose}>
       <div
-        className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-4 sm:rounded-3xl dark:border dark:border-[#232E42] dark:bg-[#0F1520]"
+        className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-4 sm:rounded-3xl dark:border dark:border-[#232E42] dark:bg-[#0F1520]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
-        aria-label="Пауза: болит"
+        aria-label="Понизить уровень"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wide text-[#B45309] dark:text-[#FBBF24]">Пауза: болит</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#B45309] dark:text-[#FBBF24]">Понизить уровень</p>
             <h3 className="text-base font-bold text-[#111827] dark:text-[#F3F4F6]">{exerciseName}</h3>
           </div>
           <button type="button" onClick={onClose} className="tap-scale flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-gray-500" aria-label="Закрыть">
@@ -38,7 +39,7 @@ export const PainPauseSheet: React.FC<Props> = ({ exerciseName, suggested, onApp
           </button>
         </div>
 
-        <p className="mt-3 mb-1.5 text-sm font-semibold text-[#111827] dark:text-[#F3F4F6]">Где?</p>
+        <p className="mt-3 mb-1.5 text-sm font-semibold text-[#111827] dark:text-[#F3F4F6]">Какой сустав?</p>
         <div className="flex flex-wrap gap-1.5">
           {ordered.map((j) => (
             <button
@@ -57,30 +58,10 @@ export const PainPauseSheet: React.FC<Props> = ({ exerciseName, suggested, onApp
           ))}
         </div>
 
-        <p className="mt-4 mb-1.5 text-sm font-semibold text-[#111827] dark:text-[#F3F4F6]">Как?</p>
-        <div className="grid grid-cols-1 gap-2">
-          <button
-            type="button"
-            disabled={joints.length === 0}
-            onClick={() => onApply(joints, 'stop', 'pain')}
-            className="tap-scale min-h-[56px] rounded-2xl bg-[#DC2626] px-4 text-left text-white disabled:opacity-40"
-          >
-            <span className="block text-sm font-bold">Острая боль или травма</span>
-            <span className="block text-xs opacity-90">Не нагружаем, пока не пройдёт</span>
-          </button>
-          <button
-            type="button"
-            disabled={joints.length === 0}
-            onClick={() => onApply(joints, 'gentle', 'discomfort')}
-            className="tap-scale min-h-[56px] rounded-2xl border border-[#F59E0B] bg-[#FFFBEB] px-4 text-left text-[#92400E] disabled:opacity-40 dark:bg-[#451A03]/50 dark:text-[#FBBF24]"
-          >
-            <span className="block text-sm font-bold">Дискомфорт</span>
-            <span className="block text-xs">Нагружаем бережно, без тяжёлых вариантов</span>
-          </button>
-        </div>
-
-        <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-          Это упражнение и все, что нагружают это место, заменим или уберём — сегодня и в следующих тренировках. Через неделю спросим, как дела. При острой боли — к врачу.
+        <p className="mt-4 mb-1.5 text-sm font-semibold text-[#111827] dark:text-[#F3F4F6]">Как двигается?</p>
+        <JointLevelPicker allowFree={false} onPick={(lv) => joints.length > 0 && lv !== undefined && onApply(joints, lv)} />
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          Упражнения, которые нагружают это место, заменим или уберём — сегодня и дальше. Сустав появится в «Я» на скелете; через неделю спросим, как дела.
         </p>
       </div>
     </div>

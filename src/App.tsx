@@ -66,7 +66,7 @@ import { loadFitnoteData, saveFitnoteData } from './utils/storage';
 import { APP_VERSION_LABEL } from './version';
 import { warmupOptionsFor } from './domain/warmup/warmup';
 import { applySwaps } from './domain/session/change';
-import { answerReview, blockedByCare, careToReview, JOINT_NAMES, removeCare, setCare } from './domain/care/care';
+import { answerReview, blockedByCare, careToReview, JOINT_NAMES, LEVEL_INFO, normalizeCare, removeCare, setCare } from './domain/care/care';
 
 const PROTECTED_WORKOUT_IDS = new Set([
   'workout-a',
@@ -133,7 +133,7 @@ export default function App() {
   // «Изменить» and sharing all respect it (care brief, v3.9).
   const genProfile = useMemo(() => {
     const g = toGeneratorProfile(data.profile, data.favorites ?? []);
-    const care = (data.care ?? []).map((c) => ({ joint: c.joint, level: c.level }));
+    const care = normalizeCare(data.care).map((c) => ({ joint: c.joint, level: c.level }));
     return care.length ? { ...g, usualConditions: { ...(g.usualConditions ?? {}), care } } : g;
   }, [data.profile, data.favorites, data.care]);
 
@@ -384,7 +384,7 @@ export default function App() {
   // ——— The week (v3.5): cycles lay plans out on weekdays; moves are overrides.
   const today = localDate(new Date());
   // «Как плечо?» a week after «Пауза: болит» (v3.9).
-  const careDue = careToReview(data.care, today)[0];
+  const careDue = careToReview(normalizeCare(data.care), today)[0];
   const cycles: Cycle[] = useMemo(() => {
     if (data.cycles && data.cycles.length) return data.cycles;
     const c = implicitCycle(data.workouts, data.profile?.perWeek ?? 3, today);
@@ -913,7 +913,7 @@ export default function App() {
               <div className="mt-3 rounded-2xl border border-[#F59E0B]/50 bg-[#FFFBEB] p-3 dark:border-[#FBBF24]/40 dark:bg-[#451A03]/50">
                 <p className="text-sm font-bold text-[#92400E] dark:text-[#FBBF24]">Как {JOINT_NAMES[careDue.joint].acc}?</p>
                 <p className="mt-0.5 text-xs text-[#92400E] dark:text-[#FBBF24]">
-                  С {careDue.since.split('-').reverse().slice(0, 2).join('.')} бережём: {careDue.level === 'stop' ? 'не нагружаем' : 'нагружаем бережно'}.
+                  С {careDue.since.split('-').reverse().slice(0, 2).join('.')} уровень {careDue.level} — {LEVEL_INFO[careDue.level].name.toLowerCase()}.
                 </p>
                 <div className="mt-2 grid grid-cols-3 gap-1.5">
                   {([
@@ -924,14 +924,14 @@ export default function App() {
                     <button
                       key={a}
                       type="button"
-                      onClick={() => setData((prev) => ({ ...prev, care: answerReview(prev.care ?? [], careDue.joint, a, today) }))}
+                      onClick={() => setData((prev) => ({ ...prev, care: answerReview(normalizeCare(prev.care), careDue.joint, a, today) }))}
                       className="tap-scale min-h-[44px] rounded-xl border border-[#F59E0B]/60 bg-white text-sm font-semibold text-[#111827] dark:bg-[#1A2333] dark:text-[#F3F4F6]"
                     >
                       {label}
                     </button>
                   ))}
                 </div>
-                <p className="mt-1.5 text-[11px] text-[#92400E]/80 dark:text-[#FBBF24]/80">Возвращаем постепенно: сначала бережно, потом как обычно. Если не проходит — покажитесь врачу.</p>
+                <p className="mt-1.5 text-[11px] text-[#92400E]/80 dark:text-[#FBBF24]/80">Поднимаем уровень постепенно, сам он не снимается. Если не проходит — покажитесь врачу.</p>
               </div>
             )}
             {showTopUp && (
@@ -1020,8 +1020,19 @@ export default function App() {
             favorites={data.favorites ?? []}
             onToggleFavorite={handleToggleFavorite}
             onEdit={() => navigate({ name: 'onboarding' })}
-            care={data.care ?? []}
-            onRemoveCare={(joint) => setData((prev) => ({ ...prev, care: removeCare(prev.care, joint) }))}
+            care={normalizeCare(data.care)}
+            onCareLevel={(joint, level) =>
+              setData((prev) => {
+                const list = normalizeCare(prev.care);
+                return {
+                  ...prev,
+                  care: level === undefined ? removeCare(list, joint) : setCare(list, { joint, level, since: localDate(new Date()), source: 'self' }),
+                };
+              })
+            }
+            onZone={(zone, mark) =>
+              setData((prev) => (prev.profile ? { ...prev, profile: { ...prev.profile, zones: { ...prev.profile.zones, [zone]: mark } } } : prev))
+            }
           />
         )}
         {!isFullscreen && activeTab === 'checkup' && (
@@ -1126,10 +1137,10 @@ export default function App() {
             setData((prev) => ({ ...prev, reminder }))
           }
           conditions={genProfile.usualConditions}
-          onCare={(joints, level, reason) =>
+          onCare={(joints, level) =>
             setData((prev) => {
               const since = localDate(new Date());
-              const care = joints.reduce((list, joint) => setCare(list, { joint, level, reason, since, source: 'self' }), prev.care ?? []);
+              const care = joints.reduce((list, joint) => setCare(list, { joint, level, since, source: 'self' }), normalizeCare(prev.care));
               return { ...prev, care };
             })
           }

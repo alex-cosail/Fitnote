@@ -3,7 +3,7 @@ import { CATALOG } from '../../data/catalog';
 import { findAntagonistMatches } from '../../domain/catalog/antagonists';
 import type { Conditions } from '../../domain/catalog/filter';
 import { changeOptions, sessionSwaps } from '../../domain/session/change';
-import { blockedByCare, CareLevel, CareReason, JOINT_NAMES } from '../../domain/care/care';
+import { blockedByCare, JointLevel, JOINT_NAMES } from '../../domain/care/care';
 import { Joint, mainJoints } from '../../domain/catalog/joints';
 import { ladderNeighbour } from '../../domain/catalog/ladder';
 import { ladderPosition } from '../../domain/generator';
@@ -53,7 +53,7 @@ export interface WorkoutPlayerProps {
   notes?: Record<string, string>;
   onNote?: (exerciseId: string, text: string) => void;
   /** «Пауза: болит» (v3.9): the places go to «Я → Берегу». */
-  onCare?: (joints: Joint[], level: CareLevel, reason: CareReason) => void;
+  onCare?: (joints: Joint[], level: JointLevel) => void;
 }
 
 /**
@@ -354,8 +354,8 @@ export function usePlayerController({
     const ex = exercises.find((e) => e.id === id);
     if (ex && ex.id !== currentExercise.id) pickExercise(ex);
   };
-  const handlePainPause = (joints: Joint[], level: CareLevel, reason: CareReason) => {
-    onCare?.(joints, level, reason);
+  const handlePainPause = (joints: Joint[], level: JointLevel) => {
+    onCare?.(joints, level);
     const rules = [...(conditions?.care ?? []), ...joints.map((joint) => ({ joint, level }))];
     const r = applyCareToSession(session, rules, { catalog: CATALOG, exercises, conditions: condNoCare }, Date.now(), [currentExercise.id]);
     setPairedLeftValue(null);
@@ -363,7 +363,7 @@ export function usePlayerController({
     setShowPause(false);
     const place = joints.map((j) => JOINT_NAMES[j].acc).join(', ');
     const parts = [r.replaced.length ? `заменено ${r.replaced.length}` : '', r.dropped.length ? `убрано ${r.dropped.length}` : ''].filter(Boolean);
-    setCareNotice(`Бережём ${place}${parts.length ? ': ' + parts.join(', ') : ''}`);
+    setCareNotice(`Бережём ${place} (уровень ${level})${parts.length ? ': ' + parts.join(', ') : ''}`);
     window.setTimeout(() => setCareNotice(''), 5000);
   };
   const pauseSuggested = (() => {

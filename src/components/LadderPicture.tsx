@@ -13,7 +13,7 @@ interface LadderPictureProps {
   onSwap?: () => void;
   swapLabel?: string;
   className?: string; // picture size
-  /** Past the easiest step: «Пауза: болит» (v3.9). */
+  /** Past the easiest step: lower a joint level (v3.10). */
   onPause?: () => void;
   /** Fill the parent's height (the player). */
   fill?: boolean;
@@ -26,7 +26,7 @@ const SLIDE_MS = 160;
  * The exercise picture as a strip of slides: swipe left — an easier step
  * («в минус», customer 27.11), swipe right — a harder one; at the ends the
  * picture springs back, and past the easiest step a swipe left opens
- * «Пауза: болит» when it is offered. Dots under it are the ladder steps (tap = jump), thin ‹ › inside the
+ * the joint levels («Беречь») when offered. Dots under it are the ladder steps (tap = jump), thin ‹ › inside the
  * picture do the same as a swipe. Vertical page scroll is left to the browser.
  */
 export const LadderPicture: React.FC<LadderPictureProps> = ({
@@ -109,7 +109,7 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
       >
         {onPause && !canEasier && x < -12 && (
           <div className="absolute inset-y-0 right-0 flex items-center justify-center bg-[#FEF3C7] px-3 text-center text-xs font-bold text-[#92400E] dark:bg-[#451A03] dark:text-[#FBBF24]" style={{ width: Math.min(160, -x) }}>
-            Пауза: болит
+            Беречь сустав
           </div>
         )}
         <div
@@ -140,10 +140,10 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
               type="button"
               onClick={onPause}
               className="tap-scale mr-1.5 flex min-h-[28px] items-center gap-1 rounded-lg px-1.5 text-[11px] font-semibold text-[#B45309] dark:text-[#FBBF24]"
-              aria-label={`Пауза: болит — ${name}`}
+              aria-label={`Беречь сустав — ${name}`}
             >
               <Pause className="h-3 w-3" />
-              Болит
+              Беречь
             </button>
           )}
           {ladder?.ranks.map((r) => (

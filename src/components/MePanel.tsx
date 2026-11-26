@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Heart, Pencil, UserRound, X } from 'lucide-react';
+import type { Care, JointLevel } from '../domain/care/care';
 import { JOINT_NAMES } from '../domain/care/care';
-import { Heart, Pencil, UserRound } from 'lucide-react';
+import type { Joint } from '../domain/catalog/joints';
+import type { Zone, ZoneMark } from '../domain/generator/types';
+import { BodySkeleton } from './care/BodySkeleton';
+import { JointLevelPicker } from './care/JointLevelPicker';
 import { UserProfile, ZONES } from '../domain/profile/profile';
 import { useT } from '../i18n';
 import type { TranslationKey } from '../i18n/ru';
@@ -12,8 +17,11 @@ interface MePanelProps {
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   onEdit: () => void;
-  care?: import('../domain/care/care').Care[];
-  onRemoveCare?: (joint: import('../domain/catalog/joints').Joint) => void;
+  care?: Care[];
+  /** A joint's level 0–4, or undefined = free. */
+  onCareLevel?: (joint: Joint, level: JointLevel | undefined) => void;
+  /** A movement goal: base · + · ++. */
+  onZone?: (zone: Zone, mark: ZoneMark) => void;
 }
 
 const MARK: Record<string, string> = { plus: '+', plusplus: '++' };
@@ -23,8 +31,20 @@ const MARK: Record<string, string> = { plus: '+', plusplus: '++' };
  * goal, accents, equipment, favorites; «Изменить ответы» reopens the wizard.
  * The check-up stays below as its own section.
  */
-export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites, onToggleFavorite, onEdit, care = [], onRemoveCare }) => {
+export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites, onToggleFavorite, onEdit, care = [], onCareLevel, onZone }) => {
   const { t } = useT();
+  const [joint, setJoint] = useState<Joint | null>(null);
+  const [askPlusPlus, setAskPlusPlus] = useState<Zone | null>(null);
+  const levelOf = new Map(care.map((c) => [c.joint, c.level]));
+  // Goals: teens up to + (6), adults up to ++ (7); 55+ get a warning on ++.
+  const nextMark = (m: ZoneMark | undefined): ZoneMark =>
+    m === 'plusplus' ? 'base' : m === 'plus' ? (profile?.ageGroup === 'teen' ? 'base' : 'plusplus') : 'plus';
+  const tapZone = (z: Zone) => {
+    if (!profile || !onZone) return;
+    const next = nextMark(profile.zones[z]);
+    if (next === 'plusplus' && profile.ageGroup === 'masters') setAskPlusPlus(z);
+    else onZone(z, next);
+  };
   const exById = new Map(exercises.map((e) => [e.id, e]));
 
   const line = (label: string, value: React.ReactNode) => (
@@ -93,30 +113,62 @@ export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites,
         </div>
       )}
 
-      {/* «Берегу» (v3.9): set by «Пауза: болит» in the player */}
-      {care.length > 0 && (
-        <div className="mt-4 rounded-2xl border border-[#F59E0B]/50 bg-[#FFFBEB] p-3 dark:border-[#FBBF24]/40 dark:bg-[#451A03]/40">
-          <p className="text-sm font-bold text-[#92400E] dark:text-[#FBBF24]">Берегу</p>
-          <ul className="mt-1.5 space-y-1.5">
-            {care.map((c) => (
-              <li key={c.joint} className="flex items-center justify-between gap-2 text-sm">
-                <span className="min-w-0 text-[#111827] dark:text-[#F3F4F6]">
-                  <b>{JOINT_NAMES[c.joint].name}</b> · {c.level === 'stop' ? 'не нагружаем' : 'бережно'}
-                  <span className="text-xs text-gray-500 dark:text-gray-400"> · с {c.since.split('-').reverse().slice(0, 2).join('.')}</span>
-                </span>
-                {onRemoveCare && (
-                  <button
-                    type="button"
-                    onClick={() => onRemoveCare(c.joint)}
-                    className="tap-scale min-h-[36px] shrink-0 rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-semibold text-[#111827] dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6]"
-                  >
-                    Снять
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-1.5 text-[11px] text-[#92400E]/80 dark:text-[#FBBF24]/80">Пока место здесь, нагружающие его упражнения не предлагаются.</p>
+      {/* Skeleton (care brief §0): joints 0–4 by tap, goals as labels below */}
+      <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-3 dark:border-[#232E42] dark:bg-[#131A26]">
+        <p className="text-sm font-bold text-[#111827] dark:text-[#F3F4F6]">Тело</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Кружок — как двигается сустав (тап), подписи — чего хотите.</p>
+        <BodySkeleton care={care} onJoint={(j) => onCareLevel && setJoint(j)} className="mx-auto mt-1 h-72 w-full max-w-xs" />
+        {profile && (
+          <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+            {ZONES.map((z) => {
+              const m = profile.zones[z];
+              return (
+                <button
+                  key={z}
+                  type="button"
+                  onClick={() => tapZone(z)}
+                  disabled={!onZone}
+                  className={`tap-scale min-h-[40px] rounded-xl px-3 text-sm font-semibold ${
+                    m && m !== 'base' ? 'bg-[#EEEDFE] text-[#3C3489] dark:bg-[#26215C] dark:text-[#CECBF6]' : 'bg-gray-100 text-gray-600 dark:bg-[#1A2333] dark:text-gray-300'
+                  }`}
+                >
+                  {t(`wiz.zone.${z}` as TranslationKey).split(':')[0]} {m && m !== 'base' ? MARK[m] : ''}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {askPlusPlus && (
+          <div className="mt-2 rounded-xl bg-[#FFFBEB] p-2.5 text-sm text-[#92400E] dark:bg-[#451A03]/50 dark:text-[#FBBF24]">
+            «++» — выше рекомендованного для 55+. Поставить?
+            <div className="mt-1.5 flex gap-2">
+              <button type="button" onClick={() => setAskPlusPlus(null)} className="tap-scale min-h-[40px] flex-1 rounded-lg bg-[#111827] text-sm font-bold text-white">Нет</button>
+              <button type="button" onClick={() => { onZone?.(askPlusPlus, 'plusplus'); setAskPlusPlus(null); }} className="tap-scale min-h-[40px] flex-1 rounded-lg border border-[#F59E0B] text-sm font-semibold">Да</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {joint && onCareLevel && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center" onClick={() => setJoint(null)}>
+          <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-4 sm:rounded-3xl dark:bg-[#0F1520]" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={JOINT_NAMES[joint].name}>
+            <div className="mb-2 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Как двигается?</p>
+                <h3 className="text-lg font-bold text-[#111827] dark:text-[#F3F4F6]">{JOINT_NAMES[joint].name}</h3>
+              </div>
+              <button type="button" onClick={() => setJoint(null)} className="tap-scale flex h-11 w-11 items-center justify-center rounded-xl text-gray-500" aria-label="Закрыть">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <JointLevelPicker
+              value={levelOf.get(joint)}
+              onPick={(lv) => {
+                onCareLevel(joint, lv);
+                setJoint(null);
+              }}
+            />
+          </div>
         </div>
       )}
 

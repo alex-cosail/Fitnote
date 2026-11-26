@@ -8,7 +8,7 @@ import { resolveExercises } from '../catalog/resolve';
 import { buildWeek, DEFAULT_PROFILE } from '../generator';
 import { applyCareToSession } from '../session/careSession';
 import type { ActiveSession } from '../../types';
-import { answerReview, blockedByCare, careToReview, setCare } from './care';
+import { answerReview, blockedByCare, careToReview, normalizeCare, setCare } from './care';
 
 const cat = (id: string) => CATALOG.find((c) => c.id === id)!;
 const exercises = resolveExercises(CATALOG, catalogTextsFor('ru'), {}, [], 'medium');
@@ -28,46 +28,54 @@ describe('joint loads', () => {
 });
 
 describe('«Берегу»', () => {
-  it('stop on the shoulder removes pike push-ups and pull-ups, keeps squats and the band face pull', () => {
-    const care = [{ joint: 'shoulder' as const, level: 'stop' as const }];
+  it('level 3 on the shoulder removes pike push-ups and pull-ups, keeps squats and the band face pull', () => {
+    const care = [{ joint: 'shoulder' as const, level: 3 as const }];
     expect(isAvailable(cat('pike-push-ups'), { care })).toBe(false);
     expect(isAvailable(cat('strict-pull-ups'), { care })).toBe(false);
     expect(isAvailable(cat('air-squats'), { care })).toBe(true);
     expect(isAvailable(cat('band-face-pull'), { care })).toBe(true);
   });
 
-  it('gentle removes only the strong load', () => {
-    const care = [{ joint: 'knee' as const, level: 'gentle' as const }];
+  it('level 0 removes even a light load; level 4 only the strong one', () => {
+    expect(isAvailable(cat('band-face-pull'), { care: [{ joint: 'shoulder', level: 0 }] })).toBe(false);
+    const care = [{ joint: 'knee' as const, level: 4 as const }];
     expect(blockedByCare(cat('bulgarian-split-squat'), care)).toBeTruthy();
     expect(blockedByCare(cat('box-squats'), care)).toBeUndefined();
   });
 
-  it('a pattern takes a safe exercise: a horizontal pull with the shoulder protected is a light band row', () => {
-    const p = pickForPattern(CATALOG, 'pull_h', 3, { care: [{ joint: 'shoulder', level: 'stop' }] });
+  it('a pattern takes a safe exercise: a horizontal pull with the shoulder protected is light', () => {
+    const p = pickForPattern(CATALOG, 'pull_h', 3, { care: [{ joint: 'shoulder', level: 2 }] });
     expect(p && (jointLoad(p).shoulder ?? 0)).toBeLessThan(2);
   });
 
   it('the generator respects it: no shoulder-heavy exercise in a week', () => {
-    const profile = { ...DEFAULT_PROFILE, usualConditions: { ...DEFAULT_PROFILE.usualConditions, care: [{ joint: 'shoulder' as const, level: 'stop' as const }] } };
+    const profile = { ...DEFAULT_PROFILE, usualConditions: { ...DEFAULT_PROFILE.usualConditions, care: [{ joint: 'shoulder' as const, level: 1 as const }] } };
     const week = buildWeek(profile, { catalog: CATALOG, exercises, history: { lastDone: {}, swappedAway: {} }, date: '2026-11-27' });
     for (const g of week) for (const it of g.plan.items) if (it.exerciseId) expect((jointLoad(cat(it.exerciseId)).shoulder ?? 0) < 2).toBe(true);
   });
 
-  it('setting care: review in a week; stop is never softened by a later discomfort', () => {
-    let list = setCare([], { joint: 'shoulder', level: 'stop', reason: 'pain', since: '2026-11-27', source: 'self' });
+  it('setting a level: review in a week; the latest choice wins', () => {
+    let list = setCare([], { joint: 'shoulder', level: 0, since: '2026-11-27', source: 'self' });
     expect(list[0].reviewAt).toBe('2026-12-04');
-    list = setCare(list, { joint: 'shoulder', level: 'gentle', reason: 'discomfort', since: '2026-11-28', source: 'self' });
-    expect(list[0].level).toBe('stop');
+    list = setCare(list, { joint: 'shoulder', level: 3, since: '2026-11-28', source: 'self' });
+    expect(list).toHaveLength(1);
+    expect(list[0].level).toBe(3);
     expect(careToReview(list, '2026-12-01')).toHaveLength(0);
     expect(careToReview(list, '2026-12-05')).toHaveLength(1);
   });
 
-  it('«Как плечо?»: passed → gentle → off; same → one more week', () => {
-    const start = setCare([], { joint: 'shoulder', level: 'stop', reason: 'pain', since: '2026-11-27', source: 'self' });
-    const a = answerReview(start, 'shoulder', 'passed', '2026-12-04');
-    expect(a[0]).toMatchObject({ level: 'gentle', reviewAt: '2026-12-11' });
-    expect(answerReview(a, 'shoulder', 'passed', '2026-12-11')).toHaveLength(0);
-    expect(answerReview(start, 'shoulder', 'same', '2026-12-04')[0]).toMatchObject({ level: 'stop', reviewAt: '2026-12-11' });
+  it('«Как плечо?»: passed → two levels up, better → one, past 4 — free; same → a week more', () => {
+    const start = setCare([], { joint: 'shoulder', level: 1, since: '2026-11-27', source: 'self' });
+    expect(answerReview(start, 'shoulder', 'passed', '2026-12-04')[0]).toMatchObject({ level: 3, reviewAt: '2026-12-11' });
+    expect(answerReview(start, 'shoulder', 'better', '2026-12-04')[0].level).toBe(2);
+    expect(answerReview(start, 'shoulder', 'same', '2026-12-04')[0]).toMatchObject({ level: 1, reviewAt: '2026-12-11' });
+    const four = setCare([], { joint: 'knee', level: 4, since: '2026-11-27', source: 'self' });
+    expect(answerReview(four, 'knee', 'better', '2026-12-04')).toHaveLength(0);
+  });
+
+  it('older data: stop → 0, gentle → 4', () => {
+    expect(normalizeCare([{ joint: 'knee', level: 'stop', since: 'x', source: 'self' }, { joint: 'neck', level: 'gentle', since: 'x', source: 'self' }]).map((c) => c.level)).toEqual([0, 4]);
+    expect(normalizeCare(undefined)).toEqual([]);
   });
 });
 
@@ -81,7 +89,7 @@ describe('«Пауза: болит» during a workout', () => {
     }) as ActiveSession;
 
   it('replaces every exercise of the session that loads the joint', () => {
-    const r = applyCareToSession(session(['pike-push-ups', 'air-squats', 'strict-pull-ups'], 0), [{ joint: 'shoulder', level: 'stop' }], { catalog: CATALOG, exercises }, 0);
+    const r = applyCareToSession(session(['pike-push-ups', 'air-squats', 'strict-pull-ups'], 0), [{ joint: 'shoulder', level: 2 }], { catalog: CATALOG, exercises }, 0);
     const ids = r.session.items.map((i) => i.exerciseId);
     expect(ids[1]).toBe('air-squats');
     for (const id of ids) expect((jointLoad(cat(id)).shoulder ?? 0) < 2).toBe(true);
@@ -89,7 +97,7 @@ describe('«Пауза: болит» during a workout', () => {
   });
 
   it('a dropped last slot moves on to the next round (no vertical pull spares the shoulder)', () => {
-    const r = applyCareToSession(session(['air-squats', 'strict-pull-ups'], 1), [{ joint: 'shoulder', level: 'stop' }], { catalog: CATALOG, exercises }, 0);
+    const r = applyCareToSession(session(['air-squats', 'strict-pull-ups'], 1), [{ joint: 'shoulder', level: 2 }], { catalog: CATALOG, exercises }, 0);
     expect(r.dropped).toEqual(['strict-pull-ups']);
     expect(r.session.items.map((i) => i.exerciseId)).toEqual(['air-squats']);
     expect(r.session).toMatchObject({ currentRound: 3, currentItemIndex: 0 });

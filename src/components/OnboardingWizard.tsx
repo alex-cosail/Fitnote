@@ -223,6 +223,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ initial, onC
               ))}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">{t('wiz.marksHint')}</p>
+            {p.ageGroup === 'masters' && ZONES.some((z) => p.zones[z] === 'plusplus') && (
+              <p className="rounded-xl bg-[#FFFBEB] p-2.5 text-xs font-semibold text-[#92400E] dark:bg-[#451A03]/50 dark:text-[#FBBF24]">
+                «++» — выше рекомендованного для 55+. Можно оставить, если вы к этому готовы.
+              </p>
+            )}
+            <p className="text-xs text-gray-500 dark:text-gray-400">Суставы («как двигается?») отмечаются на скелете во вкладке «Я».</p>
           </>
         )}
 
