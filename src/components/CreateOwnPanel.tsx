@@ -4,7 +4,7 @@ import { CATALOG } from '../data/catalog';
 import { formatMetricTarget } from '../domain/format';
 import {
   COMPONENT, Component, GeneratorProfile, OwnZone, antagonistOptions, basketIssues, buildOwnPlan,
-  changeTarget, estimateSeconds, fixFor, ladderPosition, ownItem, stepRank, zoneCandidates,
+  changeTarget, estimateSeconds, fixFor, ladderPosition, ownItem, stepRank, stepToRank, zoneCandidates,
 } from '../domain/generator';
 import { useT } from '../i18n';
 import type { TranslationKey } from '../i18n/ru';
@@ -73,6 +73,10 @@ export const CreateOwnPanel: React.FC<CreateOwnPanelProps> = ({
   const asPlan = (xs: WorkoutItem[]): WorkoutPlan => ({ id: '', title: '', subtitle: '', formatLabel: '', rounds, restBetweenExercises: 0, restBetweenRounds: 0, items: xs });
   const step = (i: number, dir: 1 | -1) => {
     setItems((xs) => stepRank(asPlan(xs), i, dir, CATALOG, exercises, cond).items);
+    setChecking(false);
+  };
+  const jump = (i: number, rank: number) => {
+    setItems((xs) => stepToRank(asPlan(xs), i, rank, CATALOG, exercises, cond).items);
     setChecking(false);
   };
   const tune = (i: number, dir: 1 | -1) => {
@@ -218,6 +222,7 @@ export const CreateOwnPanel: React.FC<CreateOwnPanelProps> = ({
                   favorite={favorites.includes(ex.id)}
                   onTarget={(dir) => tune(i, dir)}
                   onStep={(dir) => step(i, dir)}
+                  onJump={(rank) => jump(i, rank)}
                   onToggleFavorite={() => onToggleFavorite(ex.id)}
                   onRemove={() => remove(i)}
                 />

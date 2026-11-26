@@ -20,7 +20,7 @@ import { formatMetricTarget } from '../domain/format';
 import { CATALOG } from '../data/catalog';
 import { ResolvedItem, resolveWorkout } from '../domain/plan/resolveWorkout';
 import { targetStep } from '../domain/plan/targets';
-import { ACCENT_MINUTES, DEFAULT_ACCENT_MINUTES, dayPlan, dayTimes, estimateSeconds, ladderPosition, stepRank, swapExercise } from '../domain/generator';
+import { ACCENT_MINUTES, DEFAULT_ACCENT_MINUTES, dayPlan, dayTimes, estimateSeconds, ladderPosition, stepRank, stepToRank, swapExercise } from '../domain/generator';
 import { useT } from '../i18n';
 import type { TranslationKey } from '../i18n/ru';
 import {
@@ -30,6 +30,7 @@ import {
   WorkoutPlan,
 } from '../types';
 import { ExerciseSvg } from './ExerciseSvg';
+import { LadderPicture } from './LadderPicture';
 
 interface WorkoutPreviewTabProps {
   workouts: WorkoutPlan[];
@@ -248,6 +249,11 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   const handleStepExercise = (idx: number, direction: 1 | -1) => {
     const base = withOriginal(selectedPlan);
     const next = stepRank(base, idx, direction, CATALOG, exercises, cond);
+    if (next !== base) onUpdateWorkout(next);
+  };
+  const handleJumpExercise = (idx: number, rank: number) => {
+    const base = withOriginal(selectedPlan);
+    const next = stepToRank(base, idx, rank, CATALOG, exercises, cond);
     if (next !== base) onUpdateWorkout(next);
   };
   const handleSwapExercise = (idx: number) => {
@@ -732,65 +738,17 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                       {ex.isPaired ? ' · на каждую сторону' : ''}
                     </p>
 
-                    <div className="mt-2.5 flex flex-wrap items-center justify-between gap-3 landscape:mt-1.5 landscape:justify-start landscape:gap-3">
+                    <div className="mt-2.5 flex items-center justify-between gap-3 landscape:mt-1.5 landscape:justify-start landscape:gap-3">
                       {canTune ? (
-                        <div className="flex shrink-0 flex-col items-center">
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleStepExercise(item.slotIndex, -1)}
-                              disabled={!ladderPosition(ex.id, CATALOG, cond)?.canEasier}
-                              className={stepBtnClass}
-                              aria-label={`Ступень легче: ${ex.name}`}
-                              title="Ступень легче"
-                            >
-                              <Minus className="h-4 w-4" />
-                            </button>
-                            <ExerciseSvg
-                              svgKey={ex.svgKey}
-                              className="h-16 w-24 shrink-0 landscape:h-11 landscape:w-16"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleStepExercise(item.slotIndex, 1)}
-                              disabled={!ladderPosition(ex.id, CATALOG, cond)?.canHarder}
-                              className={stepBtnClass}
-                              aria-label={`Ступень тяжелее: ${ex.name}`}
-                              title="Ступень тяжелее"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </button>
-                          </div>
-                          {(() => {
-                            const lp = ladderPosition(ex.id, CATALOG, cond);
-                            if (!lp) return null;
-                            const mark: Record<number, string> = { 1: '−−', 2: '−', 3: '●', 4: '+', 5: '++' };
-                            return (
-                              <div className="mt-1 flex items-center gap-1">
-                                {lp.ranks.map((r) => (
-                                  <span
-                                    key={r}
-                                    className={`font-mono-num rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
-                                      r === lp.current
-                                        ? 'bg-[#DC2626] text-white'
-                                        : 'bg-gray-100 text-gray-400 dark:bg-[#1A2333] dark:text-gray-500'
-                                    }`}
-                                  >
-                                    {mark[r]}
-                                  </span>
-                                ))}
-                                <button
-                                  type="button"
-                                  onClick={() => handleSwapExercise(item.slotIndex)}
-                                  className="tap-scale ml-1 flex min-h-[28px] items-center gap-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400"
-                                >
-                                  <ArrowLeftRight className="h-3 w-3" />
-                                  Другое
-                                </button>
-                              </div>
-                            );
-                          })()}
-                        </div>
+                        <LadderPicture
+                          svgKey={ex.svgKey}
+                          name={ex.name}
+                          ladder={ladderPosition(ex.id, CATALOG, cond)}
+                          onStep={(dir) => handleStepExercise(item.slotIndex, dir)}
+                          onJump={(rank) => handleJumpExercise(item.slotIndex, rank)}
+                          onSwap={() => handleSwapExercise(item.slotIndex)}
+                          className="h-20 w-full landscape:h-12"
+                        />
                       ) : (
                         <ExerciseSvg
                           svgKey={ex.svgKey}

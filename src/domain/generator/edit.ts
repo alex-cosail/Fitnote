@@ -271,3 +271,24 @@ export function ladderPosition(id: string, catalog: CatalogExercise[], cond: Con
     canHarder: Boolean(ladderNeighbour(catalog, id, 1, cond)) && ranks[ranks.length - 1] > c.rank,
   };
 }
+
+/** Tap on a step dot: walk the ladder until that step (or as far as it goes). */
+export function stepToRank(
+  plan: WorkoutPlan,
+  idx: number,
+  targetRank: number,
+  catalog: CatalogExercise[],
+  exercises: Exercise[],
+  cond: Conditions = {}
+): WorkoutPlan {
+  const rankOf = (p: WorkoutPlan) => catalog.find((c) => c.id === p.items[idx]?.exerciseId)?.rank;
+  let cur = plan;
+  for (let i = 0; i < 5; i++) {
+    const r = rankOf(cur);
+    if (r === undefined || r === targetRank) break;
+    const next = stepRank(cur, idx, r < targetRank ? 1 : -1, catalog, exercises, cond);
+    if (next === cur || rankOf(next) === r) break;
+    cur = next;
+  }
+  return cur;
+}

@@ -4,7 +4,7 @@ import { CATALOG } from '../data/catalog';
 import { formatMetricTarget } from '../domain/format';
 import {
   Component, DEFAULT_PROFILE, DEFAULT_REQUEST, GenLevel, GenPeriod, GenRequest, GeneratedWorkout,
-  changeRounds, changeTarget, estimateSeconds, ladderPosition, runGenerator, stepRank, swapExercise, toWorkoutPlans,
+  changeRounds, changeTarget, estimateSeconds, ladderPosition, runGenerator, stepRank, stepToRank, swapExercise, toWorkoutPlans,
 } from '../domain/generator';
 import { MovementPattern } from '../domain/catalog/types';
 import { useT } from '../i18n';
@@ -136,6 +136,7 @@ export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
                 favorite={favorites.includes(ex.id)}
                 onTarget={(dir) => edit(index, (p) => changeTarget(p, i, dir, ex.metric))}
                 onStep={(dir) => edit(index, (p) => stepRank(p, i, dir, CATALOG, exercises, cond))}
+                onJump={(rank) => edit(index, (p) => stepToRank(p, i, rank, CATALOG, exercises, cond))}
                 onToggleFavorite={() => onToggleFavorite(ex.id)}
                 onSwap={() => edit(index, (p) => swapExercise(p, i, CATALOG, exercises, cond))}
               />

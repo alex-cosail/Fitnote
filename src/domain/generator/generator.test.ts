@@ -10,7 +10,7 @@ import {
   applyMode, buildMonth, buildWeek, calibrateMax, calibrateTempo, capMinutes, checkSession, deficitTemplate,
   estimateSeconds, fitRounds, hasSameDirectionInRow, historyFromLogs, nextTarget, orderRound, outcomeFromLog,
   antagonistOptions, basketIssues, buildOwnPlan, changeRounds, changeTarget, fixFor, ladderPosition, ownItem, stepRank, swapExercise, zoneCandidates,
-  dayPlan, replaceGenerated, runGenerator, shortRounds, toWorkoutPlans, weekDebt, weekIsCovered,
+  dayPlan, replaceGenerated, runGenerator, shortRounds, stepToRank, toWorkoutPlans, weekDebt, weekIsCovered,
 } from '.';
 import { CAP_TOLERANCE, DELOAD } from './rules';
 
@@ -533,5 +533,17 @@ describe('ladder position on the card', () => {
     const home = ladderPosition('strict-pull-ups', CATALOG, { environment: 'home' })!;
     expect(home.ranks).toEqual([3]);
     expect(home.canEasier || home.canHarder).toBe(false);
+  });
+});
+
+describe('tap on a step dot', () => {
+  it('walks the ladder to the chosen step', () => {
+    const exercises = resolveExercises(CATALOG, texts, {}, [], 'medium');
+    const plan = { id: 'p', title: '', subtitle: '', formatLabel: '', rounds: 3, restBetweenExercises: 45, restBetweenRounds: 90, items: [{ exerciseId: 'floor-push-ups', pattern: 'push_h' as const, rank: 3 as const, target: 15 }] };
+    const top = stepToRank(plan, 0, 5, CATALOG, exercises);
+    expect(byId.get(top.items[0].exerciseId!)!.rank).toBe(5);
+    const bottom = stepToRank(plan, 0, 1, CATALOG, exercises);
+    expect(byId.get(bottom.items[0].exerciseId!)!.rank).toBe(1);
+    expect(stepToRank(plan, 0, 3, CATALOG, exercises)).toBe(plan);
   });
 });

@@ -1,10 +1,10 @@
 import React from 'react';
-import { ArrowLeftRight, Heart, Minus, Plus, X } from 'lucide-react';
+import { Heart, Minus, Plus, X } from 'lucide-react';
 import { formatMetricTarget } from '../domain/format';
 import { LadderPosition } from '../domain/generator';
 import { useT } from '../i18n';
 import { Exercise } from '../types';
-import { ExerciseSvg } from './ExerciseSvg';
+import { LadderPicture } from './LadderPicture';
 
 interface ExerciseStepCardProps {
   exercise: Exercise;
@@ -13,13 +13,11 @@ interface ExerciseStepCardProps {
   favorite: boolean;
   onTarget: (dir: 1 | -1) => void;
   onStep: (dir: 1 | -1) => void;
+  onJump: (rank: number) => void;
   onToggleFavorite: () => void;
   onSwap?: () => void;
   onRemove?: () => void;
 }
-
-/** Step marks: −− − ● + ++ for ranks 1..5. */
-const RANK_MARK: Record<number, string> = { 1: '−−', 2: '−', 3: '●', 4: '+', 5: '++' };
 
 const btn =
   'tap-scale flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#111827] disabled:opacity-30 dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-[#F3F4F6]';
@@ -36,7 +34,7 @@ const btn =
  * Right − / +: reps or seconds.
  */
 export const ExerciseStepCard: React.FC<ExerciseStepCardProps> = ({
-  exercise, target, ladder, favorite, onTarget, onStep, onToggleFavorite, onSwap, onRemove,
+  exercise, target, ladder, favorite, onTarget, onStep, onJump, onToggleFavorite, onSwap, onRemove,
 }) => {
   const { t } = useT();
   return (
@@ -58,45 +56,24 @@ export const ExerciseStepCard: React.FC<ExerciseStepCardProps> = ({
               <Heart className={`h-4 w-4 ${favorite ? 'fill-[#DC2626] text-[#DC2626]' : 'text-gray-400'}`} />
             </button>
           </div>
-          <div className="mt-1 flex items-center gap-1.5">
-            <button type="button" className={btn} onClick={() => onStep(-1)} disabled={!ladder?.canEasier} aria-label={t('gen.edit.easier')} title={t('gen.edit.easier')}>
-              <Minus className="h-4 w-4" />
-            </button>
-            <ExerciseSvg svgKey={exercise.svgKey} className="h-20 min-w-0 flex-1" />
-            <button type="button" className={btn} onClick={() => onStep(1)} disabled={!ladder?.canHarder} aria-label={t('gen.edit.harder')} title={t('gen.edit.harder')}>
-              <Plus className="h-4 w-4" />
-            </button>
+          <div className="mt-1">
+            <LadderPicture
+              svgKey={exercise.svgKey}
+              name={exercise.name}
+              ladder={ladder}
+              onStep={onStep}
+              onJump={onJump}
+              onSwap={onSwap}
+              swapLabel={t('card.other')}
+              className="h-20 w-full"
+            />
           </div>
-          {ladder && (
-            <div className="mt-1 flex items-center justify-center gap-1" aria-label={t('card.step', { n: ladder.current })}>
-              {ladder.ranks.map((r) => (
-                <span
-                  key={r}
-                  className={`font-mono-num rounded-md px-1.5 py-0.5 text-[11px] font-bold ${
-                    r === ladder.current
-                      ? 'bg-[#DC2626] text-white'
-                      : 'bg-gray-100 text-gray-400 dark:bg-[#1A2333] dark:text-gray-500'
-                  }`}
-                >
-                  {RANK_MARK[r]}
-                </span>
-              ))}
-            </div>
-          )}
-          {(onSwap || onRemove) && (
-            <div className="mt-1.5 flex items-center justify-center gap-3">
-              {onSwap && (
-                <button type="button" onClick={onSwap} className="tap-scale flex min-h-[32px] items-center gap-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
-                  <ArrowLeftRight className="h-3.5 w-3.5" />
-                  {t('card.other')}
-                </button>
-              )}
-              {onRemove && (
-                <button type="button" onClick={onRemove} className="tap-scale flex min-h-[32px] items-center gap-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
-                  <X className="h-3.5 w-3.5" />
-                  {t('own.remove')}
-                </button>
-              )}
+          {onRemove && (
+            <div className="mt-1 flex justify-center">
+              <button type="button" onClick={onRemove} className="tap-scale flex min-h-[32px] items-center gap-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                <X className="h-3.5 w-3.5" />
+                {t('own.remove')}
+              </button>
             </div>
           )}
         </div>
