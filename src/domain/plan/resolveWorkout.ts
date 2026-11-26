@@ -3,6 +3,7 @@ import { Conditions, isAvailable } from '../catalog/filter';
 import { pickForPattern } from '../catalog/ladder';
 import { CatalogExercise } from '../catalog/types';
 import { calcAgt30 } from './targets';
+import { SUBSTITUTE } from '../generator/rules';
 
 export interface ResolveContext {
   catalog: CatalogExercise[];
@@ -64,9 +65,13 @@ export function resolveWorkout(plan: Pick<WorkoutPlan, 'items' | 'useAgt30'>, ct
     if (!chosen) {
       const pattern = item.pattern ?? pinnedCat?.pattern;
       const rank = item.rank ?? pinnedCat?.rank ?? 3;
-      const pick = pattern
+      let pick = pattern
         ? pickForPattern(ctx.catalog, pattern, rank, cond, pinnedCat?.family)
         : undefined;
+      // Not possible here at all (vertical pull at home without a bar): the
+      // substitute pattern takes the slot — a band row (GENERATOR_RULES §11).
+      const sub = pattern ? SUBSTITUTE[pattern] : undefined;
+      if (!pick && sub) pick = pickForPattern(ctx.catalog, sub, rank, cond);
       if (pick) {
         chosen = exById.get(pick.id);
         if (item.exerciseId && item.exerciseId !== pick.id) substitutedFrom = item.exerciseId;

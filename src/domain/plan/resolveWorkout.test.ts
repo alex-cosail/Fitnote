@@ -115,9 +115,16 @@ describe('resolveWorkout', () => {
     expect(cat(r.exerciseId).posture).not.toContain('floor_contact');
   });
 
-  it('keeps the slot flagged when nothing fits', () => {
+  it('a pattern impossible here takes its substitute (pull-ups at home → a horizontal pull)', () => {
     const plan = { items: [{ exerciseId: 'strict-pull-ups', target: 6 }] };
-    expect(resolveWorkout(plan, { ...ctx, conditions: { environment: 'home' } })).toEqual([
+    const [r] = resolveWorkout(plan, { ...ctx, conditions: { environment: 'home', equipment: ['bands'] } });
+    expect(CATALOG.find((c) => c.id === r.exerciseId)!.pattern).toBe('pull_h');
+    expect(r.substitutedFrom).toBe('strict-pull-ups');
+  });
+
+  it('keeps the slot flagged when nothing fits, not even the substitute', () => {
+    const plan = { items: [{ exerciseId: 'strict-pull-ups', target: 6 }] };
+    expect(resolveWorkout(plan, { ...ctx, conditions: { environment: 'home', equipment: [], cleanFloor: false } })).toEqual([
       { slotIndex: 0, exerciseId: 'strict-pull-ups', target: 6, unavailable: true },
     ]);
   });
