@@ -165,6 +165,10 @@ export interface WorkoutLog {
   id: string;
   date: string;
   workoutTitle: string;
+  // The plan this was (absent in logs before v3.5): the week strip marks the day done.
+  workoutId?: string;
+  // «Как зашло?» after the workout (absent = not answered).
+  outcome?: 'easy' | 'ok' | 'hard';
   readiness: ReadinessLevel;
   roundsCompleted: number;
   roundsPlanned: number;
@@ -215,6 +219,10 @@ export interface FitnoteData {
   activeSession: ActiveSession | null;
   // ISO time of the last saved backup file (absent = never).
   lastBackupAt?: string;
+  // The week: cycles lay plans out on weekdays; moves are stored as overrides
+  // (docs/BACKLOG.md, field test 26.11). Absent before v3.5.
+  cycles?: import('./domain/schedule/schedule').Cycle[];
+  dayOverrides?: import('./domain/schedule/schedule').DayOverrides;
   // «Позже» on the start wizard: a new person is not sent there again on launch.
   onboardingDismissed?: boolean;
   // The person from the start wizard (absent = not met yet; generator uses defaults).

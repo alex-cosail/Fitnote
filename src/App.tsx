@@ -16,6 +16,11 @@ import { GeneratorPanel } from './components/GeneratorPanel';
 import { OnboardingWizard } from './components/OnboardingWizard';
 import { MePanel } from './components/MePanel';
 import { WeekReadyPanel } from './components/WeekReadyPanel';
+import { WeekStrip } from './components/WeekStrip';
+import {
+  Cycle, DayView, addDays, implicitCycle, localDate, moveDay, planOn, strengthInARow, weekDates, weekView,
+} from './domain/schedule/schedule';
+import { planKind } from './domain/schedule/kind';
 import { planLabel } from './components/generatorLabels';
 import { SyncLogTab } from './components/SyncLogTab';
 import { WorkoutPlayer } from './components/WorkoutPlayer';
@@ -326,6 +331,73 @@ export default function App() {
 
   // Generator: new generated plans replace the previous generated ones and
   // the first becomes the selected workout.
+  // ——— The week (v3.5): cycles lay plans out on weekdays; moves are overrides.
+  const today = localDate(new Date());
+  const cycles: Cycle[] = useMemo(() => {
+    if (data.cycles && data.cycles.length) return data.cycles;
+    const c = implicitCycle(data.workouts, data.profile?.perWeek ?? 3, today);
+    return c ? [c] : [];
+  }, [data.cycles, data.workouts, data.profile?.perWeek, today]);
+  const overrides = data.dayOverrides ?? {};
+  const [weekAnchor, setWeekAnchor] = useState(today);
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [weekWarning, setWeekWarning] = useState('');
+  const weekDays = useMemo(
+    () => weekView(cycles, overrides, data.workoutLogs, weekAnchor, today),
+    [cycles, overrides, data.workoutLogs, weekAnchor, today]
+  );
+  const planById = useMemo(() => new Map(data.workouts.map((w) => [w.id, w])), [data.workouts]);
+  const kindOf = (id: string) => {
+    const p = planById.get(id);
+    return p ? planKind(p) : undefined;
+  };
+  const weekLabel = (() => {
+    const [mon, , , , , , sun] = weekDates(weekAnchor);
+    const fmt = (d: string) => `${Number(d.slice(8, 10))}.${d.slice(5, 7)}`;
+    const which = weekDates(today)[0] === mon ? t('week.this') : mon > today ? t('week.next') : t('week.prev');
+    return `${which} · ${fmt(mon)}–${fmt(sun)}`;
+  })();
+
+  // On launch: today's workout is the selected one.
+  useEffect(() => {
+    const p = planOn(cycles, overrides, today);
+    if (p && planById.has(p)) setData((prev) => ({ ...prev, selectedWorkoutId: p }));
+    // only on launch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSelectDay = (day: DayView) => {
+    setSelectedDate(day.date);
+    setWeekWarning('');
+    if (day.planId && planById.has(day.planId)) {
+      setData((prev) => ({ ...prev, selectedWorkoutId: day.planId! }));
+    }
+  };
+
+  const handleMoveDay = (from: string, to: string) => {
+    const target = weekDays.find((d) => d.date === to);
+    if (target?.status === 'done') {
+      setWeekWarning(t('week.doneTaken'));
+      return;
+    }
+    const next = moveDay(cycles, overrides, from, to);
+    setData((prev) => ({ ...prev, cycles: prev.cycles?.length ? prev.cycles : cycles, dayOverrides: next }));
+    setSelectedDate(to);
+    // Warn only about neighbours that still lie ahead or were done (a missed
+    // past day does not tire anyone).
+    const after = weekView(cycles, next, data.workoutLogs, to, today);
+    const counts = (d: string) => {
+      const v = after.find((x) => x.date === d);
+      return !v || v.status !== 'missed';
+    };
+    const isStrength = (id: string) => kindOf(id) === 'S';
+    const warn = strengthInARow(cycles, next, to, isStrength) && [addDays(to, -1), addDays(to, 1)].some((d) => {
+      const p = planOn(cycles, next, d);
+      return Boolean(p && isStrength(p) && counts(d));
+    });
+    setWeekWarning(warn ? t('week.strengthInRow') : '');
+  };
+
   // The week built at the end of the wizard, shown on «Ваша неделя готова».
   const [readyPlans, setReadyPlans] = useState<WorkoutPlan[] | null>(null);
 
@@ -604,6 +676,21 @@ export default function App() {
                 {t('wiz.bannerBtn')}
               </button>
             </div>
+          </div>
+        )}
+        {!isOnboarding && activeTab === 'workout' && cycles.length > 0 && (
+          <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-5 landscape:px-5">
+            <WeekStrip
+              days={weekDays}
+              kindOf={kindOf}
+              titleOf={(id) => planById.get(id)?.title ?? ''}
+              selectedDate={selectedDate}
+              warning={weekWarning}
+              onSelect={handleSelectDay}
+              onMove={handleMoveDay}
+              onWeek={(delta) => setWeekAnchor((a) => addDays(a, delta * 7))}
+              weekLabel={weekLabel}
+            />
           </div>
         )}
         {!isOnboarding && activeTab === 'workout' && (

@@ -209,6 +209,23 @@ export const ru = {
   'ready.personal': "Персональный тренер",
   'ready.soon': "скоро",
   'ready.shareHeader': "Моя неделя в Fitnote",
+  'week.this': "Эта неделя",
+  'week.next': "Следующая",
+  'week.prev': "Прошлая",
+  'week.day.0': "Пн",
+  'week.day.1': "Вт",
+  'week.day.2': "Ср",
+  'week.day.3': "Чт",
+  'week.day.4': "Пт",
+  'week.day.5': "Сб",
+  'week.day.6': "Вс",
+  'week.rest': "отдых",
+  'week.done': "сделано",
+  'week.missed': "пропущено",
+  'week.hint': "Нажмите на день — его тренировка. Удерживайте и перетащите — перенос на другой день.",
+  'week.dropHint': "Отпустите на нужном дне. На занятый день — обмен местами.",
+  'week.strengthInRow': "Две силовые подряд — можно, но мышцам полезен день между ними.",
+  'week.doneTaken': "В этот день тренировка уже в журнале — выберите другой день.",
 };
 
 export type Dict = Record<keyof typeof ru, string>;

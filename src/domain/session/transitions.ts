@@ -295,6 +295,7 @@ export function buildWorkoutLog(
     id: `wlog-${now}`,
     date: new Date(now).toISOString(),
     workoutTitle: session.workoutTitle,
+    workoutId: session.workoutId,
     readiness: session.readiness,
     roundsCompleted: session.isRoundFlow
       ? completedRounds(session.logs)
