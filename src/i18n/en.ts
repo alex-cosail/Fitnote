@@ -225,4 +225,10 @@ export const en: Dict = {
   'week.dropHint': "Drop on the day you want. On a busy day the two swap.",
   'week.strengthInRow': "Two strength days in a row — fine, but muscles like a day in between.",
   'week.doneTaken': "That day already has a logged workout — pick another day.",
+  'wiz.days': "Training days",
+  'start.when': "When to start?",
+  'start.today': "Today",
+  'start.nextWeek': "From next week",
+  'start.afterCurrent': "After the current cycle",
+  'start.update': "Into the current cycle",
 };

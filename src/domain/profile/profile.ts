@@ -37,6 +37,7 @@ export interface UserProfile {
   waistCm?: number;
   weightKg?: number;
   perWeek: number; // 1, 2, 3, 4 (4 = 4+)
+  days?: import('../schedule/schedule').Weekday[]; // training days (absent = default by perWeek)
   equipment: ProfileEquipment;
   completedAt: string; // ISO
 }

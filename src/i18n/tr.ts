@@ -226,4 +226,10 @@ export const tr: Dict = {
   'week.dropHint': "İstediğin güne bırak. Dolu günde yer değiştirirler.",
   'week.strengthInRow': "Art arda iki güç günü — olur, ama aralarında bir gün iyi gelir.",
   'week.doneTaken': "O günün antrenmanı zaten kayıtlı — başka gün seç.",
+  'wiz.days': "Antrenman günleri",
+  'start.when': "Ne zaman başlayalım?",
+  'start.today': "Bugün",
+  'start.nextWeek': "Gelecek haftadan",
+  'start.afterCurrent': "Mevcut döngüden sonra",
+  'start.update': "Mevcut döngüye",
 };

@@ -11,6 +11,7 @@ import { useT } from '../i18n';
 import type { TranslationKey } from '../i18n/ru';
 import { Exercise, WorkoutLog, WorkoutPlan } from '../types';
 import { CreateOwnPanel } from './CreateOwnPanel';
+import { CycleChoice } from '../domain/schedule/place';
 import { UserProfile, requestFor, toGeneratorProfile } from '../domain/profile/profile';
 import { ExerciseStepCard } from './ExerciseStepCard';
 
@@ -20,7 +21,9 @@ interface GeneratorPanelProps {
   logs: WorkoutLog[];
   favorites: string[];
   onToggleFavorite: (id: string) => void;
-  onAdd: (plans: WorkoutPlan[]) => void;
+  onAdd: (plans: WorkoutPlan[], how: { choice: CycleChoice; single: boolean; perWeek: number }) => void;
+  /** A real cycle is running (offers «После текущего цикла»). */
+  hasActiveCycle?: boolean;
   onSaveOwn: (plan: WorkoutPlan) => void;
 }
 
@@ -47,8 +50,9 @@ export const iconBtn =
  * "Done — add to Workouts".
  */
 export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
-  exercises, profile, logs, favorites, onToggleFavorite, onAdd, onSaveOwn,
+  exercises, profile, logs, favorites, onToggleFavorite, onAdd, onSaveOwn, hasActiveCycle,
 }) => {
+  const [choice, setChoice] = useState<CycleChoice>(hasActiveCycle ? 'nextWeek' : 'today');
   const { t } = useT();
   const [tab, setTab] = useState<'base' | 'own'>('base');
   // The questions' defaults come from the person's profile.
@@ -301,10 +305,22 @@ export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
             })}
           </div>
 
+          {req.period !== 'single' && (
+            <div className="mt-5">
+              <p className="mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('start.when')}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {(['today', 'nextWeek', ...(hasActiveCycle ? ['afterCurrent'] : [])] as CycleChoice[]).map((c) => (
+                  <button key={c} type="button" className={chipClass(choice === c)} onClick={() => setChoice(c)}>
+                    {t(`start.${c}` as TranslationKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
             <button
               type="button"
-              onClick={() => onAdd(plans)}
+              onClick={() => onAdd(plans, { choice, single: req.period === 'single', perWeek: req.perWeek })}
               className="tap-scale flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-[#DC2626] px-5 text-sm font-bold text-white hover:bg-[#B91C1C]"
             >
               <Check className="h-4 w-4" />

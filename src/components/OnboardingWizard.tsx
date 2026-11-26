@@ -6,6 +6,7 @@ import {
 } from '../domain/profile/profile';
 import { HealthLevel, Zone, ZoneMark } from '../domain/generator';
 import { useT } from '../i18n';
+import { Weekday, defaultDays } from '../domain/schedule/schedule';
 import type { TranslationKey } from '../i18n/ru';
 
 interface OnboardingWizardProps {
@@ -80,6 +81,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ initial, onC
   const [p, setP] = useState<UserProfile>(() => initial ?? draftProfile());
   const [zonesTouched, setZonesTouched] = useState(Boolean(initial));
   const [autoNote, setAutoNote] = useState(false);
+  const [daysTouched, setDaysTouched] = useState(Boolean(initial?.days));
+  const days: Weekday[] = p.days ?? defaultDays(p.perWeek);
+  const setPerWeek = (n: number) => set({ perWeek: n, ...(daysTouched ? {} : { days: defaultDays(n) }) });
+  const toggleDay = (d: Weekday) => {
+    setDaysTouched(true);
+    const next = (days.includes(d) ? days.filter((x) => x !== d) : [...days, d]).sort((a, b) => a - b) as Weekday[];
+    if (next.length === 0) return;
+    set({ days: next, perWeek: Math.min(4, next.length) });
+  };
   const set = (patch: Partial<UserProfile>) => setP((x) => ({ ...x, ...patch }));
   const setLife = (patch: Partial<UserProfile['lifestyle']>) => setP((x) => ({ ...x, lifestyle: { ...x.lifestyle, ...patch } }));
   const setEq = (patch: Partial<ProfileEquipment>) => setP((x) => ({ ...x, equipment: { ...x.equipment, ...patch } }));
@@ -281,11 +291,32 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ initial, onC
             {row(
               t('wiz.perWeek'),
               [1, 2, 3, 4].map((n) => (
-                <button key={n} type="button" className={chip(p.perWeek === n)} onClick={() => set({ perWeek: n })}>
+                <button key={n} type="button" className={chip(p.perWeek === n)} onClick={() => setPerWeek(n)}>
                   {n === 4 ? '4+' : n}
                 </button>
               ))
             )}
+            <div>
+              <p className="mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('wiz.days')}</p>
+              <div className="grid grid-cols-7 gap-1">
+                {([0, 1, 2, 3, 4, 5, 6] as Weekday[]).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={days.includes(d)}
+                    onClick={() => toggleDay(d)}
+                    className={`tap-scale min-h-[44px] rounded-xl text-sm font-semibold ${
+                      days.includes(d)
+                        ? 'bg-[#111827] text-white dark:bg-[#F3F4F6] dark:text-[#0B0F17]'
+                        : 'bg-gray-100 text-gray-500 dark:bg-[#131A26] dark:text-gray-400'
+                    }`}
+                  >
+                    {t(`week.day.${d}` as TranslationKey)}
+                  </button>
+                ))}
+              </div>
+            </div>
           </>
         )}
 

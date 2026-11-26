@@ -4,6 +4,8 @@ import {
   Cycle, addDays, cycleAt, defaultDays, implicitCycle, localDate, mondayOf, moveDay, planOn, plannedFor, startCycle,
   strengthInARow, updateCyclePlans, weekDates, weekView, weekdayOf,
 } from './schedule';
+import type { Weekday } from './schedule';
+import { freshIds, placeSingle, placeWeek } from './place';
 
 // 2026-11-23 is a Monday.
 const MON = '2026-11-23';
@@ -110,5 +112,45 @@ describe('implicit cycle for users before v3.5', () => {
   });
   it('coach plans when nothing was generated', () => {
     expect(implicitCycle([{ id: 'workout-a' }, { id: 'workout-b' }, { id: 'workout-c-agt' }], 3, MON)!.planIds).toEqual(['workout-a', 'workout-b', 'workout-c-agt']);
+  });
+});
+
+describe('placing a new week (generator, wizard)', () => {
+  const plan = (id: string) => ({ id, title: id, subtitle: '', formatLabel: '', rounds: 3, restBetweenExercises: 45, restBetweenRounds: 90, items: [] });
+  const data = {
+    workouts: [plan('workout-a'), plan('gen-old-S-A'), plan('gen-old-S-B')],
+    cycles: [{ id: 'c1', title: 'old', planIds: ['gen-old-S-A', 'gen-old-S-B'], days: [0, 3] as Weekday[], startDate: MON }],
+    dayOverrides: {},
+    selectedWorkoutId: 'workout-a',
+  };
+  const fresh = [plan('gen-new-S-A'), plan('gen-new-S-B')];
+
+  it('today: new plans from today, old generated ones gone if no cycle needs them later', () => {
+    const r = placeWeek(data, fresh, 'today', [1, 4], 'new', '2026-11-26');
+    expect(plannedFor(r.cycles!, '2026-11-27')).toBe('gen-new-S-A');
+    expect(r.selectedWorkoutId).toBe('gen-new-S-A');
+    // the old cycle still covers Mon–Wed of this week, so its plans stay for the strip
+    expect(r.workouts.map((w) => w.id)).toEqual(['gen-new-S-A', 'gen-new-S-B', 'workout-a', 'gen-old-S-A', 'gen-old-S-B']);
+  });
+  it('next week: this week keeps the old plans', () => {
+    const r = placeWeek(data, fresh, 'nextWeek', [1, 4], 'new', '2026-11-26');
+    expect(plannedFor(r.cycles!, '2026-11-26')).toBe('gen-old-S-B');
+    expect(plannedFor(r.cycles!, '2026-12-01')).toBe('gen-new-S-A');
+    expect(r.workouts.some((w) => w.id === 'gen-old-S-A')).toBe(true);
+  });
+  it('update: same cycle, new plans and days, no new cycle', () => {
+    const r = placeWeek(data, fresh, 'update', [0, 3], 'new', '2026-11-26');
+    expect(r.cycles).toHaveLength(1);
+    expect(plannedFor(r.cycles!, '2026-11-26')).toBe('gen-new-S-B');
+    expect(r.workouts.some((w) => w.id === 'gen-old-S-A')).toBe(false);
+  });
+  it('a single workout goes onto today if free, else the next free day', () => {
+    const r = placeSingle(data, plan('own-1'), '2026-11-25');
+    expect(planOn(r.cycles!, r.dayOverrides!, '2026-11-25')).toBe('own-1');
+    const r2 = placeSingle(data, plan('own-2'), '2026-11-26'); // Thu is busy (B)
+    expect(planOn(r2.cycles!, r2.dayOverrides!, '2026-11-27')).toBe('own-2');
+  });
+  it('fresh ids keep the kind readable', () => {
+    expect(freshIds([plan('gen-1-0-S-A')], 'x9')[0].id).toBe('gen-1-0-S-A-x9');
   });
 });

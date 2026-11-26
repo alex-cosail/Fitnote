@@ -21,6 +21,8 @@ import {
   Cycle, DayView, addDays, implicitCycle, localDate, moveDay, planOn, strengthInARow, weekDates, weekView,
 } from './domain/schedule/schedule';
 import { planKind } from './domain/schedule/kind';
+import { CycleChoice, freshIds, placeSingle, placeWeek } from './domain/schedule/place';
+import { cycleAt, defaultDays } from './domain/schedule/schedule';
 import { planLabel } from './components/generatorLabels';
 import { SyncLogTab } from './components/SyncLogTab';
 import { WorkoutPlayer } from './components/WorkoutPlayer';
@@ -30,7 +32,7 @@ import { catalogTextsFor } from './data/catalogTexts';
 import { CATALOG_IDS, RED_MOBILITY_EXERCISES, getWarmupPlan } from './data/seed';
 import { resolveExercises } from './domain/catalog/resolve';
 import { baseCheckupIds, estimateMaxes } from './domain/catalog/estimate';
-import { dayPlan, dayTimes, replaceGenerated, runGenerator, toWorkoutPlans } from './domain/generator';
+import { dayPlan, dayTimes, runGenerator, toWorkoutPlans } from './domain/generator';
 import { UserProfile, requestFor, toGeneratorProfile } from './domain/profile/profile';
 import { recordMax } from './domain/catalog/userMaxes';
 import { resolveWorkout } from './domain/plan/resolveWorkout';
@@ -38,6 +40,7 @@ import { applyImport, ImportPayload } from './domain/plan/importPlan';
 import { calcAgt30, getEffectiveRounds } from './domain/plan/targets';
 import { useWakeLock } from './hooks/useWakeLock';
 import { I18nProvider, Locale, makeT } from './i18n';
+import type { TranslationKey } from './i18n/ru';
 import { useHashRoute } from './routing/useHashRoute';
 import {
   ActiveSession,
@@ -398,8 +401,17 @@ export default function App() {
     setWeekWarning(warn ? t('week.strengthInRow') : '');
   };
 
-  // The week built at the end of the wizard, shown on «Ваша неделя готова».
-  const [readyPlans, setReadyPlans] = useState<WorkoutPlan[] | null>(null);
+  // The week built at the end of the wizard, shown on «Ваша неделя готова»,
+  // with the data before it was placed (so «Когда начать?» can be changed).
+  const [ready, setReady] = useState<{
+    plans: WorkoutPlan[];
+    base: Pick<FitnoteData, 'workouts' | 'cycles' | 'dayOverrides' | 'selectedWorkoutId'>;
+    choice: CycleChoice;
+    days: import('./domain/schedule/schedule').Weekday[];
+    title: string;
+  } | null>(null);
+  const readyPlans = ready?.plans ?? null;
+  const hasActiveCycle = Boolean(data.cycles?.length && cycleAt(data.cycles, today));
 
   // A brand-new person (no profile, no journal) meets the app first.
   useEffect(() => {
@@ -422,15 +434,20 @@ export default function App() {
         profile: toGeneratorProfile(profile, data.favorites ?? []),
       }
     );
-    const plans = toWorkoutPlans(result, (gw, week) => planLabel(t, gw, week));
-    setData((prev) => ({
-      ...prev,
-      profile,
-      workouts: replaceGenerated(prev.workouts, plans),
-      selectedWorkoutId: plans[0]?.id ?? prev.selectedWorkoutId,
-    }));
+    const plans = freshIds(toWorkoutPlans(result, (gw, week) => planLabel(t, gw, week)), Date.now().toString(36));
+    const days = profile.days ?? defaultDays(profile.perWeek);
+    const title = t(`wiz.health.${profile.healthLevel}` as TranslationKey);
+    // A running cycle and new answers: new accents go into it by default.
+    const choice: CycleChoice = hasActiveCycle ? 'update' : 'today';
+    const base = {
+      workouts: data.workouts,
+      cycles: data.cycles,
+      dayOverrides: data.dayOverrides,
+      selectedWorkoutId: data.selectedWorkoutId,
+    };
+    setData((prev) => ({ ...placeWeek({ ...prev, ...base }, plans, choice, days, title, today), profile }));
     // Stay in the wizard and show the result (field test 26.11).
-    setReadyPlans(plans);
+    setReady({ plans, base, choice, days, title });
     window.scrollTo(0, 0);
   };
 
@@ -439,13 +456,24 @@ export default function App() {
     setActiveTab('workout');
   };
 
-  const handleAddGenerated = (plans: WorkoutPlan[]) => {
-    if (plans.length === 0) return;
-    setData((prev) => ({
-      ...prev,
-      workouts: replaceGenerated(prev.workouts, plans),
-      selectedWorkoutId: plans[0].id,
-    }));
+  const handleReadyChoice = (choice: CycleChoice) => {
+    if (!ready) return;
+    setData((prev) => placeWeek({ ...prev, ...ready.base }, ready.plans, choice, ready.days, ready.title, today));
+    setReady({ ...ready, choice });
+  };
+
+  const handleAddGenerated = (
+    rawPlans: WorkoutPlan[],
+    how: { choice: CycleChoice; single: boolean; perWeek: number }
+  ) => {
+    if (rawPlans.length === 0) return;
+    const plans = freshIds(rawPlans, Date.now().toString(36));
+    const days = data.profile?.days ?? defaultDays(how.perWeek);
+    setData((prev) =>
+      how.single
+        ? placeSingle(prev, plans[0], today)
+        : placeWeek(prev, plans, how.choice, days, plans[0].formatLabel, today)
+    );
     setActiveTab('workout');
     window.scrollTo(0, 0);
   };
@@ -462,11 +490,7 @@ export default function App() {
 
   // «Создать свою»: the own workout is added to the list and selected.
   const handleSaveOwn = (plan: WorkoutPlan) => {
-    setData((prev) => ({
-      ...prev,
-      workouts: [plan, ...prev.workouts],
-      selectedWorkoutId: plan.id,
-    }));
+    setData((prev) => placeSingle(prev, plan, today));
     setActiveTab('workout');
     window.scrollTo(0, 0);
   };
@@ -645,13 +669,16 @@ export default function App() {
           <WeekReadyPanel
             plans={readyPlans}
             exercises={exercises}
+            choices={ready?.base.cycles?.length && cycleAt(ready.base.cycles, today) ? ['update', 'today', 'nextWeek'] : ['today', 'nextWeek']}
+            choice={ready?.choice ?? 'today'}
+            onChoice={handleReadyChoice}
             onStart={() => {
-              setReadyPlans(null);
+              setReady(null);
               setActiveTab('workout');
               window.scrollTo(0, 0);
             }}
             onEdit={() => {
-              setReadyPlans(null);
+              setReady(null);
               setActiveTab('catalog');
               window.scrollTo(0, 0);
             }}
@@ -755,6 +782,7 @@ export default function App() {
             onToggleFavorite={handleToggleFavorite}
             onAdd={handleAddGenerated}
             onSaveOwn={handleSaveOwn}
+            hasActiveCycle={hasActiveCycle}
           />
         )}
         {!isOnboarding && activeTab === 'catalog' && (

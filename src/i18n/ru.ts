@@ -226,6 +226,12 @@ export const ru = {
   'week.dropHint': "Отпустите на нужном дне. На занятый день — обмен местами.",
   'week.strengthInRow': "Две силовые подряд — можно, но мышцам полезен день между ними.",
   'week.doneTaken': "В этот день тренировка уже в журнале — выберите другой день.",
+  'wiz.days': "Дни тренировок",
+  'start.when': "Когда начать?",
+  'start.today': "Сегодня",
+  'start.nextWeek': "Со следующей недели",
+  'start.afterCurrent': "После текущего цикла",
+  'start.update': "В текущий цикл",
 };
 
 export type Dict = Record<keyof typeof ru, string>;

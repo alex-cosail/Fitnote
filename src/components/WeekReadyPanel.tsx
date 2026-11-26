@@ -5,12 +5,16 @@ import { estimateSeconds } from '../domain/generator';
 import { weekText } from '../domain/plan/shareText';
 import { useT } from '../i18n';
 import { Exercise, WorkoutPlan } from '../types';
+import { CycleChoice } from '../domain/schedule/place';
 
 interface WeekReadyPanelProps {
   plans: WorkoutPlan[];
   exercises: Exercise[];
   onStart: () => void;
   onEdit: () => void;
+  choices: CycleChoice[];
+  choice: CycleChoice;
+  onChoice: (c: CycleChoice) => void;
 }
 
 /**
@@ -19,7 +23,7 @@ interface WeekReadyPanelProps {
  * coach; the calendar comes with weekdays (v3.5), the personal coach is a
  * paid service for later.
  */
-export const WeekReadyPanel: React.FC<WeekReadyPanelProps> = ({ plans, exercises, onStart, onEdit }) => {
+export const WeekReadyPanel: React.FC<WeekReadyPanelProps> = ({ plans, exercises, onStart, onEdit, choices, choice, onChoice }) => {
   const { t } = useT();
   const [sent, setSent] = useState<'' | 'shared' | 'copied'>('');
   const catalogById = useMemo(() => new Map(CATALOG.map((c) => [c.id, c])), []);
@@ -80,10 +84,30 @@ export const WeekReadyPanel: React.FC<WeekReadyPanelProps> = ({ plans, exercises
         ))}
       </div>
 
+      <div className="mt-5">
+        <p className="mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">{t('start.when')}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {choices.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => onChoice(c)}
+              className={`tap-scale min-h-[44px] flex-1 rounded-xl px-3 text-sm font-semibold ${
+                choice === c
+                  ? 'bg-[#111827] text-white dark:bg-[#F3F4F6] dark:text-[#0B0F17]'
+                  : 'bg-gray-100 text-gray-600 dark:bg-[#131A26] dark:text-gray-300'
+              }`}
+            >
+              {t(`start.${c}` as never)}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <button
         type="button"
         onClick={onStart}
-        className="tap-scale mt-5 flex min-h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#DC2626] px-5 text-base font-bold text-white hover:bg-[#B91C1C]"
+        className="tap-scale mt-3 flex min-h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#DC2626] px-5 text-base font-bold text-white hover:bg-[#B91C1C]"
       >
         <Play className="h-5 w-5 fill-current" />
         {t('ready.start')}
