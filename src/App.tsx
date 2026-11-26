@@ -22,7 +22,9 @@ import {
 } from './domain/schedule/schedule';
 import { planKind } from './domain/schedule/kind';
 import { CycleChoice, freshIds, placeSingle, placeWeek } from './domain/schedule/place';
-import { cycleAt, defaultDays } from './domain/schedule/schedule';
+import { cycleAt, cycleRecurrence, defaultDays } from './domain/schedule/schedule';
+import { androidCalendarIntentUrl, buildIcsEvent, googleCalendarUrl, isAndroid } from './domain/reminder/ics';
+import { shareOrDownloadCalendar } from './utils/download';
 import { planLabel } from './components/generatorLabels';
 import { SyncLogTab } from './components/SyncLogTab';
 import { WorkoutPlayer } from './components/WorkoutPlayer';
@@ -456,6 +458,39 @@ export default function App() {
     setActiveTab('workout');
   };
 
+  // The current (or the next upcoming) cycle as one repeating calendar event
+  // with the usual reminder time; Android opens «Новое событие» (v2.4.1).
+  const handleCycleToCalendar = async () => {
+    const upcoming = [...(data.cycles ?? cycles)]
+      .filter((c) => !c.endDate || c.endDate >= today)
+      .sort((a, b) => (a.startDate < b.startDate ? 1 : -1));
+    const cycle = cycleAt(data.cycles ?? cycles, today) && !upcoming.some((c) => c.startDate > today)
+      ? cycleAt(data.cycles ?? cycles, today)!
+      : upcoming[0];
+    if (!cycle) return;
+    const rec = cycleRecurrence(cycle, today, data.reminder?.time ?? '18:00');
+    if (!rec) return;
+    const names = cycle.planIds.map((id) => planById.get(id)?.title).filter(Boolean).join(' · ');
+    const ev = {
+      uid: `fitnote-${cycle.id}@fitnote`,
+      title: t('cal.title'),
+      description: `${names}\n${window.location.origin}/#/workout`,
+      start: rec.start,
+      durationMinutes: 45,
+      now: new Date(),
+      rrule: rec.rrule,
+    };
+    if (isAndroid(navigator.userAgent)) {
+      window.location.href = androidCalendarIntentUrl(ev, googleCalendarUrl(ev));
+      return;
+    }
+    try {
+      await shareOrDownloadCalendar('fitnote-week.ics', buildIcsEvent(ev));
+    } catch {
+      // the share sheet was closed
+    }
+  };
+
   const handleReadyChoice = (choice: CycleChoice) => {
     if (!ready) return;
     setData((prev) => placeWeek({ ...prev, ...ready.base }, ready.plans, choice, ready.days, ready.title, today));
@@ -672,6 +707,7 @@ export default function App() {
             choices={ready?.base.cycles?.length && cycleAt(ready.base.cycles, today) ? ['update', 'today', 'nextWeek'] : ['today', 'nextWeek']}
             choice={ready?.choice ?? 'today'}
             onChoice={handleReadyChoice}
+            onCalendar={handleCycleToCalendar}
             onStart={() => {
               setReady(null);
               setActiveTab('workout');
@@ -717,6 +753,7 @@ export default function App() {
               onMove={handleMoveDay}
               onWeek={(delta) => setWeekAnchor((a) => addDays(a, delta * 7))}
               weekLabel={weekLabel}
+              onCalendar={data.cycles?.length ? handleCycleToCalendar : undefined}
             />
           </div>
         )}

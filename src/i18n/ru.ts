@@ -232,6 +232,8 @@ export const ru = {
   'start.nextWeek': "Со следующей недели",
   'start.afterCurrent': "После текущего цикла",
   'start.update': "В текущий цикл",
+  'ready.calendarHint': "повтор по дням, напоминание за час",
+  'cal.title': "Fitnote: тренировка",
 };
 
 export type Dict = Record<keyof typeof ru, string>;

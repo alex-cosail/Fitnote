@@ -78,6 +78,8 @@ export interface CalendarEventInput {
   durationMinutes: number;
   alarmMinutesBefore?: number;
   now: Date;
+  /** Weekly repeat for a cycle, e.g. FREQ=WEEKLY;BYDAY=TU,FR;UNTIL=20261227T235959Z */
+  rrule?: string;
 }
 
 /** A single-event iCalendar file with a display alarm. */
@@ -95,6 +97,7 @@ export function buildIcsEvent(e: CalendarEventInput): string {
     `DTSTAMP:${icsUtc(e.now)}`,
     `DTSTART:${icsUtc(e.start)}`,
     `DTEND:${icsUtc(end)}`,
+    ...(e.rrule ? [`RRULE:${e.rrule}`] : []),
     `SUMMARY:${icsEscape(e.title)}`,
     ...(e.description ? [`DESCRIPTION:${icsEscape(e.description)}`] : []),
     ...(e.url ? [`URL:${e.url}`] : []),
@@ -110,13 +113,14 @@ export function buildIcsEvent(e: CalendarEventInput): string {
 }
 
 /** Google Calendar "add event" link — a fallback when the device is online. */
-export function googleCalendarUrl(e: Pick<CalendarEventInput, 'title' | 'description' | 'start' | 'durationMinutes'>): string {
+export function googleCalendarUrl(e: Pick<CalendarEventInput, 'title' | 'description' | 'start' | 'durationMinutes' | 'rrule'>): string {
   const end = new Date(e.start.getTime() + e.durationMinutes * 60_000);
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: e.title,
     dates: `${icsUtc(e.start)}/${icsUtc(end)}`,
     details: e.description ?? '',
+    ...(e.rrule ? { recur: `RRULE:${e.rrule}` } : {}),
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
@@ -130,7 +134,7 @@ export function googleCalendarUrl(e: Pick<CalendarEventInput, 'title' | 'descrip
  * `fallbackUrl` opens in the browser if no app handles the intent.
  */
 export function androidCalendarIntentUrl(
-  e: Pick<CalendarEventInput, 'title' | 'description' | 'start' | 'durationMinutes'>,
+  e: Pick<CalendarEventInput, 'title' | 'description' | 'start' | 'durationMinutes' | 'rrule'>,
   fallbackUrl?: string
 ): string {
   const begin = e.start.getTime();
@@ -142,6 +146,7 @@ export function androidCalendarIntentUrl(
     ...(e.description ? [`S.description=${encodeURIComponent(e.description)}`] : []),
     `l.beginTime=${begin}`,
     `l.endTime=${end}`,
+    ...(e.rrule ? [`S.rrule=${encodeURIComponent(e.rrule)}`] : []),
     ...(fallbackUrl ? [`S.browser_fallback_url=${encodeURIComponent(fallbackUrl)}`] : []),
   ];
   return `intent:#Intent;${parts.join(';')};end`;

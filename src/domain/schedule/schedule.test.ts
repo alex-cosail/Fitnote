@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { WorkoutLog } from '../../types';
 import {
   Cycle, addDays, cycleAt, defaultDays, implicitCycle, localDate, mondayOf, moveDay, planOn, plannedFor, startCycle,
-  strengthInARow, updateCyclePlans, weekDates, weekView, weekdayOf,
+  strengthInARow, updateCyclePlans, weekDates, weekView, weekdayOf, cycleRecurrence,
 } from './schedule';
 import type { Weekday } from './schedule';
 import { freshIds, placeSingle, placeWeek } from './place';
@@ -152,5 +152,20 @@ describe('placing a new week (generator, wizard)', () => {
   });
   it('fresh ids keep the kind readable', () => {
     expect(freshIds([plan('gen-1-0-S-A')], 'x9')[0].id).toBe('gen-1-0-S-A-x9');
+  });
+});
+
+describe('the cycle in the phone calendar', () => {
+  it('one weekly event on the cycle days until its end, from the next training day', () => {
+    const r = cycleRecurrence({ ...cycle, days: [1, 4], endDate: '2026-12-20' }, '2026-11-26', '18:30')!;
+    expect(r.rrule).toBe('FREQ=WEEKLY;BYDAY=TU,FR;UNTIL=20261220T235959Z');
+    expect(localDate(r.start)).toBe('2026-11-27');
+    expect(r.start.getHours()).toBe(18);
+    expect(r.start.getMinutes()).toBe(30);
+  });
+  it('a cycle that starts later begins on its first training day', () => {
+    const r = cycleRecurrence({ ...cycle, startDate: '2026-11-30', days: [2] }, '2026-11-26', '07:00')!;
+    expect(localDate(r.start)).toBe('2026-12-02');
+    expect(r.rrule).toBe('FREQ=WEEKLY;BYDAY=WE');
   });
 });

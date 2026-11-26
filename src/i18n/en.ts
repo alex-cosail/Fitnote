@@ -231,4 +231,6 @@ export const en: Dict = {
   'start.nextWeek': "From next week",
   'start.afterCurrent': "After the current cycle",
   'start.update': "Into the current cycle",
+  'ready.calendarHint': "repeats on your days, reminder an hour before",
+  'cal.title': "Fitnote: workout",
 };

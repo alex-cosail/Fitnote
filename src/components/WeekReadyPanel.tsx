@@ -15,6 +15,7 @@ interface WeekReadyPanelProps {
   choices: CycleChoice[];
   choice: CycleChoice;
   onChoice: (c: CycleChoice) => void;
+  onCalendar: () => void;
 }
 
 /**
@@ -23,7 +24,7 @@ interface WeekReadyPanelProps {
  * coach; the calendar comes with weekdays (v3.5), the personal coach is a
  * paid service for later.
  */
-export const WeekReadyPanel: React.FC<WeekReadyPanelProps> = ({ plans, exercises, onStart, onEdit, choices, choice, onChoice }) => {
+export const WeekReadyPanel: React.FC<WeekReadyPanelProps> = ({ plans, exercises, onStart, onEdit, choices, choice, onChoice, onCalendar }) => {
   const { t } = useT();
   const [sent, setSent] = useState<'' | 'shared' | 'copied'>('');
   const catalogById = useMemo(() => new Map(CATALOG.map((c) => [c.id, c])), []);
@@ -123,11 +124,11 @@ export const WeekReadyPanel: React.FC<WeekReadyPanelProps> = ({ plans, exercises
           <span className="flex-1">{t('ready.coach')}</span>
           {sent && <span className="text-xs font-semibold text-[#0B5F73] dark:text-[#5EC4D8]">{t(sent === 'copied' ? 'ready.copied' : 'ready.shared')}</span>}
         </button>
-        <div className={`${secondary} cursor-default opacity-60`}>
+        <button type="button" onClick={onCalendar} className={secondary}>
           <CalendarDays className="h-4 w-4 shrink-0" />
           <span className="flex-1">{t('ready.calendar')}</span>
-          <span className="text-xs font-semibold text-gray-500">{t('ready.calendarSoon')}</span>
-        </div>
+          <span className="text-xs font-semibold text-gray-500">{t('ready.calendarHint')}</span>
+        </button>
         <div className={`${secondary} cursor-default opacity-60`}>
           <UserRoundCheck className="h-4 w-4 shrink-0" />
           <span className="flex-1">{t('ready.personal')}</span>

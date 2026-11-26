@@ -219,3 +219,22 @@ export function implicitCycle(workouts: Pick<WorkoutPlan, 'id'>[], perWeek: numb
     startDate: mondayOf(today),
   };
 }
+
+const BYDAY = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+
+/**
+ * The cycle as one repeating calendar event (customer, 26.11): the first
+ * training day from today at the given time, weekly on the cycle's days
+ * until its end.
+ */
+export function cycleRecurrence(cycle: Cycle, today: string, time: string): { start: Date; rrule: string } | undefined {
+  if (cycle.days.length === 0) return undefined;
+  let first = today < cycle.startDate ? cycle.startDate : today;
+  for (let i = 0; i < 7 && !cycle.days.includes(weekdayOf(first)); i++) first = addDays(first, 1);
+  if (cycle.endDate && first > cycle.endDate) return undefined;
+  const [h, m] = time.split(':').map(Number);
+  const [y, mo, d] = first.split('-').map(Number);
+  const start = new Date(y, mo - 1, d, h || 0, m || 0);
+  const until = cycle.endDate ? `;UNTIL=${cycle.endDate.replace(/-/g, '')}T235959Z` : '';
+  return { start, rrule: `FREQ=WEEKLY;BYDAY=${cycle.days.map((x) => BYDAY[x]).join(',')}${until}` };
+}

@@ -98,3 +98,12 @@ describe('Android calendar intent', () => {
     expect(isAndroid('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)')).toBe(false);
   });
 });
+
+describe('weekly repeat', () => {
+  const base = { uid: 'u', title: 'Fitnote', start: new Date(2026, 10, 27, 18, 0), durationMinutes: 45, now: new Date(2026, 10, 26), rrule: 'FREQ=WEEKLY;BYDAY=TU,FR' };
+  it('goes into the .ics file, the Android intent and the Google link', () => {
+    expect(buildIcsEvent(base)).toContain('RRULE:FREQ=WEEKLY;BYDAY=TU,FR\r\n');
+    expect(androidCalendarIntentUrl(base)).toContain('S.rrule=FREQ%3DWEEKLY%3BBYDAY%3DTU%2CFR');
+    expect(googleCalendarUrl(base)).toContain('recur=RRULE%3AFREQ%3DWEEKLY%3BBYDAY%3DTU%2CFR');
+  });
+});

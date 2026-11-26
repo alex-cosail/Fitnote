@@ -232,4 +232,6 @@ export const tr: Dict = {
   'start.nextWeek': "Gelecek haftadan",
   'start.afterCurrent': "Mevcut döngüden sonra",
   'start.update': "Mevcut döngüye",
+  'ready.calendarHint': "günlerinde tekrar, bir saat önce hatırlatma",
+  'cal.title': "Fitnote: antrenman",
 };
