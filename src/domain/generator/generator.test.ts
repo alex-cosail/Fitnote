@@ -9,7 +9,7 @@ import {
   DEFAULT_PROFILE, GeneratedWorkout, GeneratorContext, GeneratorProfile, HealthLevel,
   applyMode, buildMonth, buildWeek, calibrateMax, calibrateTempo, capMinutes, checkSession, deficitTemplate,
   estimateSeconds, fitRounds, hasSameDirectionInRow, historyFromLogs, nextTarget, orderRound, outcomeFromLog,
-  antagonistOptions, basketIssues, buildOwnPlan, changeRounds, changeTarget, fixFor, ladderPosition, ownItem, stepRank, swapExercise, zoneCandidates,
+  calibrateFromLog, antagonistOptions, basketIssues, buildOwnPlan, changeRounds, changeTarget, fixFor, ladderPosition, ownItem, stepRank, swapExercise, zoneCandidates,
   dayPlan, replaceGenerated, runGenerator, shortRounds, stepToRank, toWorkoutPlans, weekDebt, weekIsCovered,
 } from '.';
 import { CAP_TOLERANCE, DELOAD } from './rules';
@@ -545,5 +545,27 @@ describe('tap on a step dot', () => {
     const bottom = stepToRank(plan, 0, 1, CATALOG, exercises);
     expect(byId.get(bottom.items[0].exerciseId!)!.rank).toBe(1);
     expect(stepToRank(plan, 0, 3, CATALOG, exercises)).toBe(plan);
+  });
+});
+
+describe('maxima from «Как зашло?»', () => {
+  const mk = (outcome: WorkoutLog['outcome'], actual: number, target = 15): WorkoutLog => ({
+    id: 'l', date: '2026-11-26T10:00:00', workoutTitle: 'A', readiness: 'green', outcome, roundsCompleted: 3, roundsPlanned: 3, durationSeconds: 1,
+    sets: [1, 2, 3].map((round) => ({ round, exerciseId: 'floor-push-ups', exerciseName: 'x', metric: 'reps', target, actual, rir: '1', completedAt: '' })),
+  });
+  const max20 = () => ({ value: 20, metric: 'reps' as const });
+
+  it('easy: up, but at most +10%', () => {
+    expect(calibrateFromLog(mk('easy', 16), max20)).toEqual({ 'floor-push-ups': 22 });
+  });
+  it('just right on target: unchanged', () => {
+    expect(calibrateFromLog(mk('ok', 15), max20)).toEqual({});
+  });
+  it('hard and short: down, but at most −15%', () => {
+    expect(calibrateFromLog(mk('hard', 8), max20)).toEqual({ 'floor-push-ups': 17 });
+  });
+  it('no answer, no change; unreliable shares are skipped', () => {
+    expect(calibrateFromLog(mk(undefined, 16), max20)).toEqual({});
+    expect(calibrateFromLog(mk('easy', 20, 20), max20)).toEqual({});
   });
 });

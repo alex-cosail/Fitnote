@@ -6,7 +6,7 @@ export { buildWeek, buildMonth, weekLayout, deficitTemplate } from './week';
 export { applyMode, accentPlan, pairItems, shortRounds } from './modes';
 export { checkSession, weekDebt, weekIsCovered, countPatterns } from './coverage';
 export { estimateSeconds, capMinutes, fitRounds, calibrateTempo, setSeconds } from './duration';
-export { nextTarget, calibrateMax, outcomeFromLog, historyFromLogs } from './progress';
+export { nextTarget, calibrateMax, calibrateFromLog, outcomeFromLog, historyFromLogs } from './progress';
 export type { Outcome, NextTarget } from './progress';
 export { orderRound, hasSameDirectionInRow, moveClass } from './order';
 export { pickExercise, pickScore } from './pick';

@@ -112,7 +112,7 @@ export const FinishPhase: React.FC = () => {
                 </button>
               ))}
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Ответ сохранится в журнале — по нему подстроится начало следующей недели.</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">По ответу пересчитаются максимумы — следующие цели подстроятся.</p>
           </div>
 
           <div className="mt-5">

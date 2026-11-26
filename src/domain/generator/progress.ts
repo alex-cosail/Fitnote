@@ -93,3 +93,32 @@ export function historyFromLogs(logs: WorkoutLog[], exercises: Pick<Exercise, 'i
   }
   return { lastDone, swappedAway };
 }
+
+/**
+ * New maxima after a workout with «Как зашло?» (customer, 26.11: maxima may
+ * be recalculated automatically). Per exercise: the best set ÷ the share of
+ * the max that was planned, × 1.1 easy / × 0.9 hard; up at most +10%, down
+ * at most −15% per workout. Unreliable shares (< 15% or > 95%) are skipped.
+ */
+export function calibrateFromLog(
+  log: WorkoutLog,
+  maxOf: (exerciseId: string) => { value: number; metric: MetricType } | undefined
+): Record<string, number> {
+  if (!log.outcome) return {};
+  const out: Record<string, number> = {};
+  const ids = [...new Set(log.sets.map((s) => s.exerciseId))];
+  for (const id of ids) {
+    const m = maxOf(id);
+    if (!m || m.value <= 0) continue;
+    const sets = log.sets.filter((s) => s.exerciseId === id);
+    const target = sets[0].plannedTarget ?? sets[0].target;
+    const pct = target / m.value;
+    if (pct < 0.15 || pct > 0.95) continue;
+    const done = Math.max(...sets.map((s) => s.actual));
+    const raw = calibrateMax(done, pct, log.outcome, m.value, m.metric);
+    const floor = m.metric === 'seconds' ? Math.max(5, Math.round((m.value * 0.85) / 5) * 5) : Math.max(1, Math.round(m.value * 0.85));
+    const next = Math.max(floor, raw);
+    if (next !== m.value) out[id] = next;
+  }
+  return out;
+}

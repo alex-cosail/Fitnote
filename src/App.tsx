@@ -23,7 +23,7 @@ import {
 import { planKind } from './domain/schedule/kind';
 import { CycleChoice, freshIds, placeSingle, placeWeek } from './domain/schedule/place';
 import { addPatterns, mondayNote, reviewWeek, topUpDue } from './domain/schedule/compensation';
-import { buildSession, historyFromLogs } from './domain/generator';
+import { buildSession, calibrateFromLog, historyFromLogs } from './domain/generator';
 import { mondayOf } from './domain/schedule/schedule';
 import { patternList } from './components/generatorLabels';
 import { cycleAt, cycleRecurrence, defaultDays } from './domain/schedule/schedule';
@@ -241,11 +241,17 @@ export default function App() {
   };
 
   const handleCompleteSession = (log: WorkoutLog) => {
-    setData((prev) => ({
-      ...prev,
-      workoutLogs: [log, ...prev.workoutLogs],
-      activeSession: null,
-    }));
+    // «Как зашло?» recalculates the maxima of this workout's exercises
+    // (customer, 26.11), so the next targets follow the answer.
+    const calibrated = calibrateFromLog(log, (id) => {
+      const ex = exercises.find((e) => e.id === id);
+      return ex ? { value: ex.checkup_max, metric: ex.metric } : undefined;
+    });
+    setData((prev) => {
+      let user = { maxes: prev.maxes, customExercises: prev.customExercises };
+      for (const [id, value] of Object.entries(calibrated)) user = recordMax(user, CATALOG_IDS, id, value, log.date);
+      return { ...prev, ...user, workoutLogs: [log, ...prev.workoutLogs], activeSession: null };
+    });
     setIsPlayerVisible(false);
     setActiveTab('sync');
   };
