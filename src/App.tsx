@@ -66,6 +66,7 @@ import { loadFitnoteData, saveFitnoteData } from './utils/storage';
 import { APP_VERSION_LABEL } from './version';
 import { warmupOptionsFor } from './domain/warmup/warmup';
 import { applySwaps } from './domain/session/change';
+import { answerReview, blockedByCare, careToReview, JOINT_NAMES, removeCare, setCare } from './domain/care/care';
 
 const PROTECTED_WORKOUT_IDS = new Set([
   'workout-a',
@@ -128,10 +129,13 @@ export default function App() {
   }, [locale, data.maxes, data.customExercises, level]);
 
   // The person as the generator sees them (defaults until the start wizard).
-  const genProfile = useMemo(
-    () => toGeneratorProfile(data.profile, data.favorites ?? []),
-    [data.profile, data.favorites]
-  );
+  // «Берегу» goes into the conditions, so the generator, substitutions,
+  // «Изменить» and sharing all respect it (care brief, v3.9).
+  const genProfile = useMemo(() => {
+    const g = toGeneratorProfile(data.profile, data.favorites ?? []);
+    const care = (data.care ?? []).map((c) => ({ joint: c.joint, level: c.level }));
+    return care.length ? { ...g, usualConditions: { ...(g.usualConditions ?? {}), care } } : g;
+  }, [data.profile, data.favorites, data.care]);
 
   // Tabs follow the URL hash (#/workout, #/log, …); #/onboarding is the start
   // wizard. Routes reserved for later steps (studio, shared workouts) show the
@@ -203,7 +207,10 @@ export default function App() {
           target: item.target,
           plannedTarget: item.target,
         }))
-      : resolveWorkout(today, { catalog: CATALOG, exercises }).map((r) => ({
+      : resolveWorkout(today, { catalog: CATALOG, exercises, conditions: { care: genProfile.usualConditions?.care } })
+          // «Берегу»: a slot with no safe exercise is skipped today (v3.9).
+          .filter((r) => !(r.unavailable && careBlocks(r.exerciseId)))
+          .map((r) => ({
           exerciseId: r.exerciseId,
           target: r.target,
           plannedTarget: r.target,
@@ -252,6 +259,12 @@ export default function App() {
     setData((prev) => ({ ...prev, activeSession: newSession }));
     setIsPlayerVisible(true);
   };
+
+  // «Берегу»: is this catalog exercise protected now?
+  function careBlocks(id: string) {
+    const c = CATALOG.find((x) => x.id === id);
+    return Boolean(c && blockedByCare(c, genProfile.usualConditions?.care));
+  }
 
   const handleUpdateSession = (nextSession: ActiveSession) => {
     setData((prev) => ({ ...prev, activeSession: nextSession }));
@@ -370,6 +383,8 @@ export default function App() {
   // the first becomes the selected workout.
   // ——— The week (v3.5): cycles lay plans out on weekdays; moves are overrides.
   const today = localDate(new Date());
+  // «Как плечо?» a week after «Пауза: болит» (v3.9).
+  const careDue = careToReview(data.care, today)[0];
   const cycles: Cycle[] = useMemo(() => {
     if (data.cycles && data.cycles.length) return data.cycles;
     const c = implicitCycle(data.workouts, data.profile?.perWeek ?? 3, today);
@@ -894,6 +909,31 @@ export default function App() {
               onCalendar={data.cycles?.length ? handleCycleToCalendar : undefined}
               onShare={shareCycle}
             />
+            {careDue && (
+              <div className="mt-3 rounded-2xl border border-[#F59E0B]/50 bg-[#FFFBEB] p-3 dark:border-[#FBBF24]/40 dark:bg-[#451A03]/50">
+                <p className="text-sm font-bold text-[#92400E] dark:text-[#FBBF24]">Как {JOINT_NAMES[careDue.joint].acc}?</p>
+                <p className="mt-0.5 text-xs text-[#92400E] dark:text-[#FBBF24]">
+                  С {careDue.since.split('-').reverse().slice(0, 2).join('.')} бережём: {careDue.level === 'stop' ? 'не нагружаем' : 'нагружаем бережно'}.
+                </p>
+                <div className="mt-2 grid grid-cols-3 gap-1.5">
+                  {([
+                    ['passed', 'Прошло'],
+                    ['better', 'Лучше'],
+                    ['same', 'Так же'],
+                  ] as const).map(([a, label]) => (
+                    <button
+                      key={a}
+                      type="button"
+                      onClick={() => setData((prev) => ({ ...prev, care: answerReview(prev.care ?? [], careDue.joint, a, today) }))}
+                      className="tap-scale min-h-[44px] rounded-xl border border-[#F59E0B]/60 bg-white text-sm font-semibold text-[#111827] dark:bg-[#1A2333] dark:text-[#F3F4F6]"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-[11px] text-[#92400E]/80 dark:text-[#FBBF24]/80">Возвращаем постепенно: сначала бережно, потом как обычно. Если не проходит — покажитесь врачу.</p>
+              </div>
+            )}
             {showTopUp && (
               <div className="mt-3 rounded-2xl border border-[#0B5F73]/30 bg-[#ECFAFC] p-3 dark:border-[#5EC4D8]/30 dark:bg-[#0B2E36]/60">
                 <p className="text-sm font-semibold text-[#0B5F73] dark:text-[#5EC4D8]">
@@ -980,6 +1020,8 @@ export default function App() {
             favorites={data.favorites ?? []}
             onToggleFavorite={handleToggleFavorite}
             onEdit={() => navigate({ name: 'onboarding' })}
+            care={data.care ?? []}
+            onRemoveCare={(joint) => setData((prev) => ({ ...prev, care: removeCare(prev.care, joint) }))}
           />
         )}
         {!isFullscreen && activeTab === 'checkup' && (
@@ -1084,6 +1126,13 @@ export default function App() {
             setData((prev) => ({ ...prev, reminder }))
           }
           conditions={genProfile.usualConditions}
+          onCare={(joints, level, reason) =>
+            setData((prev) => {
+              const since = localDate(new Date());
+              const care = joints.reduce((list, joint) => setCare(list, { joint, level, reason, since, source: 'self' }), prev.care ?? []);
+              return { ...prev, care };
+            })
+          }
           notes={data.exerciseNotes}
           onNote={(id, text) =>
             setData((prev) => {

@@ -241,6 +241,8 @@ export interface FitnoteData {
   accentMinutes?: number;
   /** The person's own note per exercise (v3.8): «жёлтая + синяя». */
   exerciseNotes?: Record<string, string>;
+  /** «Берегу» (v3.9): joints not loaded now or loaded gently. */
+  care?: import('./domain/care/care').Care[];
   // Last answer to "When is the next workout?" (calendar reminder).
   reminder?: { daysAhead: 0 | 1 | 2 | 3; time: string };
   // Interface language (absent = Russian; the switcher arrives in step 4).

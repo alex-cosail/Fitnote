@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ArrowLeftRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeftRight, ChevronLeft, ChevronRight, Pause } from 'lucide-react';
 import { LadderPosition } from '../domain/generator';
 import { SvgKey } from '../types';
 import { ExerciseSvg } from './ExerciseSvg';
@@ -13,19 +13,24 @@ interface LadderPictureProps {
   onSwap?: () => void;
   swapLabel?: string;
   className?: string; // picture size
+  /** Past the easiest step: «Пауза: болит» (v3.9). */
+  onPause?: () => void;
+  /** Fill the parent's height (the player). */
+  fill?: boolean;
 }
 
 const SWIPE = 40; // px to commit a step
 const SLIDE_MS = 160;
 
 /**
- * The exercise picture as a strip of slides (customer, 26.11): swipe left —
- * a harder step, swipe right — an easier one; at the ends the picture springs
- * back. Dots under it are the ladder steps (tap = jump), thin ‹ › inside the
+ * The exercise picture as a strip of slides: swipe left — an easier step
+ * («в минус», customer 27.11), swipe right — a harder one; at the ends the
+ * picture springs back, and past the easiest step a swipe left opens
+ * «Пауза: болит» when it is offered. Dots under it are the ladder steps (tap = jump), thin ‹ › inside the
  * picture do the same as a swipe. Vertical page scroll is left to the browser.
  */
 export const LadderPicture: React.FC<LadderPictureProps> = ({
-  svgKey, name, ladder, onStep, onJump, onSwap, swapLabel = 'Другое', className = 'h-20 w-full',
+  svgKey, name, ladder, onStep, onJump, onSwap, swapLabel = 'Другое', className = 'h-20 w-full', onPause, fill,
 }) => {
   const [x, setX] = useState(0);
   const [animate, setAnimate] = useState(false);
@@ -36,11 +41,11 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
   const commit = (dir: 1 | -1) => {
     // slide out, change the exercise, slide the new picture in from the other side
     setAnimate(true);
-    setX(dir === 1 ? -120 : 120);
+    setX(dir === -1 ? -120 : 120);
     window.setTimeout(() => {
       onStep(dir);
       setAnimate(false);
-      setX(dir === 1 ? 120 : -120);
+      setX(dir === -1 ? 120 : -120);
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           setAnimate(true);
@@ -68,7 +73,7 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
       if (s.horizontal) (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     }
     if (!s.horizontal) return;
-    const blocked = (dx < 0 && !canHarder) || (dx > 0 && !canEasier);
+    const blocked = (dx < 0 && !canEasier && !onPause) || (dx > 0 && !canHarder);
     setX(blocked ? dx * 0.25 : dx); // rubber band at the ends
   };
   const onPointerUp = (e: React.PointerEvent) => {
@@ -79,8 +84,11 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
       return;
     }
     const dx = e.clientX - s.x;
-    if (dx <= -SWIPE && canHarder) commit(1);
-    else if (dx >= SWIPE && canEasier) commit(-1);
+    if (dx <= -SWIPE && canEasier) commit(-1);
+    else if (dx <= -SWIPE * 1.5 && onPause) {
+      springBack();
+      onPause();
+    } else if (dx >= SWIPE && canHarder) commit(1);
     else springBack();
   };
 
@@ -88,9 +96,9 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
     'absolute top-1/2 z-10 flex h-8 w-6 -translate-y-1/2 items-center justify-center text-gray-400 hover:text-[#111827] dark:text-gray-500 dark:hover:text-[#F3F4F6]';
 
   return (
-    <div className="min-w-0 flex-1">
+    <div className={fill ? 'flex min-h-0 min-w-0 flex-1 flex-col' : 'min-w-0 flex-1'}>
       <div
-        className="relative overflow-hidden rounded-xl bg-gray-50/70 select-none dark:bg-[#1A2333]/60"
+        className={`relative overflow-hidden rounded-xl bg-gray-50/70 select-none dark:bg-[#1A2333]/60 ${fill ? 'min-h-0 flex-1' : ''}`}
         style={{ touchAction: 'pan-y' }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -99,7 +107,13 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
         role="group"
         aria-label={name}
       >
+        {onPause && !canEasier && x < -12 && (
+          <div className="absolute inset-y-0 right-0 flex items-center justify-center bg-[#FEF3C7] px-3 text-center text-xs font-bold text-[#92400E] dark:bg-[#451A03] dark:text-[#FBBF24]" style={{ width: Math.min(160, -x) }}>
+            Пауза: болит
+          </div>
+        )}
         <div
+          className={fill ? 'flex h-full items-center justify-center' : undefined}
           style={{
             transform: `translateX(${x}px)`,
             opacity: Math.abs(x) >= 120 ? 0 : 1,
@@ -119,8 +133,19 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
           </button>
         )}
       </div>
-      {(ladder || onSwap) && (
-        <div className="mt-1 flex items-center justify-center gap-0.5">
+      {(ladder || onSwap || onPause) && (
+        <div className="mt-1 flex shrink-0 items-center justify-center gap-0.5">
+          {onPause && (
+            <button
+              type="button"
+              onClick={onPause}
+              className="tap-scale mr-1.5 flex min-h-[28px] items-center gap-1 rounded-lg px-1.5 text-[11px] font-semibold text-[#B45309] dark:text-[#FBBF24]"
+              aria-label={`Пауза: болит — ${name}`}
+            >
+              <Pause className="h-3 w-3" />
+              Болит
+            </button>
+          )}
           {ladder?.ranks.map((r) => (
             <button
               key={r}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { JOINT_NAMES } from '../domain/care/care';
 import { Heart, Pencil, UserRound } from 'lucide-react';
 import { UserProfile, ZONES } from '../domain/profile/profile';
 import { useT } from '../i18n';
@@ -11,6 +12,8 @@ interface MePanelProps {
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   onEdit: () => void;
+  care?: import('../domain/care/care').Care[];
+  onRemoveCare?: (joint: import('../domain/catalog/joints').Joint) => void;
 }
 
 const MARK: Record<string, string> = { plus: '+', plusplus: '++' };
@@ -20,7 +23,7 @@ const MARK: Record<string, string> = { plus: '+', plusplus: '++' };
  * goal, accents, equipment, favorites; «Изменить ответы» reopens the wizard.
  * The check-up stays below as its own section.
  */
-export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites, onToggleFavorite, onEdit }) => {
+export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites, onToggleFavorite, onEdit, care = [], onRemoveCare }) => {
   const { t } = useT();
   const exById = new Map(exercises.map((e) => [e.id, e]));
 
@@ -87,6 +90,33 @@ export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites,
             {line(t('me.equipment'), eqList.length ? eqList.join(', ') : t('me.equipmentNone'))}
             {eq?.dirtyFloor && line(t('wiz.noTouch'), '✓')}
           </div>
+        </div>
+      )}
+
+      {/* «Берегу» (v3.9): set by «Пауза: болит» in the player */}
+      {care.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-[#F59E0B]/50 bg-[#FFFBEB] p-3 dark:border-[#FBBF24]/40 dark:bg-[#451A03]/40">
+          <p className="text-sm font-bold text-[#92400E] dark:text-[#FBBF24]">Берегу</p>
+          <ul className="mt-1.5 space-y-1.5">
+            {care.map((c) => (
+              <li key={c.joint} className="flex items-center justify-between gap-2 text-sm">
+                <span className="min-w-0 text-[#111827] dark:text-[#F3F4F6]">
+                  <b>{JOINT_NAMES[c.joint].name}</b> · {c.level === 'stop' ? 'не нагружаем' : 'бережно'}
+                  <span className="text-xs text-gray-500 dark:text-gray-400"> · с {c.since.split('-').reverse().slice(0, 2).join('.')}</span>
+                </span>
+                {onRemoveCare && (
+                  <button
+                    type="button"
+                    onClick={() => onRemoveCare(c.joint)}
+                    className="tap-scale min-h-[36px] shrink-0 rounded-lg border border-gray-300 bg-white px-2.5 text-xs font-semibold text-[#111827] dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6]"
+                  >
+                    Снять
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1.5 text-[11px] text-[#92400E]/80 dark:text-[#FBBF24]/80">Пока место здесь, нагружающие его упражнения не предлагаются.</p>
         </div>
       )}
 

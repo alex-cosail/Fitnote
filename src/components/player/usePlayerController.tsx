@@ -3,6 +3,11 @@ import { CATALOG } from '../../data/catalog';
 import { findAntagonistMatches } from '../../domain/catalog/antagonists';
 import type { Conditions } from '../../domain/catalog/filter';
 import { changeOptions, sessionSwaps } from '../../domain/session/change';
+import { blockedByCare, CareLevel, CareReason, JOINT_NAMES } from '../../domain/care/care';
+import { Joint, mainJoints } from '../../domain/catalog/joints';
+import { ladderNeighbour } from '../../domain/catalog/ladder';
+import { ladderPosition } from '../../domain/generator';
+import { applyCareToSession } from '../../domain/session/careSession';
 import {
   addRestSeconds,
   buildWorkoutLog,
@@ -47,6 +52,8 @@ export interface WorkoutPlayerProps {
   conditions?: Conditions;
   notes?: Record<string, string>;
   onNote?: (exerciseId: string, text: string) => void;
+  /** «Пауза: болит» (v3.9): the places go to «Я → Берегу». */
+  onCare?: (joints: Joint[], level: CareLevel, reason: CareReason) => void;
 }
 
 /**
@@ -66,6 +73,7 @@ export function usePlayerController({
   conditions,
   notes,
   onNote,
+  onCare,
 }: WorkoutPlayerProps) {
   const currentItem = session.items[session.currentItemIndex];
   const currentExercise =
@@ -77,6 +85,10 @@ export function usePlayerController({
   const [finishNote, setFinishNote] = useState('');
   // Changes made during the workout: keep them in the plan or only today.
   const [keepSwaps, setKeepSwaps] = useState(false);
+  // «Пауза: болит» and the confirmation for a protected exercise (v3.9).
+  const [showPause, setShowPause] = useState(false);
+  const [careConfirm, setCareConfirm] = useState<{ ex: Exercise; jointAcc: string } | null>(null);
+  const [careNotice, setCareNotice] = useState('');
   // «Как зашло?» — calibration for the next workouts (GENERATOR_RULES §9.1).
   const [finishOutcome, setFinishOutcome] = useState<'easy' | 'ok' | 'hard' | undefined>(undefined);
   // "When is the next workout?" — defaults to the last answer.
@@ -307,7 +319,57 @@ export function usePlayerController({
   };
 
   const antagonistMatches = findAntagonistMatches(currentExercise, exercises);
-  const changeOpts = changeOptions(currentExercise.id, CATALOG, exercises, conditions);
+  // Options ignore «Берегу» so a protected exercise can still be chosen —
+  // with a question (customer, 27.11).
+  const condNoCare: Conditions = { ...(conditions ?? {}), care: undefined };
+  const changeOpts = changeOptions(currentExercise.id, CATALOG, exercises, condNoCare);
+  const protectedIds = new Set(
+    CATALOG.filter((c) => blockedByCare(c, conditions?.care)).map((c) => c.id)
+  );
+  const currentLadder = ladderPosition(currentExercise.id, CATALOG, condNoCare);
+
+  const pickExercise = (ex: Exercise) => {
+    const cat = CATALOG.find((c) => c.id === ex.id);
+    const rule = cat ? blockedByCare(cat, conditions?.care) : undefined;
+    if (rule) {
+      setCareConfirm({ ex, jointAcc: JOINT_NAMES[rule.joint].acc });
+      return;
+    }
+    handleSwapAntagonist(ex);
+  };
+  const handleLadderStep = (dir: 1 | -1) => {
+    const n = ladderNeighbour(CATALOG, currentExercise.id, dir, condNoCare);
+    const ex = n && exercises.find((e) => e.id === n.id);
+    if (ex) pickExercise(ex);
+  };
+  const handleLadderJump = (rank: number) => {
+    let id = currentExercise.id;
+    for (let i = 0; i < 6; i++) {
+      const cur = CATALOG.find((c) => c.id === id);
+      if (!cur || cur.rank === rank) break;
+      const n = ladderNeighbour(CATALOG, id, rank < cur.rank ? -1 : 1, condNoCare);
+      if (!n) break;
+      id = n.id;
+    }
+    const ex = exercises.find((e) => e.id === id);
+    if (ex && ex.id !== currentExercise.id) pickExercise(ex);
+  };
+  const handlePainPause = (joints: Joint[], level: CareLevel, reason: CareReason) => {
+    onCare?.(joints, level, reason);
+    const rules = [...(conditions?.care ?? []), ...joints.map((joint) => ({ joint, level }))];
+    const r = applyCareToSession(session, rules, { catalog: CATALOG, exercises, conditions: condNoCare }, Date.now(), [currentExercise.id]);
+    setPairedLeftValue(null);
+    onUpdateSession(r.session);
+    setShowPause(false);
+    const place = joints.map((j) => JOINT_NAMES[j].acc).join(', ');
+    const parts = [r.replaced.length ? `заменено ${r.replaced.length}` : '', r.dropped.length ? `убрано ${r.dropped.length}` : ''].filter(Boolean);
+    setCareNotice(`Бережём ${place}${parts.length ? ': ' + parts.join(', ') : ''}`);
+    window.setTimeout(() => setCareNotice(''), 5000);
+  };
+  const pauseSuggested = (() => {
+    const cat = CATALOG.find((c) => c.id === currentExercise.id);
+    return cat ? mainJoints(cat) : [];
+  })();
   const todaySwaps = sessionSwaps(session.items);
   const nextPos = getNextPosition(session);
   const nextItem = session.items[nextPos.nextItemIndex];
@@ -347,6 +409,15 @@ export function usePlayerController({
       tone={tone}
       note={notes?.[ex.id]}
       onNote={onNote && tone === 'default' ? (text) => onNote(ex.id, text) : undefined}
+      {...(tone === 'default' && ex.id === currentExercise.id && session.phase === 'exercise'
+        ? {
+            ladder: currentLadder,
+            onStep: handleLadderStep,
+            onJump: handleLadderJump,
+            onPause: () => setShowPause(true),
+            onSwap: () => setShowAntagonistSheet(true),
+          }
+        : {})}
     />
   );
 
@@ -375,6 +446,15 @@ export function usePlayerController({
   return {
     antagonistMatches,
     changeOpts,
+    protectedIds,
+    pickExercise,
+    showPause,
+    setShowPause,
+    pauseSuggested,
+    handlePainPause,
+    careConfirm,
+    setCareConfirm,
+    careNotice,
     todaySwaps,
     keepSwaps,
     setKeepSwaps,

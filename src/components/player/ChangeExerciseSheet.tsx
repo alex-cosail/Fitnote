@@ -10,6 +10,8 @@ interface Props {
   target: number;
   options: ChangeOptions;
   antagonists: Exercise[];
+  /** Protected by «Берегу»: shown with a mark, picking asks first. */
+  protectedIds?: Set<string>;
   onPick: (ex: Exercise) => void;
   onClose: () => void;
 }
@@ -18,7 +20,7 @@ interface Props {
  * «Изменить» during a workout (v3.8): easier / harder on the ladder, the same
  * movement type, or the antagonist. From this set to the end of the workout.
  */
-export const ChangeExerciseSheet: React.FC<Props> = ({ current, target, options, antagonists, onPick, onClose }) => {
+export const ChangeExerciseSheet: React.FC<Props> = ({ current, target, options, antagonists, protectedIds, onPick, onClose }) => {
   const newTarget = (ex: Exercise) => formatMetricTarget(swapTarget(target, current, ex), ex.metric);
 
   const Row = ({ ex }: { ex: Exercise }) => (
@@ -28,7 +30,10 @@ export const ChangeExerciseSheet: React.FC<Props> = ({ current, target, options,
       className="tap-scale flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white p-2.5 text-left hover:border-[#DC2626] dark:border-[#232E42] dark:bg-[#1A2333]"
     >
       <ExerciseSvg svgKey={ex.svgKey} className="h-12 w-16 shrink-0" />
-      <span className="min-w-0 flex-1 break-words text-sm font-bold leading-snug text-[#111827] dark:text-[#F3F4F6]">{ex.name}</span>
+      <span className="min-w-0 flex-1 break-words text-sm font-bold leading-snug text-[#111827] dark:text-[#F3F4F6]">
+        {ex.name}
+        {protectedIds?.has(ex.id) && <span className="ml-1.5 rounded bg-[#FEF3C7] px-1 text-[10px] font-bold text-[#92400E]">бережём</span>}
+      </span>
       <span className="font-mono-num shrink-0 text-sm font-bold text-[#DC2626] dark:text-[#F87171]">{newTarget(ex)}</span>
     </button>
   );
@@ -48,6 +53,7 @@ export const ChangeExerciseSheet: React.FC<Props> = ({ current, target, options,
         <>
           <ExerciseSvg svgKey={ex.svgKey} className="h-12 w-16" />
           <span className="line-clamp-2 text-xs font-bold leading-tight text-[#111827] dark:text-[#F3F4F6]">{ex.name}</span>
+          {protectedIds?.has(ex.id) && <span className="rounded bg-[#FEF3C7] px-1 text-[10px] font-bold text-[#92400E]">бережём</span>}
           <span className="font-mono-num text-sm font-bold text-[#DC2626] dark:text-[#F87171]">{newTarget(ex)}</span>
         </>
       ) : (

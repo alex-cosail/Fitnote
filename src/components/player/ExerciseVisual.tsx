@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { getMuscleLabel } from '../../domain/catalog/muscles';
 import { Exercise } from '../../types';
+import type { LadderPosition } from '../../domain/generator';
 import { ExerciseSvg } from '../ExerciseSvg';
+import { LadderPicture } from '../LadderPicture';
 
 // Large exercise picture (fills the free space) + muscles, name and cue,
 // and the person's own note for this exercise (v3.8: «жёлтая + синяя»).
@@ -12,7 +14,13 @@ export const ExerciseVisual: React.FC<{
   tone?: 'default' | 'rest';
   note?: string;
   onNote?: (text: string) => void;
-}> = ({ exercise: ex, label, tone = 'default', note, onNote }) => {
+  /** Swipe on the picture (v3.9): left — easier, right — harder, past the end — «Пауза: болит». */
+  ladder?: LadderPosition;
+  onStep?: (dir: 1 | -1) => void;
+  onJump?: (rank: number) => void;
+  onPause?: () => void;
+  onSwap?: () => void;
+}> = ({ exercise: ex, label, tone = 'default', note, onNote, ladder, onStep, onJump, onPause, onSwap }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const save = () => {
@@ -34,7 +42,22 @@ export const ExerciseVisual: React.FC<{
             : 'border-gray-200 bg-gray-50/70 dark:border-[#232E42] dark:bg-[#131A26]'
         }`}
       >
-        <ExerciseSvg svgKey={ex.svgKey} className="h-full max-h-full w-full" />
+        {onStep ? (
+          <LadderPicture
+            fill
+            svgKey={ex.svgKey}
+            name={ex.name}
+            ladder={ladder}
+            onStep={onStep}
+            onJump={onJump ?? (() => undefined)}
+            onPause={onPause}
+            onSwap={onSwap}
+            swapLabel="Изменить"
+            className="h-full max-h-full w-full"
+          />
+        ) : (
+          <ExerciseSvg svgKey={ex.svgKey} className="h-full max-h-full w-full" />
+        )}
       </div>
 
       <div className="mt-2 w-full shrink-0 landscape:mt-1.5">

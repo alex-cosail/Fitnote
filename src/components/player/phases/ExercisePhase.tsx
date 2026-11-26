@@ -3,6 +3,7 @@ import { Check, Minus, Plus } from 'lucide-react';
 import { formatClock } from '../../../domain/format';
 import { RirValue } from '../../../types';
 import { ChangeExerciseSheet } from '../ChangeExerciseSheet';
+import { CareConfirm, PainPauseSheet } from '../PainPauseSheet';
 import { ExitConfirmModal } from '../ExitConfirmModal';
 import { usePlayer } from '../PlayerContext';
 
@@ -10,6 +11,15 @@ export const ExercisePhase: React.FC = () => {
   const {
     antagonistMatches,
     changeOpts,
+    protectedIds,
+    pickExercise,
+    showPause,
+    setShowPause,
+    pauseSuggested,
+    handlePainPause,
+    careConfirm,
+    setCareConfirm,
+    careNotice,
     currentExercise,
     currentItem,
     handleCompleteSet,
@@ -235,9 +245,35 @@ export const ExercisePhase: React.FC = () => {
           target={currentItem.target}
           options={changeOpts}
           antagonists={antagonistMatches}
-          onPick={handleSwapAntagonist}
+          protectedIds={protectedIds}
+          onPick={pickExercise}
           onClose={() => setShowAntagonistSheet(false)}
         />
+      )}
+
+      {showPause && (
+        <PainPauseSheet
+          exerciseName={currentExercise.name}
+          suggested={pauseSuggested}
+          onApply={handlePainPause}
+          onClose={() => setShowPause(false)}
+        />
+      )}
+      {careConfirm && (
+        <CareConfirm
+          exerciseName={careConfirm.ex.name}
+          jointAcc={careConfirm.jointAcc}
+          onNo={() => setCareConfirm(null)}
+          onYes={() => {
+            handleSwapAntagonist(careConfirm.ex);
+            setCareConfirm(null);
+          }}
+        />
+      )}
+      {careNotice && (
+        <div className="pointer-events-none fixed inset-x-4 top-14 z-[55] mx-auto max-w-md rounded-xl bg-[#FFFBEB] px-3 py-2 text-center text-sm font-semibold text-[#92400E] shadow dark:bg-[#451A03] dark:text-[#FBBF24]" role="status">
+          {careNotice}
+        </div>
       )}
 
       {showExitConfirm && (

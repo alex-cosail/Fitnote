@@ -33,6 +33,7 @@ import {
 import { ExerciseSvg } from './ExerciseSvg';
 import { LadderPicture } from './LadderPicture';
 import { warmupOptionsFor } from '../domain/warmup/warmup';
+import { blockedByCare, JOINT_NAMES } from '../domain/care/care';
 
 interface WorkoutPreviewTabProps {
   workouts: WorkoutPlan[];
@@ -135,7 +136,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           exerciseId: it.exerciseId,
           target: it.target,
         }))
-      : resolveWorkout(todayPlan, { catalog: CATALOG, exercises });
+      : resolveWorkout(todayPlan, { catalog: CATALOG, exercises, conditions: { care: profile?.usualConditions?.care } });
 
   const catalogById = new Map(CATALOG.map((c) => [c.id, c]));
   const estimatedMinutes =
@@ -739,6 +740,17 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           <div className="grid grid-cols-1 gap-2.5 landscape:gap-2">
             {displayedItems.map((item, idx) => {
               const ex = getExercise(item.exerciseId);
+              const careRule = item.unavailable
+                ? blockedByCare(catalogById.get(item.exerciseId) ?? { id: item.exerciseId, pattern: 'core' }, profile?.usualConditions?.care)
+                : undefined;
+              if (careRule) {
+                return (
+                  <article key={`${item.exerciseId}-${idx}`} className="rounded-2xl border border-dashed border-[#F59E0B]/60 bg-[#FFFBEB] px-4 py-3 text-sm dark:bg-[#451A03]/40">
+                    <span className="font-semibold text-gray-500 line-through dark:text-gray-400">{ex.name}</span>
+                    <span className="ml-2 font-semibold text-[#92400E] dark:text-[#FBBF24]">бережём {JOINT_NAMES[careRule.joint].acc} — пропускаем</span>
+                  </article>
+                );
+              }
               const plannedTarget = item.target;
               const planTarget =
                 todayPlan.items[item.slotIndex]?.target ?? item.target;
