@@ -22,6 +22,10 @@ import {
 } from './domain/schedule/schedule';
 import { planKind } from './domain/schedule/kind';
 import { CycleChoice, freshIds, placeSingle, placeWeek } from './domain/schedule/place';
+import { addPatterns, mondayNote, reviewWeek, topUpDue } from './domain/schedule/compensation';
+import { buildSession, historyFromLogs } from './domain/generator';
+import { mondayOf } from './domain/schedule/schedule';
+import { patternList } from './components/generatorLabels';
 import { cycleAt, cycleRecurrence, defaultDays } from './domain/schedule/schedule';
 import { androidCalendarIntentUrl, buildIcsEvent, googleCalendarUrl, isAndroid } from './domain/reminder/ics';
 import { shareOrDownloadCalendar } from './utils/download';
@@ -458,6 +462,63 @@ export default function App() {
     setActiveTab('workout');
   };
 
+  // ——— Compensation (soft): weekend top-up and the start of a week ———
+  const perWeekNow = data.profile?.perWeek ?? 3;
+  const monday = mondayOf(today);
+  const dismissed = new Set(data.compensationDismissed ?? []);
+  const weekReview = useMemo(
+    () => reviewWeek(data.workoutLogs, CATALOG, today, perWeekNow),
+    [data.workoutLogs, today, perWeekNow]
+  );
+  const showTopUp = topUpDue(weekReview, today) && !dismissed.has(`${monday}:topup`);
+  const note = useMemo(
+    () => mondayNote(data.workoutLogs, CATALOG, today, perWeekNow),
+    [data.workoutLogs, today, perWeekNow]
+  );
+  const showMonday = Boolean(note) && !dismissed.has(`${monday}:monday`);
+  const dismissCard = (key: 'topup' | 'monday') =>
+    setData((prev) => ({ ...prev, compensationDismissed: [...(prev.compensationDismissed ?? []).slice(-10), `${monday}:${key}`] }));
+  const genCtx = () => ({ catalog: CATALOG, exercises, history: historyFromLogs(data.workoutLogs, exercises), date: today });
+
+  const handleAddTopUp = () => {
+    const gw = buildSession(
+      weekReview.missing.map((pattern) => ({ pattern })),
+      genProfile,
+      genCtx(),
+      { kind: 'TOPUP', component: genProfile.healthLevel === 'strength' ? 'S' : 'F', index: 0, usedThisWeek: new Set(), roundsOverride: 2 }
+    );
+    const [plan] = freshIds([{ ...gw.plan, ...planLabel(t, gw), title: t('comp.topupTitle') }], Date.now().toString(36));
+    setData((prev) => ({ ...placeSingle(prev, plan, today), compensationDismissed: [...(prev.compensationDismissed ?? []), `${monday}:topup`] }));
+    setSelectedDate(today);
+  };
+
+  // The first workout of this week from today on (for the Monday note).
+  const firstPlanThisWeek = (() => {
+    for (const d of weekDates(today).filter((x) => x >= today)) {
+      const p = planOn(cycles, overrides, d);
+      if (p && planById.has(p)) return planById.get(p)!;
+    }
+    return undefined;
+  })();
+
+  const stillMissing = (() => {
+    if (!note || !firstPlanThisWeek) return [];
+    const byId = new Map(CATALOG.map((c) => [c.id, c]));
+    const has = new Set(firstPlanThisWeek.items.map((it) => it.pattern ?? byId.get(it.exerciseId!)?.pattern));
+    return note.missing.filter((p) => !has.has(p));
+  })();
+
+  const handleTakeInMissing = () => {
+    if (!note || !firstPlanThisWeek) return;
+    const next = addPatterns(firstPlanThisWeek, note.missing, planKind(firstPlanThisWeek), genProfile, genCtx());
+    setData((prev) => ({
+      ...prev,
+      workouts: prev.workouts.map((w) => (w.id === next.id ? next : w)),
+      selectedWorkoutId: next.id,
+      compensationDismissed: [...(prev.compensationDismissed ?? []), `${monday}:monday`],
+    }));
+  };
+
   // The current (or the next upcoming) cycle as one repeating calendar event
   // with the usual reminder time; Android opens «Новое событие» (v2.4.1).
   const handleCycleToCalendar = async () => {
@@ -755,6 +816,47 @@ export default function App() {
               weekLabel={weekLabel}
               onCalendar={data.cycles?.length ? handleCycleToCalendar : undefined}
             />
+            {showTopUp && (
+              <div className="mt-3 rounded-2xl border border-[#0B5F73]/30 bg-[#ECFAFC] p-3 dark:border-[#5EC4D8]/30 dark:bg-[#0B2E36]/60">
+                <p className="text-sm font-semibold text-[#0B5F73] dark:text-[#5EC4D8]">
+                  {t('comp.topup', { list: patternList(t, weekReview.missing) })}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button type="button" onClick={handleAddTopUp} className="tap-scale min-h-[40px] rounded-xl bg-[#0B5F73] px-3 text-sm font-bold text-white">
+                    {t('comp.topupAdd')}
+                  </button>
+                  <button type="button" onClick={() => dismissCard('topup')} className="tap-scale min-h-[40px] rounded-xl px-3 text-sm font-semibold text-[#0B5F73] dark:text-[#5EC4D8]">
+                    {t('comp.later')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {showMonday && note && (
+              <div className="mt-3 rounded-2xl border border-gray-200 bg-white p-3 dark:border-[#232E42] dark:bg-[#131A26]">
+                {note.missing.length > 0 && (
+                  <p className="text-sm text-[#111827] dark:text-[#F3F4F6]">
+                    {t('comp.monday', { list: patternList(t, note.missing) })}
+                    {firstPlanThisWeek && stillMissing.length === 0 && ` ${t('comp.covered', { title: firstPlanThisWeek.title })}`}
+                  </p>
+                )}
+                {note.goShort && <p className="mt-1 text-sm text-[#111827] dark:text-[#F3F4F6]">{t('comp.goShort')}</p>}
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {stillMissing.length > 0 && firstPlanThisWeek && (
+                    <button type="button" onClick={handleTakeInMissing} className="tap-scale min-h-[40px] rounded-xl bg-[#111827] px-3 text-sm font-bold text-white dark:bg-[#F3F4F6] dark:text-[#0B0F17]">
+                      {t('comp.takeIn', { title: firstPlanThisWeek.title })}
+                    </button>
+                  )}
+                  {note.goShort && (
+                    <button type="button" onClick={() => setData((prev) => ({ ...prev, readiness: 'yellow' }))} className="tap-scale min-h-[40px] rounded-xl border border-gray-300 px-3 text-sm font-semibold dark:border-[#334155]">
+                      {t('comp.short')}
+                    </button>
+                  )}
+                  <button type="button" onClick={() => dismissCard('monday')} className="tap-scale min-h-[40px] rounded-xl px-3 text-sm font-semibold text-gray-500">
+                    {t('comp.later')}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
         {!isOnboarding && activeTab === 'workout' && (

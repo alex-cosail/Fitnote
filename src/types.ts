@@ -223,6 +223,8 @@ export interface FitnoteData {
   // (docs/BACKLOG.md, field test 26.11). Absent before v3.5.
   cycles?: import('./domain/schedule/schedule').Cycle[];
   dayOverrides?: import('./domain/schedule/schedule').DayOverrides;
+  // «Не сейчас» on the compensation cards: '<monday>:topup' / '<monday>:monday'.
+  compensationDismissed?: string[];
   // «Позже» on the start wizard: a new person is not sent there again on launch.
   onboardingDismissed?: boolean;
   // The person from the start wizard (absent = not met yet; generator uses defaults).

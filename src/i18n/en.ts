@@ -233,4 +233,13 @@ export const en: Dict = {
   'start.update': "Into the current cycle",
   'ready.calendarHint': "repeats on your days, reminder an hour before",
   'cal.title': "Fitnote: workout",
+  'comp.topup': "This week had no {list}. Twenty minutes at the weekend will complete it.",
+  'comp.topupAdd': "Add the week top-up",
+  'comp.topupTitle': "Week top-up",
+  'comp.monday': "Let's take in last week: there was no {list}.",
+  'comp.goShort': "Last week was hard — you can start with “Short”.",
+  'comp.takeIn': "Add to “{title}”",
+  'comp.short': "Start with “Short”",
+  'comp.later': "Not now",
+  'comp.covered': "“{title}” already has them.",
 };

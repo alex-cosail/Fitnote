@@ -234,4 +234,13 @@ export const tr: Dict = {
   'start.update': "Mevcut döngüye",
   'ready.calendarHint': "günlerinde tekrar, bir saat önce hatırlatma",
   'cal.title': "Fitnote: antrenman",
+  'comp.topup': "Bu hafta yoktu: {list}. Hafta sonu 20 dakika haftayı tamamlar.",
+  'comp.topupAdd': "Hafta tamamlamayı ekle",
+  'comp.topupTitle': "Hafta tamamlama",
+  'comp.monday': "Geçen haftayı hesaba katalım: {list} yoktu.",
+  'comp.goShort': "Geçen hafta zordu — “Kısa” ile başlayabilirsin.",
+  'comp.takeIn': "“{title}” içine ekle",
+  'comp.short': "“Kısa” ile başla",
+  'comp.later': "Şimdi değil",
+  'comp.covered': "“{title}” bunları zaten içeriyor.",
 };

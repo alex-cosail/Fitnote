@@ -234,6 +234,15 @@ export const ru = {
   'start.update': "В текущий цикл",
   'ready.calendarHint': "повтор по дням, напоминание за час",
   'cal.title': "Fitnote: тренировка",
+  'comp.topup': "На этой неделе не было: {list}. 20 минут в выходные закроют неделю.",
+  'comp.topupAdd': "Добавить «Добор недели»",
+  'comp.topupTitle': "Добор недели",
+  'comp.monday': "Учтём прошлую неделю: не было {list}.",
+  'comp.goShort': "Прошлая неделя шла тяжело — можно начать с «Короткой».",
+  'comp.takeIn': "Добавить в «{title}»",
+  'comp.short': "Начать с «Короткой»",
+  'comp.later': "Не сейчас",
+  'comp.covered': "«{title}» уже их включает.",
 };
 
 export type Dict = Record<keyof typeof ru, string>;
