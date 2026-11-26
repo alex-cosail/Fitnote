@@ -1,6 +1,7 @@
 import React from 'react';
 import { SvgKey } from '../types';
 import { EXERCISE_SCENES } from './exerciseScenes';
+import { WARMUP_SCENES } from './warmupScenes';
 
 interface ExerciseSvgProps {
   svgKey: SvgKey;
@@ -18,6 +19,8 @@ export const ExerciseSvg: React.FC<ExerciseSvgProps> = ({
   const renderScene = () => {
     const scene = (EXERCISE_SCENES as Record<string, () => React.ReactElement>)[svgKey];
     if (scene) return scene();
+    const warm = (WARMUP_SCENES as Record<string, () => React.ReactElement>)[svgKey];
+    if (warm) return warm();
     switch (svgKey) {
       case 'pullups':
         return (
@@ -446,7 +449,7 @@ export const ExerciseSvg: React.FC<ExerciseSvgProps> = ({
   return (
     <svg
       viewBox="0 0 160 120"
-      className={`fitnote-svg ${className}`}
+      className={`fitnote-svg ${svgKey in WARMUP_SCENES ? 'wu-anim ' : ''}${className}`}
       aria-hidden="true"
       fill="none"
     >

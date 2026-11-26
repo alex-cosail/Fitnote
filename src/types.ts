@@ -14,6 +14,7 @@ export type AppTab = 'workout' | 'checkup' | 'catalog' | 'sync';
 
 export type SvgKey =
   | import('./data/sceneKeys').SceneKey
+  | import('./data/warmupKeys').WarmupKey
   | 'pullups'
   | 'dips'
   | 'australian_pullups'
@@ -138,6 +139,8 @@ export interface ActiveSession {
   warmupMinutes: number;
   warmupStepIndex?: number;
   warmupStepRemainingSec?: number;
+  /** The warm-up built at the start (v3.7: one movement per minute). */
+  warmupSteps?: MobilityStep[];
   preCountdownSec?: number;
   cooldownMinutes: number;
   phaseRemainingSec: number;

@@ -122,11 +122,8 @@ describe('warm-up plans', () => {
   const total = (minutes: number) =>
     getWarmupPlan(minutes).steps.reduce((s, st) => s + (st.durationSeconds ?? 0), 0);
 
-  it('8 and 10 minutes: 4 blocks; 12 and 15 minutes: 6 blocks', () => {
-    expect(getWarmupPlan(8).steps).toHaveLength(4);
-    expect(getWarmupPlan(10).steps).toHaveLength(4);
-    expect(getWarmupPlan(12).steps).toHaveLength(6);
-    expect(getWarmupPlan(15).steps).toHaveLength(6);
+  it('one movement per minute (v3.7)', () => {
+    for (const minutes of [5, 8, 10, 12, 15]) expect(getWarmupPlan(minutes).steps).toHaveLength(minutes);
   });
 
   it('block durations add up to the chosen time', () => {
@@ -137,7 +134,7 @@ describe('warm-up plans', () => {
 
   it('names the first exercise in the primer step', () => {
     const primer = getWarmupPlan(10, 'Strict Pull-Ups').steps.find(
-      (s) => s.id === 'wu-primer-set'
+      (s) => s.id === 'wu-primer'
     );
     expect(primer?.subtitle).toContain('Strict Pull-Ups');
   });

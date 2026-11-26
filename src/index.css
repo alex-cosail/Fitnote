@@ -80,3 +80,14 @@ html.dark svg.fitnote-svg [fill="#DC2626"] {
   .fitnote-poster { position: absolute; inset: 0; }
   .fitnote-no-print { display: none !important; }
 }
+
+/* Animated warm-up scenes (v3.7): frames change sharply, joints rotate */
+@keyframes wu-f2 { 0% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes wu-f3 { 0% { opacity: 1; } 33.333%, 100% { opacity: 0; } }
+@keyframes wu-f4 { 0% { opacity: 1; } 25%, 100% { opacity: 0; } }
+@keyframes wu-spin { to { transform: rotate(360deg); } }
+@keyframes wu-swing { from { transform: rotate(var(--a0)); } to { transform: rotate(var(--a1)); } }
+@media (prefers-reduced-motion: reduce) {
+  .wu-anim .fr, .wu-anim .spin { animation: none !important; }
+  .wu-anim .fr:not(.key) { opacity: 0; }
+}

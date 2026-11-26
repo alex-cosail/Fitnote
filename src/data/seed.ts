@@ -7,6 +7,7 @@ import {
 } from '../types';
 import { CATALOG, SEED_MAXES } from './catalog';
 import { CATALOG_TEXT_RU } from './catalogText.ru';
+import { WarmupOptions, buildWarmup } from '../domain/warmup/warmup';
 
 export const CATALOG_IDS: ReadonlySet<string> = new Set(CATALOG.map((c) => c.id));
 
@@ -71,123 +72,13 @@ export const INITIAL_WORKOUTS: WorkoutPlan[] = [
   },
 ];
 
+/** The warm-up for N minutes: one movement per minute (v3.7, src/domain/warmup). */
 export function getWarmupPlan(
   minutes: number,
-  firstExerciseName?: string
+  firstExerciseName?: string,
+  opts: WarmupOptions = {}
 ): { label: string; steps: MobilityStep[] } {
-  // 5 min: the short warm-up of the short and accent modes (GENERATOR_RULES §3.3).
-  const is5 = minutes <= 5;
-  const is8 = minutes <= 8;
-  const is12 = minutes >= 12 && minutes < 15;
-  const isFull = minutes >= 12;
-
-  const durations = is5
-    ? {
-        joint: { label: '2 мин', sec: 120 },
-        pulse: { label: '1.5 мин', sec: 90 },
-        lunge: { label: '1.5 мин', sec: 90 },
-        primer: { label: '1.5 мин', sec: 90 },
-      }
-    : is8
-    ? {
-        joint: { label: '3 мин', sec: 180 },
-        pulse: { label: '2 мин', sec: 120 },
-        lunge: { label: '1.5 мин', sec: 90 },
-        primer: { label: '1.5 мин', sec: 90 },
-      }
-    : is12
-      ? {
-          joint: { label: '2.5 мин', sec: 150 },
-          pulse: { label: '1.5 мин', sec: 90 },
-          lunge: { label: '1.5 мин', sec: 90 },
-          primer: { label: '1.5 мин', sec: 90 },
-        }
-      : {
-          joint: { label: '4 мин', sec: 240 },
-          pulse: { label: '2.5 мин', sec: 150 },
-          lunge: { label: '2 мин', sec: 120 },
-          primer: { label: '1.5 мин', sec: 90 },
-        };
-
-  const primerHint = firstExerciseName ? ` (${firstExerciseName})` : '';
-
-  const baseSteps: MobilityStep[] = [
-    {
-      id: 'wu-joint-rotations',
-      name: 'Joint Rotations',
-      subtitle: 'Суставная разминка: плечи, грудной отдел, таз',
-      cue: 'Выполняй плавные вращения по максимальной комфортной амплитуде сверху вниз: мягкие полукруги и наклоны головы, круги плечами вперёд и назад, раскрытие грудного отдела в стороны и вращения тазом по 8–10 раз. Двигайся без рывков и боли, дыши спокойно через нос.',
-      durationHint: durations.joint.label,
-      durationSeconds: durations.joint.sec,
-      svgKey: 'warmup_neck_thoracic',
-    },
-    {
-      id: 'wu-pulse-jacks',
-      name: 'Light Pulse & Jumping Jacks',
-      subtitle: 'Лёгкий пульсовой разогрев',
-      cue: 'Выполняй прыжки «ноги врозь — руки вверх» или бодрый шаг с высоким подниманием коленей в лёгком разговорном темпе для плавного подъёма пульса и температуры тела. Приземляйся мягко на переднюю часть стопы, плечи расслаблены и опущены от ушей.',
-      durationHint: durations.pulse.label,
-      durationSeconds: durations.pulse.sec,
-      svgKey: 'warmup_jumping_jacks',
-    },
-    {
-      id: 'wu-lunge-reach',
-      name: 'Dynamic Lunge & Reach',
-      subtitle: 'Выпады с вытяжением · Сгибатели бедра, грудь',
-      cue: 'Сделай плавный шаг вперёд в выпад, одновременно подавая таз вперёд и вытягивая обе руки вверх над головой для мягкого раскрытия сгибателей бедра и грудной клетки. Не прогибайся в пояснице — держи пресс слегка подтянутым и чередуй ноги без спешки.',
-      durationHint: durations.lunge.label,
-      durationSeconds: durations.lunge.sec,
-      svgKey: 'warmup_lunge_reach',
-    },
-    {
-      id: 'wu-primer-set',
-      name: 'Primer Set',
-      subtitle: `Подводящий подход 30% к первому упражнению${primerHint}`,
-      cue: 'Сделай 1–2 спокойных технических подхода первого упражнения основной тренировки примерно на 30% от рабочего объёма. Сфокусируйся на чёткой траектории, контроле лопаток или колена и ровном дыхании без утомления.',
-      durationHint: durations.primer.label,
-      durationSeconds: durations.primer.sec,
-      svgKey: 'warmup_primer',
-    },
-  ];
-
-  if (is5) {
-    return {
-      label: 'Короткая · 3 блока',
-      steps: baseSteps.filter((s) => s.id !== 'wu-lunge-reach'),
-    };
-  }
-
-  if (!isFull) {
-    return {
-      label: is8 ? 'Экспресс · 4 блока' : 'Стандарт · 4 блока',
-      steps: baseSteps,
-    };
-  }
-
-  return {
-    label: 'Полная подготовка · 6 блоков',
-    steps: [
-      ...baseSteps,
-      {
-        id: 'wu-scapula-dislocates',
-        name: 'Scapular Pulls & Band Dislocates',
-        subtitle: 'Лопатки · Ротаторы плеча',
-        cue: 'В висе на прямых руках плавно опускай и своди лопатки вниз от ушей, поднимая корпус всего на несколько сантиметров без сгибания локтей. Затем возьми резинку или палку широким хватом и сделай 10–12 медленных прокрутов над головой за спину, не сгибая руки.',
-        durationHint: '2.5 мин',
-        durationSeconds: 150,
-        svgKey: 'warmup_scapula',
-      },
-      {
-        id: 'wu-worlds-greatest-stretch',
-        name: "World's Greatest Stretch",
-        subtitle: 'Тазобедренные · Грудной отдел · Бицепс бедра',
-        cue: 'Сделай глубокий выпад вперёд и поставь противоположную ладонь на пол рядом с передней стопой. Сначала потянись одноимённым локтем к внутренней стороне стопы, затем разверни грудную клетку к переднему колену и вытяни руку вертикально вверх, провожая её взглядом.',
-        durationHint: '2.5 мин',
-        durationSeconds: 150,
-        svgKey: 'warmup_worlds_greatest_stretch',
-      },
-    ],
-  };
+  return buildWarmup(minutes, { ...opts, firstExerciseName: firstExerciseName ?? opts.firstExerciseName });
 }
 
 export const COOLDOWN_STEPS: MobilityStep[] = [

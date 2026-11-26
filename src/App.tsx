@@ -64,6 +64,7 @@ import {
 import { soundEngine } from './utils/audio';
 import { loadFitnoteData, saveFitnoteData } from './utils/storage';
 import { APP_VERSION_LABEL } from './version';
+import { warmupOptionsFor } from './domain/warmup/warmup';
 
 const PROTECTED_WORKOUT_IDS = new Set([
   'workout-a',
@@ -186,12 +187,13 @@ export default function App() {
     // The plan actually played today for the chosen mode (short ⅔ rounds,
     // accent focus pairs under the minutes); red plays the mobility block.
     const times = dayTimes(readiness, data.warmupMinutes);
-    const today = dayPlan(plan, readiness, {
+    const day = dayPlan(plan, readiness, {
       catalog: CATALOG,
       accentMinutes: data.accentMinutes,
       profile: genProfile,
       ...times,
-    }).plan;
+    });
+    const today = day.plan;
     const effectiveRounds = getEffectiveRounds(today.rounds, readiness === 'yellow' ? 'green' : readiness);
 
     const sessionItems = isRed
@@ -209,7 +211,15 @@ export default function App() {
     const isRoundFlow = !isRed && (Boolean(today.useAgt30) || today.rounds >= 8);
 
     const warmupSec = times.warmupMinutes * 60;
-    const initialWarmupSteps = getWarmupPlan(times.warmupMinutes).steps;
+    const initialWarmupSteps = getWarmupPlan(
+      times.warmupMinutes,
+      undefined,
+      warmupOptionsFor(isRed ? [] : sessionItems.map((i) => i.exerciseId), CATALOG, {
+        dropped: day.dropped,
+        conditions: genProfile.usualConditions,
+        firstExerciseName: isRed ? undefined : exercises.find((e) => e.id === sessionItems[0]?.exerciseId)?.name,
+      })
+    ).steps;
 
     const newSession: ActiveSession = {
       id: `sess-${Date.now()}`,
@@ -223,6 +233,7 @@ export default function App() {
       warmupMinutes: times.warmupMinutes,
       warmupStepIndex: 0,
       warmupStepRemainingSec: initialWarmupSteps[0]?.durationSeconds ?? warmupSec,
+      warmupSteps: initialWarmupSteps,
       preCountdownSec: 5,
       cooldownMinutes: 5,
       phaseRemainingSec: warmupSec,

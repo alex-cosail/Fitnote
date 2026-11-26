@@ -32,6 +32,7 @@ import {
 } from '../types';
 import { ExerciseSvg } from './ExerciseSvg';
 import { LadderPicture } from './LadderPicture';
+import { warmupOptionsFor } from '../domain/warmup/warmup';
 
 interface WorkoutPreviewTabProps {
   workouts: WorkoutPlan[];
@@ -153,7 +154,15 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   const firstExerciseName = displayedItems[0]
     ? getExercise(displayedItems[0].exerciseId)?.name
     : undefined;
-  const warmupPlan = getWarmupPlan(times.warmupMinutes, firstExerciseName);
+  const warmupPlan = getWarmupPlan(
+    times.warmupMinutes,
+    undefined,
+    warmupOptionsFor(readiness === 'red' ? [] : displayedItems.map((d) => d.exerciseId), CATALOG, {
+      dropped: today.dropped,
+      conditions: profile?.usualConditions,
+      firstExerciseName: readiness === 'red' ? undefined : firstExerciseName,
+    })
+  );
 
   // The day's mode (GENERATOR_RULES §3.2), formerly the readiness traffic light.
   const readinessOptions: {
@@ -635,7 +644,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 <div className="landscape:float-left landscape:mr-3.5 landscape:mb-0.5 landscape:w-[46%] landscape:max-w-[50%] lg:landscape:w-[340px]">
                   <div className="flex items-baseline gap-2">
                     <span className="font-mono-num shrink-0 text-sm font-bold text-[#DC2626] dark:text-[#F87171] landscape:text-xs">
-                      0{idx + 1}
+                      {String(idx + 1).padStart(2, '0')}
                     </span>
                     <h3 className="min-w-0 break-words text-lg font-bold leading-snug text-[#111827] dark:text-[#F3F4F6] landscape:text-base landscape:leading-tight">
                       {step.name}
@@ -740,7 +749,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                   <div className="landscape:float-left landscape:mr-3.5 landscape:mb-0.5 landscape:w-[46%] landscape:max-w-[50%] lg:landscape:w-[340px]">
                     <div className="flex items-baseline gap-2">
                       <span className="font-mono-num shrink-0 text-sm font-bold text-[#DC2626] dark:text-[#F87171] landscape:text-xs">
-                        0{idx + 1}
+                        {String(idx + 1).padStart(2, '0')}
                       </span>
                       <h3 className="min-w-0 break-words text-lg font-bold leading-snug text-[#111827] dark:text-[#F3F4F6] landscape:text-base landscape:leading-tight">
                         {ex.name}
@@ -842,7 +851,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 <div className="landscape:float-left landscape:mr-3.5 landscape:mb-0.5 landscape:w-[46%] landscape:max-w-[50%] lg:landscape:w-[340px]">
                   <div className="flex items-baseline gap-2">
                     <span className="font-mono-num shrink-0 text-sm font-bold text-[#DC2626] dark:text-[#F87171] landscape:text-xs">
-                      0{idx + 1}
+                      {String(idx + 1).padStart(2, '0')}
                     </span>
                     <h3 className="min-w-0 break-words text-lg font-bold leading-snug text-[#111827] dark:text-[#F3F4F6] landscape:text-base landscape:leading-tight">
                       {step.name}

@@ -68,7 +68,7 @@ export function usePhaseTicker({
           lastTickSecondRef.current = null;
           onTimerZero();
         } else if (session.phase === 'warmup') {
-          const steps = getWarmupPlan(session.warmupMinutes).steps;
+          const steps = session.warmupSteps ?? getWarmupPlan(session.warmupMinutes).steps;
           const delta = Math.max(0, session.phaseRemainingSec - remaining);
           const startIndex = session.warmupStepIndex ?? 0;
           const { stepIndex, stepRemainingSec, crossed } = advanceWarmupSteps(

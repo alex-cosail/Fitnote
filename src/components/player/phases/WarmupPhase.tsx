@@ -24,7 +24,9 @@ export const WarmupPhase: React.FC = () => {
   const firstExName = exercises.find(
     (e) => e.id === session.items[0]?.exerciseId
   )?.name;
-  const warmupPlan = getWarmupPlan(session.warmupMinutes, firstExName);
+  const warmupPlan = session.warmupSteps
+    ? { label: getWarmupPlan(session.warmupSteps.length).label, steps: session.warmupSteps }
+    : getWarmupPlan(session.warmupMinutes, firstExName);
   const warmupStepIndex = session.warmupStepIndex ?? 0;
   const currentWarmupStep =
     warmupStepIndex < warmupPlan.steps.length
@@ -97,7 +99,7 @@ export const WarmupPhase: React.FC = () => {
               <div className="w-full min-w-0">
                 <div className="flex items-center justify-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
                   <span className="font-mono-num text-[#DC2626] dark:text-[#F87171]">
-                    0{warmupStepIndex + 1} / 0{warmupPlan.steps.length}
+                    {String(warmupStepIndex + 1).padStart(2, '0')} / {String(warmupPlan.steps.length).padStart(2, '0')}
                   </span>
                   <span aria-hidden="true">·</span>
                   <span className="font-mono-num font-bold text-[#111827] dark:text-[#F3F4F6]">
@@ -143,7 +145,7 @@ export const WarmupPhase: React.FC = () => {
         {/* BOTTOM (Portrait) / RIGHT (Landscape): Interactive Timer (no duration selector) */}
         <div className="flex min-h-0 min-w-0 flex-col items-center justify-between rounded-3xl border border-gray-200 bg-white p-4 landscape:p-3.5 dark:border-[#232E42] dark:bg-[#131A26]">
           <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-            {warmupPlan.label} · {session.warmupMinutes} мин
+            {warmupPlan.label}
           </span>
 
           <button
