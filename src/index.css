@@ -72,3 +72,11 @@ html.dark svg.fitnote-svg [fill="#DC2626"] {
 .tap-scale:active {
   transform: scale(0.97);
 }
+
+/* Share poster: print only the poster (v3.6) */
+@media print {
+  body * { visibility: hidden; }
+  .fitnote-poster, .fitnote-poster * { visibility: visible; }
+  .fitnote-poster { position: absolute; inset: 0; }
+  .fitnote-no-print { display: none !important; }
+}

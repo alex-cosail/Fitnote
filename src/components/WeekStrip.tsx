@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { CalendarDays, Check, ChevronLeft, ChevronRight, Dumbbell, Leaf, Zap } from 'lucide-react';
+import { CalendarDays, Check, ChevronLeft, ChevronRight, Dumbbell, Leaf, Share2, Zap } from 'lucide-react';
 import { DayView } from '../domain/schedule/schedule';
 import { PlanKind } from '../domain/schedule/kind';
 import { useT } from '../i18n';
@@ -16,6 +16,7 @@ interface WeekStripProps {
   onWeek: (delta: -1 | 1) => void;
   weekLabel: string;
   onCalendar?: () => void;
+  onShare?: () => void;
 }
 
 const LONG_PRESS_MS = 420;
@@ -33,7 +34,7 @@ const KIND_STYLE: Record<PlanKind, { icon: React.FC<{ className?: string }>; ton
  * and drag onto another day — move (onto a busy day the two swap).
  */
 export const WeekStrip: React.FC<WeekStripProps> = ({
-  days, kindOf, titleOf, selectedDate, warning, onSelect, onMove, onWeek, weekLabel, onCalendar,
+  days, kindOf, titleOf, selectedDate, warning, onSelect, onMove, onWeek, weekLabel, onCalendar, onShare,
 }) => {
   const { t } = useT();
   const [dragFrom, setDragFrom] = useState<string | null>(null);
@@ -97,6 +98,11 @@ export const WeekStrip: React.FC<WeekStripProps> = ({
       <div className="mb-1.5 flex items-center justify-between">
         <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{weekLabel}</span>
         <div className="flex items-center gap-1">
+          {onShare && (
+            <button type="button" onClick={onShare} className="tap-scale flex h-8 items-center rounded-lg px-2 text-gray-500" aria-label={t('share.title')}>
+              <Share2 className="h-4 w-4" />
+            </button>
+          )}
           {onCalendar && (
             <button type="button" onClick={onCalendar} className="tap-scale flex h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-gray-500" aria-label={t('ready.calendar')}>
               <CalendarDays className="h-4 w-4" />

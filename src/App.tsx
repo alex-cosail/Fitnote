@@ -17,6 +17,8 @@ import { OnboardingWizard } from './components/OnboardingWizard';
 import { MePanel } from './components/MePanel';
 import { WeekReadyPanel } from './components/WeekReadyPanel';
 import { WeekStrip } from './components/WeekStrip';
+import { ShareSheet } from './components/ShareSheet';
+import { SharedPreview } from './components/SharedPreview';
 import {
   Cycle, DayView, addDays, implicitCycle, localDate, moveDay, planOn, strengthInARow, weekDates, weekView,
 } from './domain/schedule/schedule';
@@ -134,6 +136,9 @@ export default function App() {
   // Workout tab for now.
   const [route, navigate] = useHashRoute();
   const isOnboarding = route.name === 'onboarding';
+  const sharePayload = route.name === 'share' ? route.payload : null;
+  // Screens without the tab bar: the start wizard and an opened shared link.
+  const isFullscreen = isOnboarding || Boolean(sharePayload);
   const activeTab: AppTab = route.name === 'tab' ? route.tab : 'workout';
   const setActiveTab = (tab: AppTab) => navigate({ name: 'tab', tab });
   const [isPlayerVisible, setIsPlayerVisible] = useState<boolean>(
@@ -427,7 +432,8 @@ export default function App() {
 
   // A brand-new person (no profile, no journal) meets the app first.
   useEffect(() => {
-    if (!data.profile && !data.onboardingDismissed && data.workoutLogs.length === 0 && !isOnboarding) {
+    // …but not over an opened shared link: first see what was sent.
+    if (!data.profile && !data.onboardingDismissed && data.workoutLogs.length === 0 && !isOnboarding && !sharePayload) {
       navigate({ name: 'onboarding' });
     }
     // only on launch
@@ -523,6 +529,19 @@ export default function App() {
       selectedWorkoutId: next.id,
       compensationDismissed: [...(prev.compensationDismissed ?? []), `${monday}:monday`],
     }));
+  };
+
+  // ——— Sharing (v3.6) ———
+  const [shareOf, setShareOf] = useState<{ plans: WorkoutPlan[]; title: string; days?: import('./domain/schedule/schedule').Weekday[] } | null>(null);
+  const shareCycle = () => {
+    const c = cycleAt(cycles, today);
+    if (!c) return;
+    const plans = c.planIds.map((id) => planById.get(id)).filter(Boolean) as WorkoutPlan[];
+    if (plans.length) setShareOf({ plans, title: c.title || t('share.cycleTitle', { count: plans.length }), days: c.days });
+  };
+  const afterShared = () => {
+    setActiveTab('workout');
+    window.scrollTo(0, 0);
   };
 
   // The current (or the next upcoming) cycle as one repeating calendar event
@@ -767,6 +786,40 @@ export default function App() {
 
       {/* Tab Content */}
       <main>
+        {sharePayload && (
+          <SharedPreview
+            encoded={sharePayload}
+            exercises={exercises}
+            profile={genProfile}
+            hasProfile={Boolean(data.profile)}
+            hasActiveCycle={hasActiveCycle}
+            onTryToday={(plan) => {
+              setData((prev) => placeSingle(prev, plan, today));
+              afterShared();
+            }}
+            onStartCycle={(plans, choice, days) => {
+              setData((prev) =>
+                placeWeek(prev, plans, choice, days ?? data.profile?.days ?? defaultDays(plans.length), plans[0]?.subtitle || t('share.cycleTitle', { count: plans.length }), today)
+              );
+              afterShared();
+            }}
+            onSaveLibrary={(plans) => {
+              setData((prev) => ({ ...prev, workouts: [...plans, ...prev.workouts], selectedWorkoutId: plans[0]?.id ?? prev.selectedWorkoutId }));
+              afterShared();
+            }}
+            onMeet={() => navigate({ name: 'onboarding' })}
+            onClose={afterShared}
+          />
+        )}
+        {shareOf && (
+          <ShareSheet
+            plans={shareOf.plans}
+            title={shareOf.title}
+            days={shareOf.days}
+            defaultAuthor={data.profile?.name}
+            onClose={() => setShareOf(null)}
+          />
+        )}
         {isOnboarding && readyPlans && (
           <WeekReadyPanel
             plans={readyPlans}
@@ -775,6 +828,7 @@ export default function App() {
             choice={ready?.choice ?? 'today'}
             onChoice={handleReadyChoice}
             onCalendar={handleCycleToCalendar}
+            onCoach={() => readyPlans && setShareOf({ plans: readyPlans, title: t('ready.shareHeader'), days: ready?.days })}
             onStart={() => {
               setReady(null);
               setActiveTab('workout');
@@ -794,7 +848,7 @@ export default function App() {
             onCancel={handleDismissOnboarding}
           />
         )}
-        {!isOnboarding && activeTab === 'workout' && !data.profile && (
+        {!isFullscreen && activeTab === 'workout' && !data.profile && (
           <div className="mx-auto max-w-6xl px-5 pt-4">
             <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#0B5F73]/30 bg-[#ECFAFC] p-3 dark:border-[#5EC4D8]/30 dark:bg-[#0B2E36]/60">
               <p className="min-w-0 flex-1 text-sm font-semibold text-[#0B5F73] dark:text-[#5EC4D8]">{t('wiz.banner')}</p>
@@ -808,7 +862,7 @@ export default function App() {
             </div>
           </div>
         )}
-        {!isOnboarding && activeTab === 'workout' && cycles.length > 0 && (
+        {!isFullscreen && activeTab === 'workout' && cycles.length > 0 && (
           <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-5 landscape:px-5">
             <WeekStrip
               days={weekDays}
@@ -821,6 +875,7 @@ export default function App() {
               onWeek={(delta) => setWeekAnchor((a) => addDays(a, delta * 7))}
               weekLabel={weekLabel}
               onCalendar={data.cycles?.length ? handleCycleToCalendar : undefined}
+              onShare={shareCycle}
             />
             {showTopUp && (
               <div className="mt-3 rounded-2xl border border-[#0B5F73]/30 bg-[#ECFAFC] p-3 dark:border-[#5EC4D8]/30 dark:bg-[#0B2E36]/60">
@@ -865,7 +920,7 @@ export default function App() {
             )}
           </div>
         )}
-        {!isOnboarding && activeTab === 'workout' && (
+        {!isFullscreen && activeTab === 'workout' && (
           <WorkoutPreviewTab
             workouts={data.workouts}
             exercises={exercises}
@@ -887,6 +942,7 @@ export default function App() {
                 warmupMinutes: readiness === 'red' ? 8 : prev.warmupMinutes,
               }))
             }
+            onShare={(plan) => setShareOf({ plans: [plan], title: plan.title })}
             onChangeAccentMinutes={(accentMinutes) =>
               setData((prev) => ({ ...prev, accentMinutes }))
             }
@@ -899,7 +955,7 @@ export default function App() {
           />
         )}
 
-        {!isOnboarding && activeTab === 'checkup' && (
+        {!isFullscreen && activeTab === 'checkup' && (
           <MePanel
             profile={data.profile}
             exercises={exercises}
@@ -908,7 +964,7 @@ export default function App() {
             onEdit={() => navigate({ name: 'onboarding' })}
           />
         )}
-        {!isOnboarding && activeTab === 'checkup' && (
+        {!isFullscreen && activeTab === 'checkup' && (
           <CheckUpTab
             baseIds={baseCheckupIds(CATALOG, genProfile.usualConditions)}
             exercises={exercises}
@@ -918,7 +974,7 @@ export default function App() {
           />
         )}
 
-        {!isOnboarding && activeTab === 'catalog' && (
+        {!isFullscreen && activeTab === 'catalog' && (
           <GeneratorPanel
             exercises={exercises}
             profile={data.profile}
@@ -930,14 +986,14 @@ export default function App() {
             hasActiveCycle={hasActiveCycle}
           />
         )}
-        {!isOnboarding && activeTab === 'catalog' && (
+        {!isFullscreen && activeTab === 'catalog' && (
           <CatalogTab
             exercises={exercises}
             onAddExercise={handleAddExercise}
           />
         )}
 
-        {!isOnboarding && activeTab === 'sync' && (
+        {!isFullscreen && activeTab === 'sync' && (
           <SyncLogTab
             exercises={exercises}
             workouts={data.workouts}
@@ -967,7 +1023,7 @@ export default function App() {
       {/* Portrait Mobile Fixed 4-Tab Bottom Navigation (lifted away from rounded bottom edges) */}
       <nav
         aria-label={t('nav.aria')}
-        hidden={isOnboarding}
+        hidden={isFullscreen}
         className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 z-40 rounded-2xl border border-gray-200 bg-white/95 shadow-lg shadow-black/5 backdrop-blur-md dark:border-[#1E293B] dark:bg-[#101622]/95 dark:shadow-black/50 landscape:hidden"
       >
         <div className="grid h-15 grid-cols-4 items-center px-1">

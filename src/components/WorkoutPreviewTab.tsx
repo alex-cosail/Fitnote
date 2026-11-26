@@ -8,6 +8,7 @@ import {
   Plus,
   RotateCcw,
   ShieldAlert,
+  Share2,
   Trash2,
 } from 'lucide-react';
 import {
@@ -46,6 +47,7 @@ interface WorkoutPreviewTabProps {
   onUpdateWorkout: (plan: WorkoutPlan) => void;
   onChangeReadiness: (level: ReadinessLevel) => void;
   onChangeAccentMinutes: (minutes: number) => void;
+  onShare?: (plan: WorkoutPlan) => void;
   onChangeWarmupMinutes: (mins: number) => void;
   onStartWorkout: () => void;
   onResumeWorkout: () => void;
@@ -72,6 +74,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   onUpdateWorkout,
   onChangeReadiness,
   onChangeAccentMinutes,
+  onShare,
   onChangeWarmupMinutes,
   onStartWorkout,
   onResumeWorkout,
@@ -445,6 +448,17 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                   {readiness === 'red' ? 45 : todayPlan.restBetweenRounds}с
                 </span>
 
+                {onShare && readiness !== 'red' && (
+                  <button
+                    type="button"
+                    onClick={() => onShare(selectedPlan)}
+                    aria-label="Поделиться тренировкой"
+                    title="Поделиться"
+                    className="tap-scale flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-[#111827] dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-gray-400"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
                 {isCustomWorkout && readiness !== 'red' && (
                   <button
                     type="button"
