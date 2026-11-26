@@ -5,6 +5,8 @@ import { usePlayer } from '../PlayerContext';
 export const FinishPhase: React.FC = () => {
   const {
     finishNote,
+    finishOutcome,
+    setFinishOutcome,
     handleSaveFinish,
     onExitSession,
     reminderDays,
@@ -85,6 +87,33 @@ export const FinishPhase: React.FC = () => {
               Плюс статика: {totalHoldSec} сек
             </p>
           )}
+
+          {/* «Как зашло?» — one tap; the next workouts adjust to it */}
+          <div className="mt-5">
+            <p className="text-sm font-bold text-[#111827] dark:text-[#F3F4F6]">Как зашло?</p>
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {([
+                ['easy', 'Легко'],
+                ['ok', 'В самый раз'],
+                ['hard', 'Тяжело'],
+              ] as const).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setFinishOutcome(finishOutcome === id ? undefined : id)}
+                  aria-pressed={finishOutcome === id}
+                  className={`tap-scale min-h-[48px] rounded-xl text-sm font-semibold transition-colors ${
+                    finishOutcome === id
+                      ? 'bg-[#111827] text-white dark:bg-[#F3F4F6] dark:text-[#0B0F17]'
+                      : 'border border-gray-300 bg-white text-[#111827] dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Ответ сохранится в журнале — по нему подстроится начало следующей недели.</p>
+          </div>
 
           <div className="mt-5">
             <label

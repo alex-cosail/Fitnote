@@ -65,6 +65,8 @@ export function usePlayerController({
   const [showAntagonistSheet, setShowAntagonistSheet] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [finishNote, setFinishNote] = useState('');
+  // «Как зашло?» — calibration for the next workouts (GENERATOR_RULES §9.1).
+  const [finishOutcome, setFinishOutcome] = useState<'easy' | 'ok' | 'hard' | undefined>(undefined);
   // "When is the next workout?" — defaults to the last answer.
   const [reminderDays, setReminderDays] = useState<ReminderPrefs['daysAhead']>(
     reminderPrefs?.daysAhead ?? 0
@@ -269,7 +271,7 @@ export function usePlayerController({
   // Saves the workout; if a day is chosen, first hands a calendar event with a
   // one-hour alarm to the phone (still inside the tap, as sharing requires).
   const handleSaveFinish = async () => {
-    const log = buildWorkoutLog(session, finishNote, Date.now());
+    const log = { ...buildWorkoutLog(session, finishNote, Date.now()), ...(finishOutcome ? { outcome: finishOutcome } : {}) };
     onReminderPrefsChange?.({ daysAhead: reminderDays, time: reminderTime });
     if (reminderDays > 0 && isAndroid(navigator.userAgent)) {
       // Android: open the calendar on a pre-filled "New event" screen.
@@ -349,6 +351,8 @@ export function usePlayerController({
     currentItem,
     exercises,
     finishNote,
+    finishOutcome,
+    setFinishOutcome,
     reminderDays,
     setReminderDays,
     reminderTime,
