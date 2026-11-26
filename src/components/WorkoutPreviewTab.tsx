@@ -49,6 +49,7 @@ interface WorkoutPreviewTabProps {
   onChangeReadiness: (level: ReadinessLevel) => void;
   onChangeAccentMinutes: (minutes: number) => void;
   onShare?: (plan: WorkoutPlan) => void;
+  exerciseNotes?: Record<string, string>;
   onChangeWarmupMinutes: (mins: number) => void;
   onStartWorkout: () => void;
   onResumeWorkout: () => void;
@@ -76,6 +77,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   onChangeReadiness,
   onChangeAccentMinutes,
   onShare,
+  exerciseNotes,
   onChangeWarmupMinutes,
   onStartWorkout,
   onResumeWorkout,
@@ -760,6 +762,11 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                       {ex.target_muscles.map(getMuscleLabel).join(' · ')}
                       {ex.isPaired ? ' · на каждую сторону' : ''}
                     </p>
+                    {exerciseNotes?.[ex.id] && (
+                      <p className="mt-1 inline-block rounded-lg bg-[#FFFBEB] px-2 py-0.5 text-xs font-semibold text-[#92400E] dark:bg-[#451A03]/50 dark:text-[#FBBF24]">
+                        {exerciseNotes[ex.id]}
+                      </p>
+                    )}
 
                     <div className="mt-2.5 flex items-center justify-between gap-3 landscape:mt-1.5 landscape:justify-start landscape:gap-3">
                       {canTune ? (

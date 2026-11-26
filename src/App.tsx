@@ -65,6 +65,7 @@ import { soundEngine } from './utils/audio';
 import { loadFitnoteData, saveFitnoteData } from './utils/storage';
 import { APP_VERSION_LABEL } from './version';
 import { warmupOptionsFor } from './domain/warmup/warmup';
+import { applySwaps } from './domain/session/change';
 
 const PROTECTED_WORKOUT_IDS = new Set([
   'workout-a',
@@ -266,7 +267,12 @@ export default function App() {
     setData((prev) => {
       let user = { maxes: prev.maxes, customExercises: prev.customExercises };
       for (const [id, value] of Object.entries(calibrated)) user = recordMax(user, CATALOG_IDS, id, value, log.date);
-      return { ...prev, ...user, workoutLogs: [log, ...prev.workoutLogs], activeSession: null };
+      // «Заменить в тренировке»: today's changes stay in the plan (v3.8).
+      const workouts =
+        log.swapsKept && log.swaps?.length
+          ? prev.workouts.map((w) => (w.id === log.workoutId ? applySwaps(w, log.swaps!, { catalog: CATALOG, exercises }) : w))
+          : prev.workouts;
+      return { ...prev, ...user, workouts, workoutLogs: [log, ...prev.workoutLogs], activeSession: null };
     });
     setIsPlayerVisible(false);
     setActiveTab('sync');
@@ -933,6 +939,7 @@ export default function App() {
         )}
         {!isFullscreen && activeTab === 'workout' && (
           <WorkoutPreviewTab
+            exerciseNotes={data.exerciseNotes}
             workouts={data.workouts}
             exercises={exercises}
             selectedWorkoutId={data.selectedWorkoutId}
@@ -1075,6 +1082,16 @@ export default function App() {
           reminderPrefs={data.reminder}
           onReminderPrefsChange={(reminder) =>
             setData((prev) => ({ ...prev, reminder }))
+          }
+          conditions={genProfile.usualConditions}
+          notes={data.exerciseNotes}
+          onNote={(id, text) =>
+            setData((prev) => {
+              const next = { ...(prev.exerciseNotes ?? {}) };
+              if (text) next[id] = text;
+              else delete next[id];
+              return { ...prev, exerciseNotes: next };
+            })
           }
         />
       )}

@@ -172,6 +172,9 @@ export interface WorkoutLog {
   workoutId?: string;
   // «Как зашло?» after the workout (absent = not answered).
   outcome?: 'easy' | 'ok' | 'hard';
+  /** Exercises changed during the workout (v3.8) and whether they stay in the plan. */
+  swaps?: { from: string; to: string }[];
+  swapsKept?: boolean;
   readiness: ReadinessLevel;
   roundsCompleted: number;
   roundsPlanned: number;
@@ -236,6 +239,8 @@ export interface FitnoteData {
   favorites?: string[];
   // Minutes for the accent mode (absent = 20).
   accentMinutes?: number;
+  /** The person's own note per exercise (v3.8): «жёлтая + синяя». */
+  exerciseNotes?: Record<string, string>;
   // Last answer to "When is the next workout?" (calendar reminder).
   reminder?: { daysAhead: 0 | 1 | 2 | 3; time: string };
   // Interface language (absent = Russian; the switcher arrives in step 4).

@@ -737,4 +737,18 @@ export const EXERCISE_SCENES: Record<SceneKey, () => React.ReactElement> = {
       <polyline points="40,24 40,30 44,33" fill="none" stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </g>
   ),
+  australian_pullups_45: () => (
+    <g>
+      <Floor y={104} />
+      {/* chest-high bar on a post */}
+      <line x1="96" y1="40" x2="140" y2="40" stroke={INK} strokeWidth="3.2" strokeLinecap="round" />
+      <line x1="132" y1="40" x2="132" y2="104" stroke="#D1D5DB" strokeWidth="2.2" />
+      {/* straight body at ~45° from the heels */}
+      <Body points="46,103 100,52" />
+      <Head x={105} y={45} />
+      <Limb points="98,54 108,52 112,40" color={RED} />
+      <circle cx="112" cy="40" r="2.8" fill={RED} />
+      <Arrow x1={84} y1={58} x2={96} y2={46} />
+    </g>
+  ),
 };

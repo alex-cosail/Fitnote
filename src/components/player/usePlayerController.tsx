@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { CATALOG } from '../../data/catalog';
 import { findAntagonistMatches } from '../../domain/catalog/antagonists';
+import type { Conditions } from '../../domain/catalog/filter';
+import { changeOptions, sessionSwaps } from '../../domain/session/change';
 import {
   addRestSeconds,
   buildWorkoutLog,
@@ -40,6 +43,10 @@ export interface WorkoutPlayerProps {
   onExitSession: () => void;
   reminderPrefs?: ReminderPrefs;
   onReminderPrefsChange?: (prefs: ReminderPrefs) => void;
+  /** For «Изменить»: what is available here (v3.8). */
+  conditions?: Conditions;
+  notes?: Record<string, string>;
+  onNote?: (exerciseId: string, text: string) => void;
 }
 
 /**
@@ -56,6 +63,9 @@ export function usePlayerController({
   onExitSession,
   reminderPrefs,
   onReminderPrefsChange,
+  conditions,
+  notes,
+  onNote,
 }: WorkoutPlayerProps) {
   const currentItem = session.items[session.currentItemIndex];
   const currentExercise =
@@ -65,6 +75,8 @@ export function usePlayerController({
   const [showAntagonistSheet, setShowAntagonistSheet] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [finishNote, setFinishNote] = useState('');
+  // Changes made during the workout: keep them in the plan or only today.
+  const [keepSwaps, setKeepSwaps] = useState(false);
   // «Как зашло?» — calibration for the next workouts (GENERATOR_RULES §9.1).
   const [finishOutcome, setFinishOutcome] = useState<'easy' | 'ok' | 'hard' | undefined>(undefined);
   // "When is the next workout?" — defaults to the last answer.
@@ -246,7 +258,7 @@ export function usePlayerController({
   const handleSwapAntagonist = (replacement: Exercise) => {
     setPairedLeftValue(null);
     onUpdateSession(
-      swapCurrentExercise(session, currentExercise.metric, replacement)
+      swapCurrentExercise(session, currentExercise, replacement)
     );
     setShowAntagonistSheet(false);
   };
@@ -271,7 +283,12 @@ export function usePlayerController({
   // Saves the workout; if a day is chosen, first hands a calendar event with a
   // one-hour alarm to the phone (still inside the tap, as sharing requires).
   const handleSaveFinish = async () => {
-    const log = { ...buildWorkoutLog(session, finishNote, Date.now()), ...(finishOutcome ? { outcome: finishOutcome } : {}) };
+    const swaps = sessionSwaps(session.items);
+    const log = {
+      ...buildWorkoutLog(session, finishNote, Date.now()),
+      ...(finishOutcome ? { outcome: finishOutcome } : {}),
+      ...(swaps.length ? { swaps, swapsKept: keepSwaps } : {}),
+    };
     onReminderPrefsChange?.({ daysAhead: reminderDays, time: reminderTime });
     if (reminderDays > 0 && isAndroid(navigator.userAgent)) {
       // Android: open the calendar on a pre-filled "New event" screen.
@@ -290,6 +307,8 @@ export function usePlayerController({
   };
 
   const antagonistMatches = findAntagonistMatches(currentExercise, exercises);
+  const changeOpts = changeOptions(currentExercise.id, CATALOG, exercises, conditions);
+  const todaySwaps = sessionSwaps(session.items);
   const nextPos = getNextPosition(session);
   const nextItem = session.items[nextPos.nextItemIndex];
   const nextExercise =
@@ -321,7 +340,15 @@ export function usePlayerController({
     ex: Exercise,
     label?: string,
     tone: 'default' | 'rest' = 'default'
-  ) => <ExerciseVisual exercise={ex} label={label} tone={tone} />;
+  ) => (
+    <ExerciseVisual
+      exercise={ex}
+      label={label}
+      tone={tone}
+      note={notes?.[ex.id]}
+      onNote={onNote && tone === 'default' ? (text) => onNote(ex.id, text) : undefined}
+    />
+  );
 
   const renderTopBar = (
     centerLabel: string,
@@ -347,6 +374,10 @@ export function usePlayerController({
 
   return {
     antagonistMatches,
+    changeOpts,
+    todaySwaps,
+    keepSwaps,
+    setKeepSwaps,
     currentExercise,
     currentItem,
     exercises,

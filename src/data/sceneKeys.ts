@@ -55,6 +55,7 @@ export const SCENE_KEYS = [
   'half_kneeling_db_press',
   'elevated_pike_push_ups',
   'wall_handstand_hold',
+  'australian_pullups_45',
 ] as const;
 
 export type SceneKey = (typeof SCENE_KEYS)[number];

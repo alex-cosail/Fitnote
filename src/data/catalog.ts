@@ -51,7 +51,7 @@ export const CATALOG: CatalogExercise[] = [
     antagonistMuscles: ["chest", "front_delts"],
     svgKey: "australian_pullups",
     defaultMax: { low: 6, medium: 12, high: 25 },
-    ladder: { minus1: "band-row" },
+    ladder: { minus1: "incline-australian-pull-ups" },
   },
   {
     id: "floor-push-ups",
@@ -1098,6 +1098,23 @@ export const CATALOG: CatalogExercise[] = [
     svgKey: "split_stance_anti_rotation",
     defaultMax: { low: 15, medium: 30, high: 50 },
     ladder: { minus1: "pallof-press" },
+  },
+  // v3.8 (field test 27.11): the easier step of australian pull-ups.
+  {
+    id: "incline-australian-pull-ups",
+    pattern: "pull_h",
+    family: "pull_horizontal",
+    rank: 2,
+    metric: "reps",
+    environments: ["outdoor", "home"],
+    equipment: ["pullup_bars", "suspension"],
+    posture: ["hands_only"],
+    stability: "bilateral",
+    targetMuscles: ["upper_back", "rear_delts", "biceps"],
+    antagonistMuscles: ["chest", "front_delts"],
+    svgKey: "australian_pullups_45",
+    defaultMax: { low: 8, medium: 16, high: 30 },
+    ladder: { minus1: "band-row", plus1: "australian-pull-ups" },
   },
 ];
 

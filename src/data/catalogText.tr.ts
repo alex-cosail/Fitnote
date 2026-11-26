@@ -326,4 +326,10 @@ export const CATALOG_TEXT_TR: Record<string, CatalogText> = {
     details:
       "Bandı göğüs hizasında duvar barına sabitle, direğe yan dönüp dizler hafif bükülü alçak bir hamle duruşu al ve güçlü gerginlik oluştur. Kollarını göğüs tam ortasından düz öne uzat ve dönme kuvvetine karşı merkezde tut. Süre boyunca düzenli nefes al. Ellerin sabit noktaya doğru kaymasına izin vermekten kaçın.",
   },
+  "incline-australian-pull-ups": {
+    name: "Avustralya Barfiksi 45°",
+    cue: "Bar göğüs hizasında, vücut 45°, kürek kemiklerini sıkarak göğsünü bara çek.",
+    details:
+      "Göğüs hizasındaki barı omuz genişliğinde düz tutuşla kavra ve ayaklarını öne alarak vücudunu yaklaşık 45° açıyla düz bir çizgi yap. Nefes verirken kürek kemiklerini sıkıp dirsekleri geriye sürerek göğsünü bara çek; nefes alırken kontrollü in. Bar alçaldıkça ve vücut yataylaştıkça zorlaşır — sonraki basamak normal Avustralya barfiksi.",
+  },
 };

@@ -4,6 +4,10 @@ import { usePlayer } from '../PlayerContext';
 
 export const FinishPhase: React.FC = () => {
   const {
+    exercises,
+    keepSwaps,
+    setKeepSwaps,
+    todaySwaps,
     finishNote,
     finishOutcome,
     setFinishOutcome,
@@ -86,6 +90,40 @@ export const FinishPhase: React.FC = () => {
             <p className="font-mono-num mt-2 text-xs text-gray-500 dark:text-gray-400">
               Плюс статика: {totalHoldSec} сек
             </p>
+          )}
+
+          {/* Changes made today: only today or in the plan (v3.8) */}
+          {todaySwaps.length > 0 && (
+            <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-3.5 dark:border-[#232E42] dark:bg-[#131A26]">
+              <p className="text-sm font-bold text-[#111827] dark:text-[#F3F4F6]">Сегодня вы заменили</p>
+              <ul className="mt-1 space-y-0.5 text-sm text-gray-700 dark:text-gray-300">
+                {todaySwaps.map((s) => (
+                  <li key={s.from}>
+                    {exercises.find((e) => e.id === s.from)?.name ?? s.from} → <b>{exercises.find((e) => e.id === s.to)?.name ?? s.to}</b>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {([
+                  [false, 'Только сегодня'],
+                  [true, 'Заменить в тренировке'],
+                ] as const).map(([v, label]) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setKeepSwaps(v)}
+                    aria-pressed={keepSwaps === v}
+                    className={`tap-scale min-h-[48px] rounded-xl px-2 text-sm font-semibold transition-colors ${
+                      keepSwaps === v
+                        ? 'bg-[#111827] text-white dark:bg-[#F3F4F6] dark:text-[#0B0F17]'
+                        : 'border border-gray-300 bg-white text-[#111827] dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* «Как зашло?» — one tap; the next workouts adjust to it */}

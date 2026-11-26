@@ -38,11 +38,11 @@ export const PlayerTopBar: React.FC<{
       <X className="h-5 w-5" />
     </button>
 
-    <div className="text-center">
-      <p className="font-mono-num text-sm font-bold text-[#111827] dark:text-[#F3F4F6]">
+    <div className="min-w-0 flex-1 px-1 text-center">
+      <p className="font-mono-num truncate whitespace-nowrap text-[13px] font-bold text-[#111827] sm:text-sm dark:text-[#F3F4F6]">
         {centerLabel}
       </p>
-      <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+      <p className="truncate text-[11px] font-medium text-gray-500 dark:text-gray-400">
         {workoutTitle}
       </p>
     </div>
@@ -52,10 +52,10 @@ export const PlayerTopBar: React.FC<{
         <button
           type="button"
           onClick={onAntagonist}
-          className="tap-scale flex min-h-[44px] items-center gap-1 rounded-xl border border-gray-200 bg-white px-2.5 text-xs font-semibold text-[#111827] hover:bg-gray-50 dark:border-[#2A3548] dark:bg-[#131A26] dark:text-[#F3F4F6] dark:hover:bg-[#1A2333]"
+          className="tap-scale flex min-h-[44px] shrink-0 items-center gap-1 rounded-xl border border-gray-200 bg-white px-2 text-xs font-semibold text-[#111827] hover:bg-gray-50 dark:border-[#2A3548] dark:bg-[#131A26] dark:text-[#F3F4F6] dark:hover:bg-[#1A2333]"
         >
           <ArrowLeftRight className="h-3.5 w-3.5 text-[#DC2626] dark:text-[#F87171]" />
-          <span className="hidden sm:inline">Antagonist</span>
+          <span>Изменить</span>
         </button>
       )}
       <button

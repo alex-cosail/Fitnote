@@ -1,3 +1,4 @@
+import { swapTarget } from './change';
 import {
   ActiveSession,
   Exercise,
@@ -269,13 +270,12 @@ export function plusRound(
 // Swap the current exercise; same metric keeps the target, otherwise AGT 30%.
 export function swapCurrentExercise(
   session: ActiveSession,
-  currentMetric: MetricType,
+  current: Exercise,
   replacement: Exercise
 ): ActiveSession {
   const items = session.items.map((it, idx) => {
     if (idx !== session.currentItemIndex) return it;
-    const nextTarget =
-      replacement.metric === currentMetric ? it.target : calcAgt30(replacement);
+    const nextTarget = swapTarget(it.target, current, replacement);
     return {
       exerciseId: replacement.id,
       target: nextTarget,

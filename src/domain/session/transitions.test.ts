@@ -219,14 +219,16 @@ describe('round-flow', () => {
 });
 
 describe('swap and workout log', () => {
-  it('same metric keeps the target, a different metric uses AGT 30%', () => {
+  it('the same share of the max in the new exercise; another metric — 30% of its max', () => {
     const s = base();
-    expect(swapCurrentExercise(s, 'reps', ex('parallel-bar-dips')).items[0]).toMatchObject({
+    // 12 of 35 push-ups → the same share of 23 dips = 8.
+    expect(swapCurrentExercise(s, ex('floor-push-ups'), ex('parallel-bar-dips')).items[0]).toMatchObject({
       exerciseId: 'parallel-bar-dips',
-      target: 12,
+      target: 8,
       swappedFromId: 'floor-push-ups',
     });
-    expect(swapCurrentExercise(s, 'reps', ex('dead-hang')).items[0].target).toBe(15);
+    // dead hang max 45 s × 0.3 → 15 s (rounded to 5).
+    expect(swapCurrentExercise(s, ex('floor-push-ups'), ex('dead-hang')).items[0].target).toBe(15);
   });
 
   it('workout log: duration at least a minute, note trimmed', () => {

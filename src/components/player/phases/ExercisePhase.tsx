@@ -1,15 +1,15 @@
 import React from 'react';
-import { Check, Minus, Plus, X } from 'lucide-react';
-import { getMuscleLabel } from '../../../domain/catalog/muscles';
+import { Check, Minus, Plus } from 'lucide-react';
 import { formatClock } from '../../../domain/format';
 import { RirValue } from '../../../types';
-import { ExerciseSvg } from '../../ExerciseSvg';
+import { ChangeExerciseSheet } from '../ChangeExerciseSheet';
 import { ExitConfirmModal } from '../ExitConfirmModal';
 import { usePlayer } from '../PlayerContext';
 
 export const ExercisePhase: React.FC = () => {
   const {
     antagonistMatches,
+    changeOpts,
     currentExercise,
     currentItem,
     handleCompleteSet,
@@ -84,9 +84,7 @@ export const ExercisePhase: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 flex h-[100dvh] flex-col overflow-hidden bg-white dark:bg-[#0B0F17]">
       {renderTopBar(
-        `Round ${session.currentRound} / ${session.totalRounds} · ${
-          session.currentItemIndex + 1
-        }/${session.items.length}`,
+        `Упр. ${session.currentItemIndex + 1}/${session.items.length}`,
         true,
         true
       )}
@@ -230,63 +228,16 @@ export const ExercisePhase: React.FC = () => {
         )}
       </main>
 
-      {/* Antagonist Swap Sheet */}
+      {/* «Изменить»: easier / harder, same type, antagonist (v3.8) */}
       {showAntagonistSheet && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center dark:bg-black/70">
-          <div className="w-full max-w-lg rounded-t-3xl bg-white p-5 sm:rounded-3xl dark:border dark:border-[#232E42] dark:bg-[#131A26]">
-            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-gray-300 sm:hidden dark:bg-[#334155]" />
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-[#1E293B]">
-              <div>
-                <h3 className="text-base font-bold text-[#111827] dark:text-[#F3F4F6]">
-                  Подмена на антагонист
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Для «{currentExercise.name}» по пересечению тегов мышц
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAntagonistSheet(false)}
-                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#1E293B]"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="mt-3 max-h-80 space-y-2 overflow-y-auto">
-              {antagonistMatches.length === 0 ? (
-                <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                  Совпадений по антагонистам в каталоге пока нет.
-                </p>
-              ) : (
-                antagonistMatches.map((match) => (
-                  <button
-                    key={match.id}
-                    type="button"
-                    onClick={() => handleSwapAntagonist(match)}
-                    className="tap-scale flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 text-left hover:border-[#DC2626] dark:border-[#232E42] dark:bg-[#1A2333] dark:hover:border-[#EF4444]"
-                  >
-                    <ExerciseSvg
-                      svgKey={match.svgKey}
-                      className="h-14 w-20 shrink-0"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="break-words text-sm font-bold leading-snug text-[#111827] dark:text-[#F3F4F6]">
-                        {match.name}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
-                        {match.target_muscles.map(getMuscleLabel).join(' · ')}
-                      </p>
-                    </div>
-                    <span className="font-mono-num shrink-0 text-xs font-bold text-[#DC2626] dark:text-[#F87171]">
-                      Заменить
-                    </span>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
+        <ChangeExerciseSheet
+          current={currentExercise}
+          target={currentItem.target}
+          options={changeOpts}
+          antagonists={antagonistMatches}
+          onPick={handleSwapAntagonist}
+          onClose={() => setShowAntagonistSheet(false)}
+        />
       )}
 
       {showExitConfirm && (

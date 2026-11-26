@@ -326,4 +326,10 @@ export const CATALOG_TEXT_EN: Record<string, CatalogText> = {
     details:
       "Anchor the band to a stall bar at chest height, step out sideways into a low staggered split stance with knees softly bent, and create strong tension. Press your arms straight out along the midline of your chest and hold firm against rotational pull, optionally adding small controlled pulses. Keep breathing evenly. Avoid letting your hands drift toward the anchor.",
   },
+  "incline-australian-pull-ups": {
+    name: "Australian Pull-Ups 45°",
+    cue: "Bar at chest height, body at 45°, pull your chest to the bar squeezing the shoulder blades.",
+    details:
+      "Grip a chest-high bar overhand at shoulder width and walk your feet forward so your body forms a straight line at about 45°. Exhale and pull your chest to the bar, squeezing the shoulder blades and driving the elbows back; inhale and lower with control. The lower the bar and the flatter the body, the harder it gets — the next step is regular Australian pull-ups.",
+  },
 };
