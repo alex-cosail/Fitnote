@@ -60,4 +60,12 @@ describe('warm-up «минута = движение»', () => {
     const used = new Set(WARMUP_MOVES.map((m) => m.svgKey));
     for (const k of WARMUP_KEYS) expect(used.has(k)).toBe(true);
   });
+
+  it('joint levels: shoulder at 0 removes arm circles and the band pull-apart, and still fills the minutes', () => {
+    const s = ids(10, { patterns: ['pull_h', 'push_v'], care: [{ joint: 'shoulder', level: 0 }] });
+    expect(s).toHaveLength(10);
+    expect(s).not.toContain('wu-arm-circles');
+    expect(s).not.toContain('wu-pull-apart');
+    for (const id of s) if (id !== 'wu-primer') expect(move(id.replace(/-\d+$/, ''))?.joints.shoulder ?? 0).toBe(0);
+  });
 });

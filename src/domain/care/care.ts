@@ -1,5 +1,5 @@
 import type { CatalogExercise } from '../catalog/types';
-import { Joint, jointLoad } from '../catalog/joints';
+import { Joint, JointLoad, jointLoad } from '../catalog/joints';
 
 // «Берегу» (care brief §0, v3.10): each joint has a level 0–4, or is free
 // (not in the list). The person chooses the state — we do not diagnose:
@@ -57,7 +57,11 @@ export function normalizeCare(list: unknown): Care[] {
  */
 export function blockedByCare(c: Pick<CatalogExercise, 'id' | 'pattern'>, care: CareRule[] = []): CareRule | undefined {
   if (care.length === 0) return undefined;
-  const load = jointLoad(c);
+  return blockedByLoad(jointLoad(c), care);
+}
+
+/** The same rule for anything with a joint load (warm-up movements). */
+export function blockedByLoad(load: JointLoad, care: CareRule[] = []): CareRule | undefined {
   return care.find((r) => {
     const v = load[r.joint] ?? 0;
     if (r.level === 0) return v >= 1;

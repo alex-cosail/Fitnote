@@ -1,5 +1,7 @@
 import type { MobilityStep, SvgKey } from '../../types';
 import type { AgeGroup, Conditions } from '../catalog/filter';
+import type { JointLoad } from '../catalog/joints';
+import { blockedByLoad, CareRule } from '../care/care';
 import type { MovementPattern } from '../catalog/types';
 
 // Warm-up «минута = движение» (field test 26.11, v3.7): N minutes = N
@@ -22,12 +24,15 @@ export interface WarmupMove {
   bar?: boolean;
   /** Jumps or a deep floor position: not for 55+. */
   hard?: boolean;
+  /** Joint load, filtered by «Как двигается?» like the exercises (v3.11). */
+  joints: JointLoad;
 }
 
 export const WARMUP_MOVES: WarmupMove[] = [
   // ——— joints ———
   {
     id: 'wu-arm-circles',
+    joints: { shoulder: 1 },
     phase: 'joint',
     name: 'Круги руками',
     cue: 'Прямые руки, большие спокойные круги: полминуты вперёд, полминуты назад. Плечи опущены.',
@@ -36,6 +41,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-hip-circles',
+    joints: { hip: 1, lower_back: 1 },
     phase: 'joint',
     name: 'Круги тазом',
     cue: 'Руки на поясе, стопы на ширине плеч. Широкие круги тазом, полминуты в каждую сторону.',
@@ -44,6 +50,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-knee-ankle',
+    joints: { knee: 1, ankle: 1 },
     phase: 'joint',
     name: 'Колени и стопы',
     cue: 'Ноги вместе, ладони на коленях — мягкие круги коленями. Затем круги каждой стопой на носке.',
@@ -52,6 +59,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-neck',
+    joints: { neck: 1 },
     phase: 'joint',
     name: 'Голова и шея',
     cue: 'Медленные наклоны головы к плечам и полукруги через грудь. Назад не запрокидывай.',
@@ -60,6 +68,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-torso-twist',
+    joints: { thoracic: 1, lower_back: 1 },
     phase: 'joint',
     name: 'Повороты корпуса',
     cue: 'Стопы на месте, руки свободно. Поворачивай грудную клетку вправо и влево, руки догоняют сами.',
@@ -69,6 +78,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   // ——— pulse ———
   {
     id: 'wu-jacks',
+    joints: { knee: 2, ankle: 2, shoulder: 1 },
     phase: 'pulse',
     name: 'Прыжки «звёздочка»',
     cue: 'Ноги врозь — руки вверх, ноги вместе — руки вниз. Лёгкий темп, приземляйся мягко на носки.',
@@ -78,6 +88,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-high-knees',
+    joints: { hip: 1, knee: 1 },
     phase: 'pulse',
     name: 'Шаг с высоким коленом',
     cue: 'Бодрый шаг на месте, колено до уровня таза, руки работают. Без прыжков, дыхание ровное.',
@@ -87,6 +98,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   // ——— dynamic ———
   {
     id: 'wu-squat-reach',
+    joints: { knee: 2, hip: 1, shoulder: 1 },
     phase: 'dynamic',
     name: 'Присед с руками вверх',
     cue: 'Медленный присед на удобную глубину, пятки на земле. На подъёме тянись руками вверх.',
@@ -95,6 +107,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-lunge-reach',
+    joints: { knee: 2, hip: 2, ankle: 1 },
     phase: 'dynamic',
     name: 'Выпад с руками вверх',
     cue: 'Шаг вперёд в выпад, руки вверх, таз чуть вперёд. Вернись и смени ногу. Без спешки.',
@@ -103,6 +116,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-hinge',
+    joints: { lower_back: 2, hip: 2 },
     phase: 'dynamic',
     name: 'Наклон с ровной спиной',
     cue: 'Колени мягкие, таз уходит назад, спина ровная. Наклон до натяжения сзади бедра — и вверх.',
@@ -111,6 +125,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-leg-swing',
+    joints: { hip: 2 },
     phase: 'dynamic',
     name: 'Махи ногами',
     cue: 'Держись за опору. Свободные махи прямой ногой вперёд-назад, полминуты на каждую ногу.',
@@ -119,6 +134,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-incline-pushup',
+    joints: { shoulder: 2, elbow_wrist: 2 },
     phase: 'dynamic',
     name: 'Лёгкие отжимания от опоры',
     cue: 'Руки на перекладину, скамейку или стену. 8–10 медленных повторов вполсилы, корпус прямой.',
@@ -127,6 +143,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-pull-apart',
+    joints: { shoulder: 1 },
     phase: 'dynamic',
     name: 'Разведение рук назад',
     cue: 'Прямые руки перед собой, своди лопатки и разводи руки назад. С резинкой — растягивай её.',
@@ -135,6 +152,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-scapula',
+    joints: { shoulder: 2, elbow_wrist: 2 },
     phase: 'dynamic',
     name: 'Лопатки в висе',
     cue: 'Вис на прямых руках. Опускай плечи от ушей и снова расслабляй, 8–10 раз, локти прямые.',
@@ -144,6 +162,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-wall-slide',
+    joints: { shoulder: 1, thoracic: 1 },
     phase: 'dynamic',
     name: 'Руки вверх у стены',
     cue: 'Спиной к стене, локти и кисти касаются стены. Скользи руками вверх и вниз, поясница прижата.',
@@ -152,6 +171,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-cross-crunch',
+    joints: { lower_back: 1, hip: 1 },
     phase: 'dynamic',
     name: 'Локоть к колену',
     cue: 'Стоя, поднимай колено и тянись к нему противоположным локтем. Медленно, попеременно.',
@@ -160,6 +180,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-inchworm',
+    joints: { shoulder: 2, elbow_wrist: 2, lower_back: 2 },
     phase: 'dynamic',
     name: 'Гусеница',
     cue: 'Наклонись, поставь ладони на землю и пройди руками в упор лёжа. Затем шагами ног к рукам — и встань.',
@@ -169,6 +190,7 @@ export const WARMUP_MOVES: WarmupMove[] = [
   },
   {
     id: 'wu-worlds-greatest',
+    joints: { hip: 2, lower_back: 2, knee: 1 },
     phase: 'dynamic',
     name: 'Выпад с поворотом',
     cue: 'Глубокий выпад, ладонь на землю у передней стопы. Разверни грудь к колену и вытяни руку вверх.',
@@ -201,6 +223,8 @@ export interface WarmupOptions {
   hasBar?: boolean;
   ageGroup?: AgeGroup;
   firstExerciseName?: string;
+  /** Joint levels: movements that load a protected joint are left out. */
+  care?: CareRule[];
 }
 
 export interface WarmupPlan {
@@ -220,7 +244,8 @@ const byId = new Map(WARMUP_MOVES.map((m) => [m.id, m]));
 
 export function buildWarmup(minutes: number, opts: WarmupOptions = {}): WarmupPlan {
   const n = Math.max(3, Math.min(20, Math.round(minutes)));
-  const ok = (m: WarmupMove) => (!m.bar || opts.hasBar !== false) && !(opts.ageGroup === 'masters' && m.hard);
+  const ok = (m: WarmupMove) =>
+    (!m.bar || opts.hasBar !== false) && !(opts.ageGroup === 'masters' && m.hard) && !blockedByLoad(m.joints, opts.care);
   const chosen = new Set<string>();
   const take = (m: WarmupMove | undefined) => {
     if (!m || chosen.has(m.id) || !ok(m)) return undefined;
@@ -312,5 +337,6 @@ export function warmupOptionsFor(
     hasBar: !eq || eq.includes('pullup_bars'),
     ageGroup: extra.conditions?.ageGroup,
     firstExerciseName: extra.firstExerciseName,
+    care: extra.conditions?.care,
   };
 }

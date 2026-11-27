@@ -8,6 +8,8 @@ import {
 import { CheckUpEntry, Exercise } from '../types';
 import { soundEngine } from '../utils/audio';
 import { ExerciseSvg } from './ExerciseSvg';
+import { CATALOG } from '../data/catalog';
+import type { SvgKey } from '../types';
 
 interface CheckUpTabProps {
   exercises: Exercise[];
@@ -16,6 +18,8 @@ interface CheckUpTabProps {
   history: CheckUpEntry[];
   isMuted: boolean;
   onRecordCheckUp: (exerciseId: string, newMax: number) => void;
+  /** Own exercise without a picture: choose one from the catalog (v3.11). */
+  onPickPicture?: (exerciseId: string, svgKey: SvgKey) => void;
 }
 
 interface TimerState {
@@ -34,7 +38,10 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
   history,
   isMuted,
   onRecordCheckUp,
+  onPickPicture,
 }) => {
+  const [pictureFor, setPictureFor] = useState<Exercise | null>(null);
+  const pictureChoices = CATALOG.map((c) => ({ key: c.svgKey, name: exercises.find((e) => e.id === c.id)?.name ?? c.id }));
   const [draftValues, setDraftValues] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
     exercises.forEach((ex) => {
@@ -375,6 +382,11 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
                         className="h-20 w-full max-w-[140px]"
                       />
                     </div>
+                    {ex.isCustom && ex.svgKey === 'generic_strength' && onPickPicture && (
+                      <button type="button" onClick={() => setPictureFor(ex)} className="tap-scale col-span-2 min-h-[36px] rounded-lg text-xs font-semibold text-[#0B5F73] underline dark:text-[#5EC4D8]">
+                        Выбрать картинку
+                      </button>
+                    )}
 
                     <div className="flex items-center justify-center text-center">
                       {renderDigitsBlock(
@@ -432,6 +444,11 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
                         className="h-32 w-full max-w-[180px] lg:h-40 lg:max-w-[220px]"
                       />
                     </div>
+                    {ex.isCustom && ex.svgKey === 'generic_strength' && onPickPicture && (
+                      <button type="button" onClick={() => setPictureFor(ex)} className="tap-scale mt-1 min-h-[36px] rounded-lg text-xs font-semibold text-[#0B5F73] underline dark:text-[#5EC4D8]">
+                        Выбрать картинку
+                      </button>
+                    )}
                   </div>
 
                   {/* RIGHT: [-] [Large Number/Timer] [+] centered, and [Сохранить] safely below */}
@@ -532,6 +549,30 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
           )}
         </aside>
       </div>
+      {pictureFor && onPickPicture && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/50 sm:items-center" onClick={() => setPictureFor(null)}>
+          <div className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-4 sm:rounded-3xl dark:bg-[#0F1520]" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Выбрать картинку">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">Картинка для</p>
+            <h3 className="mb-3 text-base font-bold text-[#111827] dark:text-[#F3F4F6]">{pictureFor.name}</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {pictureChoices.map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => {
+                    onPickPicture(pictureFor.id, p.key);
+                    setPictureFor(null);
+                  }}
+                  className="tap-scale flex flex-col items-center gap-1 rounded-xl border border-gray-200 p-1.5 text-center dark:border-[#2A3548]"
+                >
+                  <ExerciseSvg svgKey={p.key} className="h-14 w-full" />
+                  <span className="line-clamp-2 text-[10px] leading-tight text-gray-600 dark:text-gray-300">{p.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

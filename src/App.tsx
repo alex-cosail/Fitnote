@@ -1042,6 +1042,9 @@ export default function App() {
             history={data.checkUpHistory}
             isMuted={data.isMuted}
             onRecordCheckUp={handleRecordCheckUp}
+            onPickPicture={(id, svgKey) =>
+              setData((prev) => ({ ...prev, customExercises: prev.customExercises.map((e) => (e.id === id ? { ...e, svgKey } : e)) }))
+            }
           />
         )}
 

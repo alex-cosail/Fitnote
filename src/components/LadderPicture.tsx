@@ -23,11 +23,11 @@ const SWIPE = 40; // px to commit a step
 const SLIDE_MS = 160;
 
 /**
- * The exercise picture as a strip of slides: swipe left — an easier step
- * («в минус», customer 27.11), swipe right — a harder one; at the ends the
- * picture springs back, and past the easiest step a swipe left opens
- * the joint levels («Беречь») when offered. Dots under it are the ladder steps (tap = jump), thin ‹ › inside the
- * picture do the same as a swipe. Vertical page scroll is left to the browser.
+ * The exercise picture as a strip of slides, like flipping photos (customer,
+ * 28.11): swipe left — the next, harder step; swipe right — an easier one.
+ * Past the easiest step a swipe right lowers a joint level («Беречь») when
+ * offered. Dots under it are the ladder steps (tap = jump), thin ‹ › inside
+ * the picture do the same as a swipe. Vertical scroll is left to the browser.
  */
 export const LadderPicture: React.FC<LadderPictureProps> = ({
   svgKey, name, ladder, onStep, onJump, onSwap, swapLabel = 'Другое', className = 'h-20 w-full', onPause, fill,
@@ -41,11 +41,11 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
   const commit = (dir: 1 | -1) => {
     // slide out, change the exercise, slide the new picture in from the other side
     setAnimate(true);
-    setX(dir === -1 ? -120 : 120);
+    setX(dir === 1 ? -120 : 120);
     window.setTimeout(() => {
       onStep(dir);
       setAnimate(false);
-      setX(dir === -1 ? 120 : -120);
+      setX(dir === 1 ? 120 : -120);
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           setAnimate(true);
@@ -73,7 +73,7 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
       if (s.horizontal) (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     }
     if (!s.horizontal) return;
-    const blocked = (dx < 0 && !canEasier && !onPause) || (dx > 0 && !canHarder);
+    const blocked = (dx < 0 && !canHarder) || (dx > 0 && !canEasier && !onPause);
     setX(blocked ? dx * 0.25 : dx); // rubber band at the ends
   };
   const onPointerUp = (e: React.PointerEvent) => {
@@ -84,11 +84,12 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
       return;
     }
     const dx = e.clientX - s.x;
-    if (dx <= -SWIPE && canEasier) commit(-1);
-    else if (dx <= -SWIPE * 1.5 && onPause) {
+    if (dx <= -SWIPE && canHarder) commit(1);
+    else if (dx >= SWIPE && canEasier) commit(-1);
+    else if (dx >= SWIPE * 1.5 && !canEasier && onPause) {
       springBack();
       onPause();
-    } else if (dx >= SWIPE && canHarder) commit(1);
+    }
     else springBack();
   };
 
@@ -107,8 +108,8 @@ export const LadderPicture: React.FC<LadderPictureProps> = ({
         role="group"
         aria-label={name}
       >
-        {onPause && !canEasier && x < -12 && (
-          <div className="absolute inset-y-0 right-0 flex items-center justify-center bg-[#FEF3C7] px-3 text-center text-xs font-bold text-[#92400E] dark:bg-[#451A03] dark:text-[#FBBF24]" style={{ width: Math.min(160, -x) }}>
+        {onPause && !canEasier && x > 12 && (
+          <div className="absolute inset-y-0 left-0 flex items-center justify-center bg-[#FEF3C7] px-3 text-center text-xs font-bold text-[#92400E] dark:bg-[#451A03] dark:text-[#FBBF24]" style={{ width: Math.min(160, x) }}>
             Беречь сустав
           </div>
         )}
