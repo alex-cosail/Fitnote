@@ -39,6 +39,9 @@ export interface DayPlan {
  * mobility block instead).
  */
 export function dayPlan(plan: WorkoutPlan, mode: ReadinessLevel, opts: DayOptions): DayPlan {
+  // «Здоровье и восстановление» (Addendum №5): 2 rounds, 60 s between
+  // exercises and 105 s between rounds, the round opens with a pull.
+  if (opts.profile?.usualConditions?.longevity) plan = longevityPlan(plan, opts.catalog);
   if (mode === 'yellow') return { plan: { ...plan, rounds: shortRounds(plan.rounds) }, dropped: [] };
   if (mode !== 'accent') return { plan, dropped: [] };
 
@@ -66,4 +69,22 @@ export function dayPlan(plan: WorkoutPlan, mode: ReadinessLevel, opts: DayOption
     cooldownMinutes: opts.cooldownMinutes,
   });
   return { plan: { ...acc, items: [...acc.items, ...unknown] }, dropped };
+}
+
+export const LONGEVITY = { rounds: 2, restBetweenExercises: 60, restBetweenRounds: 105 };
+
+/** The plan for «Здоровье и восстановление»: gentle volume, a pull first. */
+export function longevityPlan(plan: WorkoutPlan, catalog: CatalogExercise[]): WorkoutPlan {
+  const byId = new Map(catalog.map((c) => [c.id, c]));
+  const patternOf = (it: WorkoutItem) => it.pattern ?? (it.exerciseId ? byId.get(it.exerciseId)?.pattern : undefined);
+  const first = plan.items.findIndex((it) => patternOf(it) === 'pull_h') ;
+  const items = first > 0 ? [plan.items[first], ...plan.items.filter((_, i) => i !== first)] : plan.items;
+  return {
+    ...plan,
+    items,
+    useAgt30: false,
+    rounds: Math.min(plan.rounds, LONGEVITY.rounds),
+    restBetweenExercises: Math.max(plan.restBetweenExercises, LONGEVITY.restBetweenExercises),
+    restBetweenRounds: Math.max(plan.restBetweenRounds, LONGEVITY.restBetweenRounds),
+  };
 }

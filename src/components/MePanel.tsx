@@ -24,6 +24,8 @@ interface MePanelProps {
   onCareLevel?: (joint: Joint, level: JointLevel | undefined) => void;
   /** A movement goal: base · + · ++. */
   onZone?: (zone: Zone, mark: ZoneMark) => void;
+  /** «Спорт» ↔ «Здоровье и восстановление» (v3.17). */
+  onTrainingMode?: (mode: 'athletic' | 'longevity') => void;
 }
 
 const MARK: Record<string, string> = { plus: '+', plusplus: '++' };
@@ -33,7 +35,7 @@ const MARK: Record<string, string> = { plus: '+', plusplus: '++' };
  * goal, accents, equipment, favorites; «Изменить ответы» reopens the wizard.
  * The check-up stays below as its own section.
  */
-export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites, onToggleFavorite, onEdit, care = [], onCareLevel, onZone }) => {
+export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites, onToggleFavorite, onEdit, care = [], onCareLevel, onZone, onTrainingMode }) => {
   const { t } = useT();
   const [joint, setJoint] = useState<Joint | null>(null);
   const [askPlusPlus, setAskPlusPlus] = useState<Zone | null>(null);
@@ -90,6 +92,17 @@ export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites,
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <div className="rounded-2xl border border-gray-200 bg-white px-4 py-2 dark:border-[#232E42] dark:bg-[#131A26]">
             {line(t('me.health'), t(`wiz.health.${profile.healthLevel}` as TranslationKey))}
+            {line(
+              'Режим',
+              <button
+                type="button"
+                disabled={!onTrainingMode}
+                onClick={() => onTrainingMode?.(profile.trainingMode === 'longevity' ? 'athletic' : 'longevity')}
+                className="tap-scale rounded-lg bg-gray-100 px-2 py-1 text-sm font-semibold text-[#111827] dark:bg-[#1A2333] dark:text-[#F3F4F6]"
+              >
+                {profile.trainingMode === 'longevity' ? 'Здоровье и восстановление' : 'Спорт и форма'} ⇄
+              </button>
+            )}
             {profile.personalGoal && line(t('me.goal'), profile.personalGoal)}
             {line(t('wiz.perWeek'), profile.perWeek >= 4 ? '4+' : profile.perWeek)}
             {line(t('wiz.age'), t(`wiz.age.${profile.ageGroup}` as TranslationKey))}

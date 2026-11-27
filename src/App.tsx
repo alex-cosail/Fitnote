@@ -67,6 +67,7 @@ import { APP_VERSION_LABEL } from './version';
 import { warmupOptionsFor } from './domain/warmup/warmup';
 import { buildCooldown } from './domain/cooldown/cooldown';
 import { applySwaps } from './domain/session/change';
+import type { Conditions } from './domain/catalog/filter';
 import { archiveOf, buildSeries, clearFrom, copyToSingles, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, unschedule, weekPlans, WEEKDAY_SHORT } from './domain/schedule/archive';
 import { ArchivePanel } from './components/constructor/ArchivePanel';
 import { answerReview, blockedByCare, careToReview, JOINT_NAMES, LEVEL_INFO, normalizeCare, removeCare, setCare } from './domain/care/care';
@@ -210,9 +211,9 @@ export default function App() {
           target: item.target,
           plannedTarget: item.target,
         }))
-      : resolveWorkout(today, { catalog: CATALOG, exercises, conditions: { care: genProfile.usualConditions?.care } })
+      : resolveWorkout(today, { catalog: CATALOG, exercises, conditions: playConditions(genProfile.usualConditions) })
           // «Берегу»: a slot with no safe exercise is skipped today (v3.9).
-          .filter((r) => !(r.unavailable && careBlocks(r.exerciseId)))
+          .filter((r) => !(r.unavailable && (careBlocks(r.exerciseId) || genProfile.usualConditions?.longevity)))
           .map((r) => ({
           exerciseId: r.exerciseId,
           target: r.target,
@@ -277,6 +278,12 @@ export default function App() {
       .map((id) => exercises.find((e) => e.id === id))
       .filter((e): e is Exercise => Boolean(e))
       .map((e) => ({ svgKey: e.svgKey, name: e.name }));
+  }
+
+  // What substitutions at the start look at: joint levels always; in the
+  // health mode also the equipment (nothing the person does not have).
+  function playConditions(c?: Conditions): Conditions {
+    return c?.longevity ? { care: c.care, longevity: true, equipment: c.equipment, environment: c.environment, cleanFloor: c.cleanFloor } : { care: c?.care };
   }
 
   // «Берегу»: is this catalog exercise protected now?
@@ -1100,6 +1107,7 @@ export default function App() {
                 };
               })
             }
+            onTrainingMode={(trainingMode) => setData((prev) => (prev.profile ? { ...prev, profile: { ...prev.profile, trainingMode } } : prev))}
             onZone={(zone, mark) =>
               setData((prev) => (prev.profile ? { ...prev, profile: { ...prev.profile, zones: { ...prev.profile.zones, [zone]: mark } } } : prev))
             }
@@ -1107,6 +1115,7 @@ export default function App() {
         )}
         {!isFullscreen && activeTab === 'checkup' && (
           <CheckUpTab
+            longevity={Boolean(genProfile.usualConditions?.longevity)}
             baseIds={baseCheckupIds(CATALOG, genProfile.usualConditions)}
             exercises={exercises}
             history={data.checkUpHistory}

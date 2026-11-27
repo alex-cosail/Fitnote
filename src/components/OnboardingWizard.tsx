@@ -173,7 +173,21 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ initial, onC
                 className="min-h-[46px] w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm dark:border-[#263248] dark:bg-[#131A26] dark:text-[#F3F4F6]"
               />
             </div>
-            {row(t('wiz.age'), pick(p.ageGroup, ['teen', 'adult', 'masters'], (v) => set({ ageGroup: v }), 'wiz.age'))}
+            {row(t('wiz.age'), pick(p.ageGroup, ['teen', 'adult', 'masters'], (v) => set({ ageGroup: v, ...(v === 'masters' && !p.trainingMode ? { trainingMode: 'longevity' as const } : {}) }), 'wiz.age'))}
+            <div>
+              <p className="mb-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">Режим</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {([
+                  ['athletic', 'Спорт и форма'],
+                  ['longevity', 'Здоровье и восстановление'],
+                ] as const).map(([mode, label]) => (
+                  <button key={mode} type="button" className={chip((p.trainingMode ?? 'athletic') === mode)} onClick={() => set({ trainingMode: mode })}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">«Здоровье» — лёгкие ступени стоя, 2 круга, без тестов до отказа. Подходит от 55 лет и после травмы или перерыва в любом возрасте.</p>
+            </div>
             {row(t('wiz.level'), pick(p.level, ['low', 'medium', 'high'], (v) => set({ level: v }), 'wiz.level'))}
             {row(t('wiz.steps'), pick<StepsPreset>(p.lifestyle.steps, ['lt5k', '5to8k', '10k'], (v) => setLife({ steps: v }), 'wiz.steps'))}
             {row(t('wiz.desk'), pick<DeskPreset>(p.lifestyle.desk, ['lt4', '4to6', '6plus'], (v) => setLife({ desk: v }), 'wiz.desk'))}

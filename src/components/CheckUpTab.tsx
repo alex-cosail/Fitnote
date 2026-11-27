@@ -20,6 +20,8 @@ interface CheckUpTabProps {
   onRecordCheckUp: (exerciseId: string, newMax: number) => void;
   /** Own exercise without a picture: choose one from the catalog (v3.11). */
   onPickPicture?: (exerciseId: string, svgKey: SvgKey) => void;
+  /** «Здоровье и восстановление»: no tests to failure (Addendum №5). */
+  longevity?: boolean;
 }
 
 interface TimerState {
@@ -39,7 +41,9 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
   isMuted,
   onRecordCheckUp,
   onPickPicture,
+  longevity,
 }) => {
+  const [showTests, setShowTests] = useState(!longevity);
   const [pictureFor, setPictureFor] = useState<Exercise | null>(null);
   const pictureChoices = CATALOG.map((c) => ({ key: c.svgKey, name: exercises.find((e) => e.id === c.id)?.name ?? c.id }));
   const [draftValues, setDraftValues] = useState<Record<string, number>>(() => {
@@ -264,6 +268,22 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
       return iso;
     }
   };
+
+  if (longevity && !showTests) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 pt-4 pb-32 sm:px-5">
+        <div className="rounded-2xl border border-[#3B6D11]/30 bg-[#F0F7E6] p-4 dark:border-[#97C459]/30 dark:bg-[#173404]/50">
+          <p className="text-sm font-bold text-[#27500A] dark:text-[#C0DD97]">Тест до отказа не нужен</p>
+          <p className="mt-1 text-sm text-[#3B6D11] dark:text-[#97C459]">
+            В режиме «Здоровье и восстановление» повторы назначаются мягко и заранее: 12 в обычном движении, 10 там, где сустав бережём. Прибавляем по ответу «Как зашло?».
+          </p>
+          <button type="button" onClick={() => setShowTests(true)} className="tap-scale mt-2 min-h-[40px] text-sm font-semibold text-[#3B6D11] underline dark:text-[#97C459]">
+            Показать тесты всё равно
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-4 pb-32 sm:px-5 landscape:pb-12 lg:pb-12">

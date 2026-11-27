@@ -40,6 +40,8 @@ export interface UserProfile {
   days?: import('../schedule/schedule').Weekday[]; // training days (absent = default by perWeek)
   equipment: ProfileEquipment;
   completedAt: string; // ISO
+  /** «Здоровье и восстановление» (Addendum №5, v3.17): gentle steps, no tests to failure. */
+  trainingMode?: 'athletic' | 'longevity';
 }
 
 export const ZONES: Zone[] = ['upper_v', 'upper_h', 'core', 'hinge', 'squat', 'lunge'];
@@ -106,7 +108,7 @@ export function toGeneratorProfile(p: UserProfile | undefined, favorites: string
     ageGroup: p.ageGroup,
     level: p.level,
     favorites,
-    usualConditions: conditionsOf(p.equipment, p.ageGroup),
+    usualConditions: { ...conditionsOf(p.equipment, p.ageGroup), ...(p.trainingMode === 'longevity' ? { longevity: true } : {}) },
   };
 }
 

@@ -151,7 +151,9 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           exerciseId: it.exerciseId,
           target: it.target,
         }))
-      : resolveWorkout(todayPlan, { catalog: CATALOG, exercises, conditions: { care: profile?.usualConditions?.care } });
+      : resolveWorkout(todayPlan, { catalog: CATALOG, exercises, conditions: profile?.usualConditions?.longevity
+          ? { care: profile.usualConditions.care, longevity: true, equipment: profile.usualConditions.equipment, environment: profile.usualConditions.environment, cleanFloor: profile.usualConditions.cleanFloor }
+          : { care: profile?.usualConditions?.care } });
 
   const catalogById = new Map(CATALOG.map((c) => [c.id, c]));
   const estimatedMinutes =
@@ -788,6 +790,14 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
               const careRule = item.unavailable
                 ? blockedByCare(catalogById.get(item.exerciseId) ?? { id: item.exerciseId, pattern: 'core' }, profile?.usualConditions?.care)
                 : undefined;
+              if (!careRule && item.unavailable && profile?.usualConditions?.longevity) {
+                return (
+                  <article key={`${item.exerciseId}-${idx}`} className="rounded-2xl border border-dashed border-[#3B6D11]/40 bg-[#F0F7E6] px-4 py-3 text-sm dark:bg-[#173404]/40">
+                    <span className="font-semibold text-gray-500 line-through dark:text-gray-400">{ex.name}</span>
+                    <span className="ml-2 font-semibold text-[#3B6D11] dark:text-[#97C459]">не для режима «Здоровье» — пропускаем</span>
+                  </article>
+                );
+              }
               if (careRule) {
                 return (
                   <article key={`${item.exerciseId}-${idx}`} className="rounded-2xl border border-dashed border-[#F59E0B]/60 bg-[#FFFBEB] px-4 py-3 text-sm dark:bg-[#451A03]/40">

@@ -1,5 +1,5 @@
 import { Exercise, TargetSpec, WorkoutItem, WorkoutPlan } from '../../types';
-import { blockingRule, rehabFor, rehabTarget } from '../care/rehab';
+import { blockingRule, longevityTarget, rehabFor, rehabTarget } from '../care/rehab';
 import { Conditions, isAvailable } from '../catalog/filter';
 import { pickForPattern } from '../catalog/ladder';
 import { CatalogExercise } from '../catalog/types';
@@ -68,13 +68,16 @@ export function resolveWorkout(plan: Pick<WorkoutPlan, 'items' | 'useAgt30'>, ct
     if (!chosen) {
       const pattern = item.pattern ?? pinnedCat?.pattern;
       const rank = item.rank ?? pinnedCat?.rank ?? 3;
+      // not the same exercise twice in one workout (a substitute of a substitute)
+      const usedIds = new Set(resolved.map((r) => r.exerciseId));
+      const fresh = ctx.catalog.filter((c) => !usedIds.has(c.id));
       let pick = pattern
-        ? pickForPattern(ctx.catalog, pattern, rank, cond, pinnedCat?.family)
+        ? pickForPattern(fresh, pattern, rank, cond, pinnedCat?.family) ?? pickForPattern(ctx.catalog, pattern, rank, cond, pinnedCat?.family)
         : undefined;
       // Not possible here at all (vertical pull at home without a bar): the
       // substitute pattern takes the slot — a band row (GENERATOR_RULES §11).
       const sub = pattern ? SUBSTITUTE[pattern] : undefined;
-      if (!pick && sub) pick = pickForPattern(ctx.catalog, sub, rank, cond);
+      if (!pick && sub) pick = pickForPattern(fresh, sub, rank, cond) ?? pickForPattern(ctx.catalog, sub, rank, cond);
       // A joint at level 1–3 blocks it: a movement for that joint (v3.14).
       if (!pick) {
         const rule = blockingRule(ctx.catalog, cond.care, pinnedCat, pattern);
@@ -99,6 +102,8 @@ export function resolveWorkout(plan: Pick<WorkoutPlan, 'items' | 'useAgt30'>, ct
     let target: number;
     if (chosenCat?.rehab) {
       target = rehabTarget(chosenCat);
+    } else if (cond.longevity && chosenCat) {
+      target = longevityTarget(chosenCat, cond.care);
     } else if (plan.useAgt30) {
       target = calcAgt30(chosen);
     } else if (item.spec) {
