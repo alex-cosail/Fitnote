@@ -23,6 +23,14 @@ export const WARMUP_KEYS = [
   'wu_ankle_toe',
   'wu_leg_swing_lat',
   'wu_scap_yw',
+  // v3.16: the cool-down flow
+  'cd_breath',
+  'cd_chest',
+  'cd_lat',
+  'cd_hamstring',
+  'cd_figure_four',
+  'cd_quad',
+  'cd_calf',
 ] as const;
 
 export type WarmupKey = (typeof WARMUP_KEYS)[number];

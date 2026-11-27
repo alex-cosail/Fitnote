@@ -72,7 +72,12 @@ export function startCooldown(
     ...extra,
     phase: 'cooldown',
     preCountdownSec: 5,
-    phaseRemainingSec: session.cooldownMinutes * 60,
+    // the flow's own length when it was built at the start (v3.16)
+    phaseRemainingSec: session.cooldownSteps?.length
+      ? session.cooldownSteps.reduce((s, st) => s + (st.durationSeconds ?? 0), 0)
+      : session.cooldownMinutes * 60,
+    cooldownStepIndex: 0,
+    cooldownStepRemainingSec: session.cooldownSteps?.[0]?.durationSeconds,
     phaseEndTimestamp: now + 5000,
     isPaused: false,
   };

@@ -67,21 +67,19 @@ export function usePhaseTicker({
         if (remaining <= 0) {
           lastTickSecondRef.current = null;
           onTimerZero();
-        } else if (session.phase === 'warmup') {
-          const steps = session.warmupSteps ?? getWarmupPlan(session.warmupMinutes).steps;
+        } else if (session.phase === 'warmup' || (session.phase === 'cooldown' && session.cooldownSteps?.length)) {
+          // Warm-up and cool-down flows (v3.15–v3.16): steps inside one timer.
+          const isWarm = session.phase === 'warmup';
+          const steps = isWarm ? session.warmupSteps ?? getWarmupPlan(session.warmupMinutes).steps : session.cooldownSteps!;
+          const startIndex = (isWarm ? session.warmupStepIndex : session.cooldownStepIndex) ?? 0;
+          const startRem = (isWarm ? session.warmupStepRemainingSec : session.cooldownStepRemainingSec) ?? steps[startIndex]?.durationSeconds ?? 0;
           const delta = Math.max(0, session.phaseRemainingSec - remaining);
-          const startIndex = session.warmupStepIndex ?? 0;
-          const { stepIndex, stepRemainingSec, crossed } = advanceWarmupSteps(
-            startIndex,
-            session.warmupStepRemainingSec ?? steps[startIndex]?.durationSeconds ?? 0,
-            delta,
-            steps
-          );
+          const { stepIndex, stepRemainingSec, crossed } = advanceWarmupSteps(startIndex, startRem, delta, steps);
           for (let i = 0; i < crossed; i += 1) soundEngine.playTick(isMuted);
-          // Side / direction change inside a step (v3.15): a soft double signal.
+          // Side / direction change inside a step: a soft double signal.
           const st = steps[startIndex];
           if (stepIndex === startIndex && st?.splitCueAt && st.durationSeconds) {
-            const before = st.durationSeconds - (session.warmupStepRemainingSec ?? st.durationSeconds);
+            const before = st.durationSeconds - startRem;
             const after = st.durationSeconds - stepRemainingSec;
             if (before < st.splitCueAt && after >= st.splitCueAt) {
               soundEngine.playTick(isMuted);
@@ -89,12 +87,11 @@ export function usePhaseTicker({
               if (!isMuted) navigator.vibrate?.([60, 80, 60]);
             }
           }
-          onUpdateSession({
-            ...session,
-            phaseRemainingSec: remaining,
-            warmupStepIndex: stepIndex,
-            warmupStepRemainingSec: stepRemainingSec,
-          });
+          onUpdateSession(
+            isWarm
+              ? { ...session, phaseRemainingSec: remaining, warmupStepIndex: stepIndex, warmupStepRemainingSec: stepRemainingSec }
+              : { ...session, phaseRemainingSec: remaining, cooldownStepIndex: stepIndex, cooldownStepRemainingSec: stepRemainingSec }
+          );
         } else {
           onUpdateSession({ ...session, phaseRemainingSec: remaining });
         }

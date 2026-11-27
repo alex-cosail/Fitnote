@@ -65,6 +65,7 @@ import { soundEngine } from './utils/audio';
 import { loadFitnoteData, saveFitnoteData } from './utils/storage';
 import { APP_VERSION_LABEL } from './version';
 import { warmupOptionsFor } from './domain/warmup/warmup';
+import { buildCooldown } from './domain/cooldown/cooldown';
 import { applySwaps } from './domain/session/change';
 import { archiveOf, buildSeries, clearFrom, copyToSingles, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, unschedule, weekPlans, WEEKDAY_SHORT } from './domain/schedule/archive';
 import { ArchivePanel } from './components/constructor/ArchivePanel';
@@ -247,7 +248,12 @@ export default function App() {
       warmupStepRemainingSec: initialWarmupSteps[0]?.durationSeconds ?? warmupSec,
       warmupSteps: initialWarmupSteps,
       preCountdownSec: 5,
-      cooldownMinutes: 5,
+      cooldownMinutes: 4.5,
+      // the cool-down flow (Addendum №7): today's patterns highlighted, joints respected
+      cooldownSteps: buildCooldown(
+        sessionItems.map((i) => CATALOG.find((c) => c.id === i.exerciseId)?.pattern).filter((p): p is NonNullable<typeof p> => Boolean(p)),
+        genProfile.usualConditions?.care
+      ),
       phaseRemainingSec: warmupSec,
       phaseEndTimestamp: Date.now() + 5000,
       isPaused: false,

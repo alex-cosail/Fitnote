@@ -33,6 +33,7 @@ import {
 import { ExerciseSvg } from './ExerciseSvg';
 import { LadderPicture } from './LadderPicture';
 import { FLOW_SECONDS, MICRO_ROUND_SECONDS, formatFlow, warmupOptionsFor } from '../domain/warmup/warmup';
+import { buildCooldown } from '../domain/cooldown/cooldown';
 import { blockedByCare, JOINT_NAMES } from '../domain/care/care';
 
 interface WorkoutPreviewTabProps {
@@ -170,6 +171,11 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   // Two flows (Addendum №6): the stored minutes 5 / 10 stand for 5:40 / 9:40.
   const warmupOptions = [5, 10];
   const roundSec = readiness === 'red' ? 0 : MICRO_ROUND_SECONDS;
+  // The cool-down flow for today (Addendum №7): today's steps highlighted.
+  const cooldownSteps = buildCooldown(
+    displayedItems.map((d) => catalogById.get(d.exerciseId)?.pattern).filter((p): p is NonNullable<typeof p> => Boolean(p)),
+    profile?.usualConditions?.care
+  );
   const warmupLabel = (mins: number) => formatFlow(FLOW_SECONDS[mins <= 6 ? 'default' : 'extended'] + roundSec);
   const warmupChosen = (mins: number) => (mins <= 6) === (warmupMinutes <= 6);
   const firstExerciseName = displayedItems[0]
@@ -901,12 +907,12 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
             </div>
             <div className="flex items-center gap-1.5 font-mono-num text-sm font-bold text-[#111827] dark:text-[#F3F4F6]">
               <Clock className="h-4 w-4 text-[#DC2626] dark:text-[#F87171]" />
-              05:00
+              {formatFlow(cooldownSteps.reduce((s, x) => s + (x.durationSeconds ?? 0), 0))}
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-2.5 landscape:gap-2">
-            {COOLDOWN_STEPS.map((step, idx) => (
+            {cooldownSteps.map((step, idx) => (
               <article
                 key={step.id}
                 className="min-w-0 rounded-2xl border border-gray-200 bg-white p-4 dark:border-[#232E42] dark:bg-[#131A26] landscape:flow-root landscape:p-3"

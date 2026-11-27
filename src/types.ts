@@ -105,6 +105,8 @@ export interface MobilityStep {
   splitCueAt?: number;
   /** The micro round (v3.15): pictures of the workout's first exercises. */
   collage?: { svgKey: SvgKey; name: string }[];
+  /** Cool-down (v3.16): this step stretches what today's workout loaded. */
+  highlight?: boolean;
 }
 
 export interface SetLog {
@@ -146,6 +148,10 @@ export interface ActiveSession {
   warmupStepRemainingSec?: number;
   /** The warm-up built at the start (v3.7: one movement per minute). */
   warmupSteps?: MobilityStep[];
+  /** The cool-down flow built at the start (v3.16). */
+  cooldownSteps?: MobilityStep[];
+  cooldownStepIndex?: number;
+  cooldownStepRemainingSec?: number;
   preCountdownSec?: number;
   cooldownMinutes: number;
   phaseRemainingSec: number;

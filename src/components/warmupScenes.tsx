@@ -19,6 +19,17 @@ export const Line = ({ p, c = INK, w = 3 }: { p: Pt[]; c?: string; w?: number })
 );
 export const Head = ({ x, y }: { x: number; y: number }) => <circle cx={x} cy={y} r="6.5" fill="none" stroke={INK} strokeWidth="2.6" />;
 export const Floor = () => <line x1="16" y1="104" x2="144" y2="104" stroke={FLOOR} strokeWidth="2" />;
+const Arrow = ({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: number }) => {
+  const a = Math.atan2(y2 - y1, x2 - x1);
+  const p1 = `${x2 - 5 * Math.cos(a - 0.6)},${y2 - 5 * Math.sin(a - 0.6)}`;
+  const p2 = `${x2 - 5 * Math.cos(a + 0.6)},${y2 - 5 * Math.sin(a + 0.6)}`;
+  return (
+    <g stroke={RED} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+      <line x1={x1} y1={y1} x2={x2} y2={y2} />
+      <polyline points={`${p1} ${x2},${y2} ${p2}`} />
+    </g>
+  );
+};
 export const Dashed = ({ d }: { d: string }) => <path d={d} fill="none" stroke={RED} strokeWidth="2" strokeDasharray="4 3" strokeLinecap="round" />;
 
 /** Frames shown one after another, a sharp change (steps). */
@@ -526,6 +537,116 @@ export const WARMUP_SCENES: Record<WarmupKey, () => React.ReactElement> = {
           </>,
         ]}
       />
+    </g>
+  ),
+  // ——— v3.16: the cool-down flow (standing by a post or bench) ———
+  cd_breath: () => (
+    <g>
+      <Floor />
+      <FrontTorso />
+      <FrontLegs />
+      <Frames
+        t={10}
+        frames={[
+          <>
+            <Line p={[[80, 36], [70, 20], [66, 6]]} c={RED} />
+            <Line p={[[80, 36], [90, 20], [94, 6]]} c={RED} />
+            <Arrow x1={108} y1={40} x2={108} y2={24} />
+          </>,
+          <>
+            <Line p={[[80, 36], [72, 51], [70, 65]]} />
+            <Line p={[[80, 36], [88, 51], [90, 65]]} />
+            <Arrow x1={108} y1={24} x2={108} y2={40} />
+          </>,
+        ]}
+      />
+    </g>
+  ),
+  cd_chest: () => (
+    <g>
+      <Floor />
+      <line x1="52" y1="14" x2="52" y2="104" stroke={GEAR} strokeWidth="3" strokeLinecap="round" />
+      <FrontTorso />
+      <FrontLegs />
+      <Line p={[[68, 40], [92, 40]]} w={2.8} />
+      <Line p={[[68, 40], [56, 34], [56, 18]]} c={RED} />
+      <Line p={[[92, 40], [94, 54], [94, 66]]} />
+      <Dashed d="M98 30 Q110 44 98 58" />
+    </g>
+  ),
+  cd_lat: () => (
+    <g>
+      <Floor />
+      <line x1="104" y1="62" x2="140" y2="62" stroke={INK} strokeWidth="3.2" strokeLinecap="round" />
+      <line x1="134" y1="62" x2="134" y2="104" stroke="#D1D5DB" strokeWidth="2.2" />
+      <Line p={[[58, 64], [60, 84], [58, 104]]} />
+      <Line p={[[58, 64], [66, 84], [68, 104]]} />
+      <Frames
+        t={4}
+        frames={[
+          <>
+            <Line p={[[58, 64], [94, 60]]} w={3.4} />
+            <Head x={100} y={56} />
+            <Line p={[[92, 60], [108, 62]]} c={RED} />
+          </>,
+          <>
+            <Line p={[[58, 64], [94, 66]]} w={3.4} />
+            <Head x={100} y={66} />
+            <Line p={[[92, 64], [108, 62]]} c={RED} />
+          </>,
+        ]}
+      />
+    </g>
+  ),
+  cd_hamstring: () => (
+    <g>
+      <Floor />
+      <line x1="96" y1="78" x2="140" y2="78" stroke={GEAR} strokeWidth="2.4" strokeLinecap="round" />
+      <line x1="100" y1="78" x2="100" y2="104" stroke={GEAR} strokeWidth="2.4" />
+      <line x1="136" y1="78" x2="136" y2="104" stroke={GEAR} strokeWidth="2.4" />
+      <Line p={[[60, 66], [62, 86], [60, 104]]} />
+      <Line p={[[60, 66], [90, 72], [118, 76]]} c={RED} />
+      <Line p={[[60, 66], [86, 44]]} w={3.4} />
+      <Head x={92} y={38} />
+      <Line p={[[82, 48], [94, 60], [100, 70]]} />
+    </g>
+  ),
+  cd_figure_four: () => (
+    <g>
+      <Floor />
+      <line x1="114" y1="30" x2="114" y2="104" stroke={GEAR} strokeWidth="3" strokeLinecap="round" />
+      <Head x={84} y={28} />
+      <Line p={[[82, 35], [72, 70]]} w={3.4} />
+      <Line p={[[80, 42], [98, 50], [114, 52]]} />
+      <Line p={[[72, 70], [92, 76], [88, 104]]} />
+      <Line p={[[88, 104], [98, 104]]} w={2.6} />
+      <Line p={[[72, 70], [90, 66], [94, 76]]} c={RED} />
+      <circle cx="78" cy="68" r="7" fill="none" stroke={RED} strokeWidth="1.6" strokeDasharray="3 3" />
+    </g>
+  ),
+  cd_quad: () => (
+    <g>
+      <Floor />
+      <line x1="112" y1="30" x2="112" y2="104" stroke={GEAR} strokeWidth="3" strokeLinecap="round" />
+      <Head x={80} y={20} />
+      <Line p={[[80, 27], [80, 64]]} w={3.4} />
+      <Line p={[[80, 34], [96, 42], [112, 46]]} />
+      <Line p={[[80, 64], [81, 84], [80, 104]]} />
+      <Line p={[[80, 104], [90, 104]]} w={2.6} />
+      <Line p={[[80, 64], [78, 84], [64, 70]]} c={RED} />
+      <Line p={[[80, 36], [70, 52], [64, 68]]} />
+    </g>
+  ),
+  cd_calf: () => (
+    <g>
+      <Floor />
+      <line x1="118" y1="30" x2="118" y2="104" stroke={GEAR} strokeWidth="3" strokeLinecap="round" />
+      <Head x={94} y={30} />
+      <Line p={[[90, 37], [78, 68]]} w={3.4} />
+      <Line p={[[88, 44], [104, 50], [118, 50]]} />
+      <Line p={[[78, 68], [94, 82], [94, 104]]} />
+      <Line p={[[78, 68], [60, 86], [44, 104]]} c={RED} />
+      <Line p={[[44, 104], [34, 104]]} c={RED} w={2.6} />
     </g>
   ),
 };
