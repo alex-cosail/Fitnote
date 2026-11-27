@@ -66,7 +66,7 @@ import { loadFitnoteData, saveFitnoteData } from './utils/storage';
 import { APP_VERSION_LABEL } from './version';
 import { warmupOptionsFor } from './domain/warmup/warmup';
 import { applySwaps } from './domain/session/change';
-import { archiveOf, placeSeriesAt, placeSingleOn, removeFromArchive, weekPlans, WEEKDAY_SHORT } from './domain/schedule/archive';
+import { archiveOf, buildSeries, clearFrom, copyToSingles, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, unschedule, weekPlans, WEEKDAY_SHORT } from './domain/schedule/archive';
 import { ArchivePanel } from './components/constructor/ArchivePanel';
 import { answerReview, blockedByCare, careToReview, JOINT_NAMES, LEVEL_INFO, normalizeCare, removeCare, setCare } from './domain/care/care';
 
@@ -414,6 +414,11 @@ export default function App() {
     const seen = new Set<string>();
     return weekList.map((w) => planById.get(w.planId)).filter((p): p is WorkoutPlan => Boolean(p) && !seen.has(p!.id) && Boolean(seen.add(p!.id)));
   }, [weekList, planById]);
+  // Older data shows an implicit cycle: calendar edits make it a real one.
+  const withCycles = <T extends FitnoteData>(prev: T): T => ({ ...prev, cycles: prev.cycles?.length ? prev.cycles : cycles });
+  // The date a plan is taken off: the selected day if it is there, else its first day this week.
+  const dateOfPlan = (planId: string) =>
+    plansOnDate(calendarData, selectedDate).includes(planId) ? selectedDate : weekList.find((w) => w.planId === planId)?.date;
   const dayLabelOf = (planId: string) =>
     weekList
       .filter((w) => w.planId === planId)
@@ -1016,6 +1021,14 @@ export default function App() {
             exerciseNotes={data.exerciseNotes}
             workouts={weekPlanList.length ? weekPlanList : data.workouts}
             chipLabel={weekPlanList.length ? dayLabelOf : undefined}
+            removeLabel={(planId) => {
+              const d = dateOfPlan(planId);
+              return d ? `Убрать с ${Number(d.slice(8))}.${d.slice(5, 7)}` : undefined;
+            }}
+            onRemoveFromDay={(planId) => {
+              const d = dateOfPlan(planId);
+              if (d) setData((prev) => removeFromDate(withCycles(prev), planId, d));
+            }}
             exercises={exercises}
             selectedWorkoutId={data.selectedWorkoutId}
             readiness={data.readiness}
@@ -1091,13 +1104,13 @@ export default function App() {
             kindOf={kindOf}
             profileDays={data.profile?.days}
             today={today}
-            onPlaceSeries={(item, start, days, weeks) =>
-              setData((prev) => placeSeriesAt({ ...prev, cycles: prev.cycles?.length ? prev.cycles : cycles }, item, start, days, weeks))
+            onPlaceSeries={(item, start, days, weeks) => setData((prev) => placeSeriesAt(withCycles(prev), item, start, days, weeks))}
+            onPlaceSingle={(item, date, repeat) =>
+              setData((prev) => (repeat.kind === 'weekly' ? placeRepeat(withCycles(prev), item, date, repeat.weeks) : placeSingleOn(withCycles(prev), item, date)))
             }
-            onPlaceSingle={(item, date) => setData((prev) => placeSingleOn({ ...prev, cycles: prev.cycles?.length ? prev.cycles : cycles }, item, date))}
-            onToday={(item) => {
+            onToday={(item, repeat) => {
               setData((prev) => ({
-                ...placeSingleOn({ ...prev, cycles: prev.cycles?.length ? prev.cycles : cycles }, item, today),
+                ...(repeat.kind === 'weekly' ? placeRepeat(withCycles(prev), item, today, repeat.weeks) : placeSingleOn(withCycles(prev), item, today)),
                 selectedWorkoutId: item.planIds[0],
               }));
               setWeekAnchor(today);
@@ -1112,6 +1125,16 @@ export default function App() {
                 return r === 'in-use' ? prev : r;
               });
             }}
+            onUnschedule={(item) => setData((prev) => unschedule(withCycles(prev), item, today))}
+            onRemoveFromDate={(planId, date) => setData((prev) => removeFromDate(withCycles(prev), planId, date))}
+            onClearFrom={(date) => setData((prev) => clearFrom(withCycles(prev), date))}
+            onCopyToSingles={(planId) => setData((prev) => copyToSingles(prev, planId, Date.now().toString(36)))}
+            onBuildSeries={(planIds, title, days, weeks) =>
+              setData((prev) => {
+                const { builtId: _built, ...next } = buildSeries(prev, planIds, title, days, weeks, Date.now().toString(36));
+                return next;
+              })
+            }
             onOpenDay={(date) => {
               setWeekAnchor(date);
               setSelectedDate(date);

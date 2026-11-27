@@ -233,6 +233,8 @@ export interface FitnoteData {
   archive?: import('./domain/schedule/archive').ArchiveItem[];
   /** A second (third…) single workout on a date. */
   dayExtras?: Record<string, string[]>;
+  /** Weekly repeats of singles (v3.13). */
+  repeats?: import('./domain/schedule/archive').Repeat[];
   // «Не сейчас» on the compensation cards: '<monday>:topup' / '<monday>:monday'.
   compensationDismissed?: string[];
   // «Позже» on the start wizard: a new person is not sent there again on launch.

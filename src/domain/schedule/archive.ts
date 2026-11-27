@@ -20,7 +20,17 @@ export interface ArchiveItem {
   days?: Weekday[];
 }
 
-type Data = Pick<FitnoteData, 'workouts' | 'cycles' | 'dayOverrides' | 'archive' | 'dayExtras' | 'profile'>;
+type Data = Pick<FitnoteData, 'workouts' | 'cycles' | 'dayOverrides' | 'archive' | 'dayExtras' | 'profile' | 'repeats'>;
+
+/** A single workout every week on one weekday (v3.13), on top of the series. */
+export interface Repeat {
+  id: string;
+  planId: string;
+  weekday: Weekday;
+  startDate: string;
+  endDate?: string; // open-ended: «пока не уберу»
+  skips?: string[]; // dates taken off one by one
+}
 
 /** freshIds() appends `-<stamp>` to a set of generated plans: same stamp = one set. */
 function stampOf(id: string): string | undefined {
@@ -145,10 +155,14 @@ function keepInArchive(data: Data, item: ArchiveItem): ArchiveItem[] {
   return list.some((it) => it.id === item.id) ? list.map((it) => (it.id === item.id ? item : it)) : [...list, item];
 }
 
-/** All workouts of a date: the day's one and the extras. */
+/** All workouts of a date: the day's one, the extras and the weekly repeats. */
 export function plansOnDate(data: Data, date: string): string[] {
   const main = planOn(data.cycles ?? [], data.dayOverrides ?? {}, date);
-  return [...(main ? [main] : []), ...(data.dayExtras?.[date] ?? [])];
+  const wd = weekdayOf(date);
+  const repeats = (data.repeats ?? [])
+    .filter((r) => r.weekday === wd && r.startDate <= date && (!r.endDate || date <= r.endDate) && !r.skips?.includes(date))
+    .map((r) => r.planId);
+  return [...(main ? [main] : []), ...(data.dayExtras?.[date] ?? []), ...repeats];
 }
 
 /** The workouts of a week, by date, for the first screen. */
@@ -181,12 +195,96 @@ export function removeFromArchive<T extends Data>(data: T, item: ArchiveItem, to
   const usedOnDay =
     Object.entries(data.dayOverrides ?? {}).some(([d, id]) => d >= today && id && ids.has(id)) ||
     Object.entries(data.dayExtras ?? {}).some(([d, list]) => d >= today && list.some((id) => ids.has(id)));
-  if (usedByCycle || usedOnDay) return 'in-use';
+  const usedByRepeat = (data.repeats ?? []).some((r) => ids.has(r.planId) && (!r.endDate || r.endDate >= today));
+  if (usedByCycle || usedOnDay || usedByRepeat) return 'in-use';
+  const rest = archiveOf(data).filter((it) => it.id !== item.id);
+  // a workout another item still lists (a single inside a built week) stays
+  const stillListed = new Set(rest.flatMap((it) => it.planIds));
   return {
     ...data,
-    workouts: data.workouts.filter((w) => !ids.has(w.id)),
-    archive: archiveOf(data).filter((it) => it.id !== item.id),
+    workouts: data.workouts.filter((w) => !ids.has(w.id) || stillListed.has(w.id)),
+    archive: rest,
   };
+}
+
+// ——— v3.13: taking off, repeating, copying, building a week ———
+
+/** «Убрать с этой даты»: only this date; the workout stays in the archive. */
+export function removeFromDate<T extends Data>(data: T, planId: string, date: string): T {
+  const extras = data.dayExtras?.[date] ?? [];
+  if (extras.includes(planId)) {
+    const i = extras.indexOf(planId);
+    return { ...data, dayExtras: { ...(data.dayExtras ?? {}), [date]: [...extras.slice(0, i), ...extras.slice(i + 1)] } };
+  }
+  if (planOn(data.cycles ?? [], data.dayOverrides ?? {}, date) === planId) {
+    return { ...data, dayOverrides: { ...(data.dayOverrides ?? {}), [date]: null } };
+  }
+  const repeats = (data.repeats ?? []).map((r) =>
+    r.planId === planId && r.weekday === weekdayOf(date) && r.startDate <= date && (!r.endDate || date <= r.endDate)
+      ? { ...r, skips: [...(r.skips ?? []), date] }
+      : r
+  );
+  return { ...data, repeats };
+}
+
+/** «Очистить календарь с этой даты»: everything from the date on; the running series ends the day before. */
+export function clearFrom<T extends Data>(data: T, date: string): T {
+  const before = addDays(date, -1);
+  const cycles = (data.cycles ?? [])
+    .filter((c) => c.startDate < date)
+    .map((c) => (!c.endDate || c.endDate >= date ? { ...c, endDate: before } : c));
+  const dayOverrides = Object.fromEntries(Object.entries(data.dayOverrides ?? {}).filter(([d]) => d < date));
+  const dayExtras = Object.fromEntries(Object.entries(data.dayExtras ?? {}).filter(([d]) => d < date));
+  const repeats = (data.repeats ?? [])
+    .filter((r) => r.startDate < date)
+    .map((r) => (!r.endDate || r.endDate >= date ? { ...r, endDate: before } : r));
+  return { ...data, cycles, dayOverrides, dayExtras, repeats };
+}
+
+/** «Убрать из календаря»: the item's dates from today on; the past and the journal stay. */
+export function unschedule<T extends Data>(data: T, item: ArchiveItem, today: string): T {
+  const ids = new Set(item.planIds);
+  const before = addDays(today, -1);
+  const own = (c: Cycle) => c.planIds.some((id) => ids.has(id));
+  const cycles = (data.cycles ?? [])
+    .filter((c) => !(own(c) && c.startDate >= today))
+    .map((c) => (own(c) && (!c.endDate || c.endDate >= today) ? { ...c, endDate: before } : c));
+  const dayOverrides = Object.fromEntries(Object.entries(data.dayOverrides ?? {}).filter(([d, id]) => !(d >= today && id && ids.has(id))));
+  const dayExtras = Object.fromEntries(
+    Object.entries(data.dayExtras ?? {}).map(([d, list]) => [d, d >= today ? list.filter((id) => !ids.has(id)) : list])
+  );
+  const repeats = (data.repeats ?? [])
+    .filter((r) => !(ids.has(r.planId) && r.startDate >= today))
+    .map((r) => (ids.has(r.planId) && (!r.endDate || r.endDate >= today) ? { ...r, endDate: before } : r));
+  return { ...data, cycles, dayOverrides, dayExtras, repeats };
+}
+
+/** «Каждую неделю»: a single on this weekday from the date, for N weeks or until taken off. */
+export function placeRepeat<T extends Data>(data: T, item: ArchiveItem, date: string, weeks?: number): T {
+  const r: Repeat = {
+    id: `rep-${date}-${item.planIds[0]}`,
+    planId: item.planIds[0],
+    weekday: weekdayOf(date),
+    startDate: date,
+    ...(weeks ? { endDate: addDays(date, weeks * 7 - 1) } : {}),
+  };
+  return { ...data, repeats: [...(data.repeats ?? []).filter((x) => x.id !== r.id), r], archive: keepInArchive(data, item) };
+}
+
+/** «Скопировать в разовые»: a session of a series becomes its own single (a copy). */
+export function copyToSingles<T extends Data>(data: T, planId: string, stamp: string): T {
+  const p = data.workouts.find((w) => w.id === planId);
+  if (!p) return data;
+  // the source id keeps two quick copies of different sessions apart
+  const copy = { ...p, id: `own-copy-${stamp}-${planId.replace(/[^a-z0-9]+/gi, '').slice(-12)}` };
+  const archive = [...archiveOf(data), { id: `arch-${copy.id}`, kind: 'single' as const, title: p.title, planIds: [copy.id], weeks: 1 }];
+  return { ...data, workouts: [copy, ...data.workouts], archive };
+}
+
+/** «Собрать в неделю»: chosen singles become a series; the singles stay in the archive. */
+export function buildSeries<T extends Data>(data: T, planIds: string[], title: string, days: Weekday[], weeks: number, stamp: string): T & { builtId: string } {
+  const item: ArchiveItem = { id: `arch-week-${stamp}`, kind: 'series', title, planIds, weeks, days };
+  return { ...data, archive: [...archiveOf(data), item], builtId: item.id };
 }
 
 export const WEEKDAY_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];

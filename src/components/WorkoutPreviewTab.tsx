@@ -53,6 +53,9 @@ interface WorkoutPreviewTabProps {
   exerciseNotes?: Record<string, string>;
   /** The days of the week a plan is on (first screen, v3.12). */
   chipLabel?: (planId: string) => string;
+  /** v3.13: the trash takes the workout off this date (it stays in the archive). */
+  removeLabel?: (planId: string) => string | undefined;
+  onRemoveFromDay?: (planId: string) => void;
   onChangeWarmupMinutes: (mins: number) => void;
   onStartWorkout: () => void;
   onResumeWorkout: () => void;
@@ -82,6 +85,8 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   onShare,
   exerciseNotes,
   chipLabel,
+  removeLabel,
+  onRemoveFromDay,
   onChangeWarmupMinutes,
   onStartWorkout,
   onResumeWorkout,
@@ -106,8 +111,14 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
     return () => window.clearTimeout(timer);
   }, [confirmDeleteId]);
 
+  const dayRemove = onRemoveFromDay ? removeLabel?.(selectedPlan.id) : undefined;
   const handleDeleteClick = () => {
-    if (!isCustomWorkout) return;
+    if (!isCustomWorkout && !dayRemove) return;
+    if (confirmDeleteId === selectedPlan.id && dayRemove) {
+      setConfirmDeleteId(null);
+      onRemoveFromDay!(selectedPlan.id);
+      return;
+    }
     if (confirmDeleteId === selectedPlan.id) {
       setConfirmDeleteId(null);
       onDeleteWorkout(selectedPlan.id);
@@ -480,16 +491,16 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                     <Share2 className="h-3.5 w-3.5" />
                   </button>
                 )}
-                {isCustomWorkout && readiness !== 'red' && (
+                {(dayRemove || isCustomWorkout) && readiness !== 'red' && (
                   <button
                     type="button"
                     onClick={handleDeleteClick}
                     title={
                       confirmDeleteId === selectedPlan.id
-                        ? 'Нажмите ещё раз для удаления'
-                        : 'Удалить импортированный план'
+                        ? 'Нажмите ещё раз'
+                        : dayRemove ?? 'Удалить импортированный план'
                     }
-                    aria-label="Удалить импортированный план"
+                    aria-label={dayRemove ?? 'Удалить импортированный план'}
                     className={`tap-scale flex h-8 shrink-0 items-center justify-center gap-1 rounded-xl border px-2 text-[11px] font-bold transition-colors ${
                       confirmDeleteId === selectedPlan.id
                         ? 'border-[#DC2626] bg-[#DC2626] text-white'
@@ -498,7 +509,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     {confirmDeleteId === selectedPlan.id && (
-                      <span>Удалить?</span>
+                      <span>{dayRemove ? `${dayRemove}?` : 'Удалить?'}</span>
                     )}
                   </button>
                 )}

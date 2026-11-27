@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FitnoteData, WorkoutPlan } from '../../types';
-import { archiveOf, fourWeeks, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, setSessionDay, weekPlans } from './archive';
-import { plannedFor } from './schedule';
+import { archiveOf, buildSeries, clearFrom, copyToSingles, fourWeeks, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, setSessionDay, unschedule, weekPlans } from './archive';
+import { plannedFor, type Cycle } from './schedule';
 
 const plan = (id: string, title = id): WorkoutPlan => ({
   id, title, subtitle: '', formatLabel: 'Сила', rounds: 3, restBetweenExercises: 30, restBetweenRounds: 60, items: [],
@@ -9,7 +9,7 @@ const plan = (id: string, title = id): WorkoutPlan => ({
 
 // The author's case (28.11): a week of 5 generated workouts not in the calendar, plus coach plans.
 const week5 = ['S-A', 'F-A', 'S-B', 'M-A', 'F-B'].map((k) => plan(`gen-1-0-${k}-mi3x9q2`, k));
-const base: Pick<FitnoteData, 'workouts' | 'cycles' | 'dayOverrides' | 'archive' | 'dayExtras' | 'profile'> = { workouts: [...week5, plan('workout-a', 'Workout A'), plan('own-core', 'Акцент кор 20 мин')], cycles: [], dayOverrides: {} };
+const base: Pick<FitnoteData, 'workouts' | 'cycles' | 'dayOverrides' | 'archive' | 'dayExtras' | 'profile' | 'repeats'> = { workouts: [...week5, plan('workout-a', 'Workout A'), plan('own-core', 'Акцент кор 20 мин')], cycles: [], dayOverrides: {} };
 
 describe('archive', () => {
   it('nothing is lost: one generation becomes a series, the rest are singles', () => {
@@ -60,10 +60,53 @@ describe('archive', () => {
   });
 
   it('the running cycle keeps the current week and ends the day before the new series', () => {
-    const running = { id: 'implicit', title: '', planIds: ['workout-a', 'own-core'], days: [0, 2] as (0 | 2)[], startDate: '2026-11-23' };
+    const running: Cycle = { id: 'implicit', title: '', planIds: ['workout-a', 'own-core'], days: [0, 2], startDate: '2026-11-23' };
     const series = archiveOf(base).find((x) => x.kind === 'series')!;
     const r = placeSeriesAt({ ...base, cycles: [running] }, series, '2026-11-30', series.days!, 1);
     expect(plannedFor(r.cycles!, '2026-11-23')).toBe('workout-a');
     expect(r.cycles!.find((c) => c.id === 'implicit')!.endDate).toBe('2026-11-29');
+  });
+
+  it('v3.13: take off one date, clear from a date, take a series off the calendar', () => {
+    const series = archiveOf(base).find((x) => x.kind === 'series')!;
+    const placed = placeSeriesAt(base, series, '2026-11-30', series.days!, 4);
+    const off = removeFromDate(placed, series.planIds[0], '2026-11-30');
+    expect(plansOnDate(off, '2026-11-30')).toEqual([]);
+    expect(plansOnDate(off, '2026-12-07')).toEqual([series.planIds[0]]);
+    const cleared = clearFrom(placed, '2026-12-09');
+    expect(plansOnDate(cleared, '2026-12-08')).toHaveLength(1);
+    expect(plansOnDate(cleared, '2026-12-14')).toEqual([]);
+    const un = unschedule(placed, series, '2026-12-07');
+    expect(plansOnDate(un, '2026-11-30')).toHaveLength(1); // the past stays
+    expect(plansOnDate(un, '2026-12-07')).toEqual([]);
+  });
+
+  it('v3.13: a single every week on top of a series; one date can be taken off', () => {
+    const series = archiveOf(base).find((x) => x.kind === 'series')!;
+    const single = archiveOf(base).find((x) => x.title === 'Акцент кор 20 мин')!;
+    let d = placeSeriesAt(base, series, '2026-11-30', series.days!, 4);
+    d = placeRepeat(d, single, '2026-12-01', 2);
+    expect(plansOnDate(d, '2026-12-01')).toEqual([series.planIds[1], 'own-core']);
+    expect(plansOnDate(d, '2026-12-08')).toContain('own-core');
+    expect(plansOnDate(d, '2026-12-15')).not.toContain('own-core'); // 2 weeks only
+    d = removeFromDate(d, 'own-core', '2026-12-08');
+    expect(plansOnDate(d, '2026-12-08')).not.toContain('own-core');
+    expect(unschedule(placeRepeat(base, single, '2026-12-01'), single, '2026-12-01').repeats).toEqual([]);
+  });
+
+  it('v3.13: copy a session to singles; build a week from singles — the singles stay', () => {
+    const series = archiveOf(base).find((x) => x.kind === 'series')!;
+    const copied = copyToSingles(base, series.planIds[2], 'abc');
+    expect(archiveOf(copied).find((x) => x.planIds[0].startsWith('own-copy-abc'))).toMatchObject({ kind: 'single', title: 'S-B' });
+    const twice = copyToSingles(copied, series.planIds[3], 'abc');
+    expect(new Set(twice.workouts.map((w) => w.id)).size).toBe(twice.workouts.length);
+    const built = buildSeries(base, ['workout-a', 'own-core'], 'Моя неделя', [1, 4], 2, 'w1');
+    const a = archiveOf(built);
+    expect(a.find((x) => x.id === built.builtId)).toMatchObject({ kind: 'series', planIds: ['workout-a', 'own-core'], days: [1, 4], weeks: 2 });
+    expect(a.filter((x) => x.kind === 'single').map((x) => x.title)).toEqual(['Workout A', 'Акцент кор 20 мин']);
+    // removing the single keeps the workout the week still needs
+    const single = a.find((x) => x.kind === 'single' && x.title === 'Workout A')!;
+    const r = removeFromArchive(built, single, '2026-12-01');
+    expect(r === 'in-use' ? [] : r.workouts.map((w) => w.id)).toContain('workout-a');
   });
 });
