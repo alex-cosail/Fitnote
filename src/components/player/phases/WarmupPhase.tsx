@@ -1,5 +1,6 @@
 import React from 'react';
 import { getWarmupPlan } from '../../../data/seed';
+import { formatFlow } from '../../../domain/warmup/warmup';
 import { formatClock } from '../../../domain/format';
 import { Exercise } from '../../../types';
 import { soundEngine } from '../../../utils/audio';
@@ -25,7 +26,10 @@ export const WarmupPhase: React.FC = () => {
     (e) => e.id === session.items[0]?.exerciseId
   )?.name;
   const warmupPlan = session.warmupSteps
-    ? { label: getWarmupPlan(session.warmupSteps.length).label, steps: session.warmupSteps }
+    ? {
+        label: `${session.warmupSteps.length} движений · ${formatFlow(session.warmupSteps.reduce((s, x) => s + (x.durationSeconds ?? 0), 0))} · поток`,
+        steps: session.warmupSteps,
+      }
     : getWarmupPlan(session.warmupMinutes, firstExName);
   const warmupStepIndex = session.warmupStepIndex ?? 0;
   const currentWarmupStep =
@@ -109,6 +113,21 @@ export const WarmupPhase: React.FC = () => {
                 <h2 className="font-display mt-1 break-words text-2xl font-bold leading-tight tracking-tight text-[#111827] sm:text-3xl landscape:text-[clamp(1.35rem,4.5dvh,2rem)] dark:text-[#F3F4F6]">
                   {currentWarmupStep.name}
                 </h2>
+                {currentWarmupStep.splitCueAt && currentWarmupStep.durationSeconds && (() => {
+                  const elapsed = currentWarmupStep.durationSeconds - warmupStepRemainingSec;
+                  const changed = elapsed >= currentWarmupStep.splitCueAt;
+                  return (
+                    <p
+                      className={`mx-auto mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-bold transition-colors ${
+                        changed
+                          ? 'bg-[#DC2626] text-white'
+                          : 'bg-gray-100 text-gray-500 dark:bg-[#1A2333] dark:text-gray-400'
+                      }`}
+                    >
+                      {changed ? 'Смена стороны / направления' : `Смена через ${Math.max(0, currentWarmupStep.splitCueAt - elapsed)} с`}
+                    </p>
+                  );
+                })()}
                 {currentWarmupStep.subtitle && (
                   <p className="mt-0.5 break-words text-xs font-medium text-gray-600 dark:text-gray-300">
                     {currentWarmupStep.subtitle}

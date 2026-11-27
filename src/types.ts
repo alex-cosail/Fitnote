@@ -101,6 +101,8 @@ export interface MobilityStep {
   durationHint: string;
   durationSeconds?: number;
   svgKey: SvgKey;
+  /** Second of the step when the side or direction changes (v3.15). */
+  splitCueAt?: number;
 }
 
 export interface SetLog {

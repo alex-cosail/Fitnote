@@ -167,7 +167,10 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           effectiveRounds === 1 ? 'Round' : 'Rounds'
         } · ~${estimatedMinutes} min`;
 
-  const warmupOptions = [8, 10, 12, 15];
+  // Two flows (Addendum №6): the stored minutes 5 / 10 stand for 5:40 / 9:40.
+  const warmupOptions = [5, 10];
+  const warmupLabel = (mins: number) => (mins <= 6 ? '5:40' : '9:40');
+  const warmupChosen = (mins: number) => (mins <= 6) === (warmupMinutes <= 6);
   const firstExerciseName = displayedItems[0]
     ? getExercise(displayedItems[0].exerciseId)?.name
     : undefined;
@@ -636,7 +639,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
             </div>
             {times.warmupMinutes !== warmupMinutes ? (
               <span className="font-mono-num rounded-xl bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-600 dark:bg-[#131A26] dark:text-gray-300">
-                {times.warmupMinutes}м
+                {warmupLabel(times.warmupMinutes)}
               </span>
             ) : (
             <div className="flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-100 p-1 dark:border-[#263248] dark:bg-[#131A26]">
@@ -646,12 +649,12 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                   type="button"
                   onClick={() => onChangeWarmupMinutes(mins)}
                   className={`tap-scale font-mono-num min-h-[36px] min-w-[40px] rounded-lg px-2 text-xs font-semibold transition-colors ${
-                    warmupMinutes === mins
+                    warmupChosen(mins)
                       ? 'bg-white text-[#111827] shadow-sm dark:bg-[#2C3A52] dark:text-white'
                       : 'text-gray-600 hover:text-[#111827] dark:text-gray-400 dark:hover:text-[#F3F4F6]'
                   }`}
                 >
-                  {mins}м
+                  {warmupLabel(mins)}
                 </button>
               ))}
             </div>

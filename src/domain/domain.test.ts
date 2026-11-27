@@ -122,21 +122,9 @@ describe('warm-up plans', () => {
   const total = (minutes: number) =>
     getWarmupPlan(minutes).steps.reduce((s, st) => s + (st.durationSeconds ?? 0), 0);
 
-  it('one movement per minute (v3.7)', () => {
-    for (const minutes of [5, 8, 10, 12, 15]) expect(getWarmupPlan(minutes).steps).toHaveLength(minutes);
-  });
-
-  it('block durations add up to the chosen time', () => {
-    for (const minutes of [8, 10, 12, 15]) {
-      expect(total(minutes)).toBe(minutes * 60);
-    }
-  });
-
-  it('names the first exercise in the primer step', () => {
-    const primer = getWarmupPlan(10, 'Strict Pull-Ups').steps.find(
-      (s) => s.id === 'wu-primer'
-    );
-    expect(primer?.subtitle).toContain('Strict Pull-Ups');
+  it('two flows (v3.15): 5:40 for short settings, 9:40 for the rest', () => {
+    expect(total(5)).toBe(340);
+    for (const minutes of [8, 10, 12, 15]) expect(total(minutes)).toBe(580);
   });
 });
 

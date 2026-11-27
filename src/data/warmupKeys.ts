@@ -15,6 +15,14 @@ export const WARMUP_KEYS = [
   'wu_pull_apart',
   'wu_cross_crunch',
   'wu_inchworm',
+  // v3.15: the warm-up flows
+  'wu_wrist_rot',
+  'wu_elbow_rot',
+  'wu_shoulder_bent',
+  'wu_hip_abduct',
+  'wu_ankle_toe',
+  'wu_leg_swing_lat',
+  'wu_scap_yw',
 ] as const;
 
 export type WarmupKey = (typeof WARMUP_KEYS)[number];

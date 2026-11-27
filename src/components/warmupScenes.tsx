@@ -404,4 +404,128 @@ export const WARMUP_SCENES: Record<WarmupKey, () => React.ReactElement> = {
       />
     </g>
   ),
+  // ——— v3.15: the warm-up flows ———
+  wu_wrist_rot: () => (
+    <g>
+      <Floor />
+      <Head x={78} y={20} />
+      <Line p={[[78, 27], [78, 64]]} w={3.4} />
+      <Line p={[[78, 64], [79, 84], [78, 104]]} />
+      <Line p={[[78, 104], [89, 104]]} w={2.6} />
+      <Line p={[[78, 34], [80, 52], [100, 52]]} />
+      <Dashed d="M100 40 A12 12 0 1 1 99.9 40" />
+      <Turn o={[100, 52]} t={1.6}>
+        <Line p={[[100, 52], [111, 52]]} c={RED} />
+      </Turn>
+    </g>
+  ),
+  wu_elbow_rot: () => (
+    <g>
+      <Floor />
+      <FrontTorso />
+      <FrontLegs />
+      <Line p={[[56, 40], [104, 40]]} w={2.8} />
+      <circle cx="56" cy="40" r="14" fill="none" stroke={RED} strokeWidth="1.5" strokeDasharray="4 3" opacity="0.5" />
+      <circle cx="104" cy="40" r="14" fill="none" stroke={RED} strokeWidth="1.5" strokeDasharray="4 3" opacity="0.5" />
+      <Turn o={[56, 40]} t={1.6}>
+        <Line p={[[56, 40], [56, 26]]} c={RED} />
+      </Turn>
+      <Turn o={[104, 40]} t={1.6}>
+        <Line p={[[104, 40], [104, 26]]} c={RED} />
+      </Turn>
+    </g>
+  ),
+  wu_shoulder_bent: () => (
+    <g>
+      <Floor />
+      <FrontTorso />
+      <FrontLegs />
+      <Line p={[[68, 40], [92, 40]]} w={2.8} />
+      <circle cx="68" cy="40" r="15" fill="none" stroke={RED} strokeWidth="1.5" strokeDasharray="4 3" opacity="0.5" />
+      <circle cx="92" cy="40" r="15" fill="none" stroke={RED} strokeWidth="1.5" strokeDasharray="4 3" opacity="0.5" />
+      <Turn o={[68, 40]} t={2}>
+        <Line p={[[68, 40], [56, 52], [66, 42]]} c={RED} />
+      </Turn>
+      <Turn o={[92, 40]} t={2}>
+        <Line p={[[92, 40], [104, 52], [94, 42]]} c={RED} />
+      </Turn>
+    </g>
+  ),
+  wu_hip_abduct: () => (
+    <g>
+      <Floor />
+      <line x1="44" y1="30" x2="44" y2="104" stroke={GEAR} strokeWidth="3" strokeLinecap="round" />
+      <FrontTorso />
+      <Line p={[[66, 40], [94, 40]]} w={2.8} />
+      <Line p={[[66, 40], [54, 46], [44, 46]]} />
+      <Line p={[[94, 40], [96, 54], [96, 66]]} />
+      <Line p={[[80, 66], [76, 85], [74, 104]]} />
+      <Frames
+        t={2}
+        frames={[
+          <Line p={[[80, 66], [86, 72], [86, 90]]} c={RED} />,
+          <Line p={[[80, 66], [102, 70], [100, 88]]} c={RED} />,
+        ]}
+      />
+    </g>
+  ),
+  wu_ankle_toe: () => (
+    <g>
+      <Floor />
+      <Head x={76} y={20} />
+      <Line p={[[76, 27], [76, 64]]} w={3.4} />
+      <Line p={[[76, 64], [74, 84], [74, 104]]} />
+      <Line p={[[74, 104], [84, 104]]} w={2.6} />
+      <Line p={[[76, 34], [70, 50], [70, 62]]} />
+      <Line p={[[76, 34], [84, 50], [86, 62]]} />
+      <ellipse cx="94" cy="98" rx="7" ry="3" fill="none" stroke={RED} strokeWidth="1.6" strokeDasharray="3 3" />
+      <Frames
+        t={2}
+        frames={[
+          <Line p={[[76, 64], [86, 82], [90, 98], [102, 104]]} c={RED} />,
+          <Line p={[[76, 64], [88, 82], [97, 96], [102, 104]]} c={RED} />,
+          <Line p={[[76, 64], [86, 82], [94, 99], [102, 104]]} c={RED} />,
+          <Line p={[[76, 64], [84, 82], [88, 97], [102, 104]]} c={RED} />,
+        ]}
+      />
+    </g>
+  ),
+  wu_leg_swing_lat: () => (
+    <g>
+      <Floor />
+      <line x1="66" y1="44" x2="94" y2="44" stroke={GEAR} strokeWidth="3" strokeLinecap="round" />
+      <line x1="80" y1="44" x2="80" y2="104" stroke={GEAR} strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+      <FrontTorso />
+      <Line p={[[68, 40], [92, 40]]} w={2.8} />
+      <Line p={[[68, 40], [66, 44]]} />
+      <Line p={[[92, 40], [94, 44]]} />
+      <Line p={[[80, 66], [84, 85], [86, 104]]} />
+      <Dashed d="M58 96 Q74 104 90 96" />
+      <Turn o={[80, 66]} swing={[-28, 22]} t={1.4}>
+        <Line p={[[80, 66], [76, 85], [74, 103]]} c={RED} />
+      </Turn>
+    </g>
+  ),
+  wu_scap_yw: () => (
+    <g>
+      <Floor />
+      <FrontTorso />
+      <FrontLegs />
+      <Line p={[[70, 38], [90, 38]]} w={2.8} />
+      <Frames
+        t={2}
+        frames={[
+          <>
+            <Line p={[[70, 38], [58, 22], [50, 8]]} c={RED} />
+            <Line p={[[90, 38], [102, 22], [110, 8]]} c={RED} />
+          </>,
+          <>
+            <Line p={[[70, 38], [56, 48], [54, 28]]} c={RED} />
+            <Line p={[[90, 38], [104, 48], [106, 28]]} c={RED} />
+            <Line p={[[76, 46], [84, 46]]} c={RED} w={2} />
+          </>,
+        ]}
+      />
+    </g>
+  ),
 };

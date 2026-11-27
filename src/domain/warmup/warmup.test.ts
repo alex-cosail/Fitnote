@@ -1,71 +1,60 @@
 import { describe, expect, it } from 'vitest';
-import { CATALOG } from '../../data/catalog';
 import { WARMUP_KEYS } from '../../data/warmupKeys';
-import { WARMUP_MOVES, buildWarmup, warmupOptionsFor } from './warmup';
+import { BASE_FLOW, FLOW_SECONDS, PULSE_FLOW, WARMUP_MOVES, buildWarmup, warmupModeOf, warmupOptionsFor } from './warmup';
 
 const ids = (minutes: number, opts = {}) => buildWarmup(minutes, opts).steps.map((s) => s.id);
-const move = (id: string) => WARMUP_MOVES.find((m) => m.id === id)!;
+const total = (minutes: number, opts = {}) => buildWarmup(minutes, opts).steps.reduce((s, x) => s + (x.durationSeconds ?? 0), 0);
 
-describe('warm-up «минута = движение»', () => {
-  it('N minutes = N different movements of one minute', () => {
-    for (const n of [5, 8, 10, 12, 15]) {
-      const steps = buildWarmup(n).steps;
-      expect(steps).toHaveLength(n);
-      expect(new Set(steps.map((s) => s.id)).size).toBe(n);
-      expect(steps.every((s) => s.durationSeconds === 60)).toBe(true);
+describe('warm-up flows (Addendum №6)', () => {
+  it('two modes: base 5:40 (10 joint links) and extended 9:40 (+6 pulse movements)', () => {
+    expect(FLOW_SECONDS).toEqual({ default: 340, extended: 580 });
+    expect(BASE_FLOW).toHaveLength(10);
+    expect(PULSE_FLOW).toHaveLength(6);
+    expect(total(5)).toBe(340);
+    expect(total(10)).toBe(580);
+  });
+
+  it('old settings map to a mode: up to 6 minutes — base, 8 / 10 / 12 / 15 — extended', () => {
+    expect(warmupModeOf(5)).toBe('default');
+    for (const m of [8, 10, 12, 15]) expect(warmupModeOf(m)).toBe('extended');
+  });
+
+  it('from the neck down: neck first, ankle last of the base', () => {
+    const s = ids(5);
+    expect(s[0]).toBe('wu-neck-half-circles');
+    expect(s[9]).toBe('wu-ankle-toe-circles');
+    expect(ids(10).slice(0, 10)).toEqual(s);
+  });
+
+  it('side changes are marked inside the step', () => {
+    const neck = buildWarmup(5).steps[0];
+    expect(neck).toMatchObject({ durationSeconds: 30, splitCueAt: 15 });
+    expect(buildWarmup(5).steps.find((x) => x.id === 'wu-thoracic-twists')!.splitCueAt).toBeUndefined();
+  });
+
+  it('55+: the jack becomes a step without a jump', () => {
+    const jack = buildWarmup(10, { ageGroup: 'masters' }).steps.find((x) => x.id === 'wu-jumping-jacks-adaptive')!;
+    expect(jack.cue).toMatch(/Без прыжка/);
+    const young = buildWarmup(10).steps.find((x) => x.id === 'wu-jumping-jacks-adaptive')!;
+    expect(young.cue).not.toMatch(/Без прыжка/);
+  });
+
+  it('a joint at level 0 skips its link; levels 1–3 keep the light links', () => {
+    expect(ids(5, { care: [{ joint: 'neck', level: 0 }] })).not.toContain('wu-neck-half-circles');
+    expect(ids(5, { care: [{ joint: 'neck', level: 2 }] })).toContain('wu-neck-half-circles');
+    // the leg swings load the hip noticeably: out at levels 1–3
+    expect(ids(10, { care: [{ joint: 'hip', level: 2 }] })).not.toContain('wu-leg-swings-sagittal');
+  });
+
+  it('options from today: only the person matters', () => {
+    const o = warmupOptionsFor(['x'], [], { conditions: { ageGroup: 'masters', care: [{ joint: 'knee', level: 1 }] } });
+    expect(o).toMatchObject({ ageGroup: 'masters', care: [{ joint: 'knee', level: 1 }] });
+  });
+
+  it('every flow movement has a picture', () => {
+    for (const m of WARMUP_MOVES) {
+      const known = (WARMUP_KEYS as readonly string[]).includes(m.svgKey) || m.svgKey.startsWith('rh_');
+      expect(known, m.svgKey).toBe(true);
     }
-  });
-
-  it('joints → pulse → dynamic → the primer set last', () => {
-    const order = { joint: 0, pulse: 1, dynamic: 2 } as const;
-    const s = ids(10);
-    expect(s[s.length - 1]).toBe('wu-primer');
-    const phases = s.slice(0, -1).map((id) => order[move(id).phase as keyof typeof order]);
-    expect([...phases].sort((a, b) => a - b)).toEqual(phases);
-  });
-
-  it('follows the workout: its patterns get a movement each', () => {
-    const s = ids(8, { patterns: ['hinge', 'pull_h'] });
-    expect(s.some((id) => move(id)?.patterns.includes('hinge') && move(id).phase === 'dynamic')).toBe(true);
-    expect(s).toContain('wu-pull-apart');
-  });
-
-  it('in the accent mode the dropped patterns come first and are marked', () => {
-    const plan = buildWarmup(5, { patterns: ['squat'], dropped: ['pull_h'] });
-    const dyn = plan.steps.filter((st) => st.id !== 'wu-primer' && move(st.id).phase === 'dynamic');
-    expect(dyn[0].id).toBe('wu-pull-apart');
-    expect(dyn[0].subtitle).toMatch(/акцент/);
-  });
-
-  it('55+: no jumps and no deep floor movements; no bar — no hang', () => {
-    const masters = ids(15, { ageGroup: 'masters' });
-    expect(masters).not.toContain('wu-jacks');
-    expect(masters).not.toContain('wu-inchworm');
-    expect(masters).toHaveLength(15);
-    expect(ids(15, { patterns: ['pull_v'], hasBar: false })).not.toContain('wu-scapula');
-    expect(ids(8, { patterns: ['pull_v'], hasBar: true })).toContain('wu-scapula');
-  });
-
-  it('options from today: patterns of the exercises, bars from the equipment', () => {
-    const o = warmupOptionsFor(['strict-pull-ups', 'air-squats', 'unknown'], CATALOG, {
-      conditions: { equipment: ['bands'], ageGroup: 'masters' },
-      firstExerciseName: 'Подтягивания',
-    });
-    expect(o.patterns).toEqual(['pull_v', 'squat']);
-    expect(o.hasBar).toBe(false);
-    expect(buildWarmup(8, o).steps.at(-1)!.subtitle).toContain('Подтягивания');
-  });
-
-  it('every new warm-up picture is used by a movement', () => {
-    const used = new Set(WARMUP_MOVES.map((m) => m.svgKey));
-    for (const k of WARMUP_KEYS) expect(used.has(k)).toBe(true);
-  });
-
-  it('joint levels: shoulder at 0 removes arm circles and the band pull-apart, and still fills the minutes', () => {
-    const s = ids(10, { patterns: ['pull_h', 'push_v'], care: [{ joint: 'shoulder', level: 0 }] });
-    expect(s).toHaveLength(10);
-    expect(s).not.toContain('wu-arm-circles');
-    expect(s).not.toContain('wu-pull-apart');
-    for (const id of s) if (id !== 'wu-primer') expect(move(id.replace(/-\d+$/, ''))?.joints.shoulder ?? 0).toBe(0);
   });
 });

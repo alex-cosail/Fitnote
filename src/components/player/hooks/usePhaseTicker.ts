@@ -78,6 +78,17 @@ export function usePhaseTicker({
             steps
           );
           for (let i = 0; i < crossed; i += 1) soundEngine.playTick(isMuted);
+          // Side / direction change inside a step (v3.15): a soft double signal.
+          const st = steps[startIndex];
+          if (stepIndex === startIndex && st?.splitCueAt && st.durationSeconds) {
+            const before = st.durationSeconds - (session.warmupStepRemainingSec ?? st.durationSeconds);
+            const after = st.durationSeconds - stepRemainingSec;
+            if (before < st.splitCueAt && after >= st.splitCueAt) {
+              soundEngine.playTick(isMuted);
+              window.setTimeout(() => soundEngine.playTick(isMuted), 180);
+              if (!isMuted) navigator.vibrate?.([60, 80, 60]);
+            }
+          }
           onUpdateSession({
             ...session,
             phaseRemainingSec: remaining,

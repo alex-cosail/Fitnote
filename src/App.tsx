@@ -220,7 +220,6 @@ export default function App() {
 
     const isRoundFlow = !isRed && (Boolean(today.useAgt30) || today.rounds >= 8);
 
-    const warmupSec = times.warmupMinutes * 60;
     const initialWarmupSteps = getWarmupPlan(
       times.warmupMinutes,
       undefined,
@@ -230,6 +229,8 @@ export default function App() {
         firstExerciseName: isRed ? undefined : exercises.find((e) => e.id === sessionItems[0]?.exerciseId)?.name,
       })
     ).steps;
+    // The flow's own length (5:40 or 9:40, shorter when a joint skips a link).
+    const warmupSec = initialWarmupSteps.reduce((s, st) => s + (st.durationSeconds ?? 0), 0) || times.warmupMinutes * 60;
 
     const newSession: ActiveSession = {
       id: `sess-${Date.now()}`,
@@ -516,7 +517,12 @@ export default function App() {
       dayOverrides: data.dayOverrides,
       selectedWorkoutId: data.selectedWorkoutId,
     };
-    setData((prev) => ({ ...placeWeek({ ...prev, ...base }, plans, choice, days, title, today), profile }));
+    // 55+: the base warm-up flow (5:40) by default (Addendum №6); the person can switch.
+    setData((prev) => ({
+      ...placeWeek({ ...prev, ...base }, plans, choice, days, title, today),
+      profile,
+      ...(profile.ageGroup === 'masters' ? { warmupMinutes: 5 } : {}),
+    }));
     // Stay in the wizard and show the result (field test 26.11).
     setReady({ plans, base, choice, days, title });
     window.scrollTo(0, 0);

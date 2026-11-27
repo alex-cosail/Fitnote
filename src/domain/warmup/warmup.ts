@@ -1,342 +1,114 @@
 import type { MobilityStep, SvgKey } from '../../types';
 import type { AgeGroup, Conditions } from '../catalog/filter';
 import type { JointLoad } from '../catalog/joints';
-import { blockedByLoad, CareRule } from '../care/care';
 import type { MovementPattern } from '../catalog/types';
+import { blockedByLoad, CareRule } from '../care/care';
 
-// Warm-up «минута = движение» (field test 26.11, v3.7): N minutes = N
-// movements of one minute each. Joints first, then the pulse, then dynamic
-// movements for the patterns of today's workout (in the accent mode — first
-// for the patterns the accent left out), and the last minute is a light
-// set of the first exercise.
+// Warm-up flows (customer's Addendum №6, docs/specs/addendum-06-warmup.md,
+// v3.15): two modes instead of 8 / 10 / 12 / 15 minutes —
+//   «Базовая 5:40»: 10 joint links from the neck down, all standing;
+//   «Расширенная 9:40»: the base + 6 movements that raise the pulse.
+// Steps follow each other without rest (the player advances by itself); a
+// side or direction change is signalled at `splitCueAt` seconds. 55+ get the
+// short flow by default and a step jack instead of jumping. A joint at level
+// 0 skips its link.
 
-type Phase = 'joint' | 'pulse' | 'dynamic' | 'primer';
+export type WarmupMode = 'default' | 'extended';
 
 export interface WarmupMove {
   id: string;
-  phase: Phase;
   name: string;
   cue: string;
   svgKey: SvgKey;
-  /** Patterns this movement prepares. */
-  patterns: MovementPattern[];
-  /** Needs a pull-up bar. */
-  bar?: boolean;
-  /** Jumps or a deep floor position: not for 55+. */
-  hard?: boolean;
-  /** Joint load, filtered by «Как двигается?» like the exercises (v3.11). */
+  seconds: number;
+  splitCueAt?: number;
   joints: JointLoad;
+  /** 55+: the cue for the variant without impact. */
+  cueMasters?: string;
 }
 
-export const WARMUP_MOVES: WarmupMove[] = [
-  // ——— joints ———
-  {
-    id: 'wu-arm-circles',
-    joints: { shoulder: 1 },
-    phase: 'joint',
-    name: 'Круги руками',
-    cue: 'Прямые руки, большие спокойные круги: полминуты вперёд, полминуты назад. Плечи опущены.',
-    svgKey: 'wu_arm_circles',
-    patterns: ['push_v', 'pull_v'],
-  },
-  {
-    id: 'wu-hip-circles',
-    joints: { hip: 1, lower_back: 1 },
-    phase: 'joint',
-    name: 'Круги тазом',
-    cue: 'Руки на поясе, стопы на ширине плеч. Широкие круги тазом, полминуты в каждую сторону.',
-    svgKey: 'wu_hip_circles',
-    patterns: ['hinge', 'core'],
-  },
-  {
-    id: 'wu-knee-ankle',
-    joints: { knee: 1, ankle: 1 },
-    phase: 'joint',
-    name: 'Колени и стопы',
-    cue: 'Ноги вместе, ладони на коленях — мягкие круги коленями. Затем круги каждой стопой на носке.',
-    svgKey: 'wu_knee_ankle',
-    patterns: ['squat', 'lunge'],
-  },
-  {
-    id: 'wu-neck',
-    joints: { neck: 1 },
-    phase: 'joint',
-    name: 'Голова и шея',
-    cue: 'Медленные наклоны головы к плечам и полукруги через грудь. Назад не запрокидывай.',
-    svgKey: 'wu_neck',
-    patterns: [],
-  },
-  {
-    id: 'wu-torso-twist',
-    joints: { thoracic: 1, lower_back: 1 },
-    phase: 'joint',
-    name: 'Повороты корпуса',
-    cue: 'Стопы на месте, руки свободно. Поворачивай грудную клетку вправо и влево, руки догоняют сами.',
-    svgKey: 'wu_torso_twist',
-    patterns: ['core'],
-  },
-  // ——— pulse ———
-  {
-    id: 'wu-jacks',
-    joints: { knee: 2, ankle: 2, shoulder: 1 },
-    phase: 'pulse',
-    name: 'Прыжки «звёздочка»',
-    cue: 'Ноги врозь — руки вверх, ноги вместе — руки вниз. Лёгкий темп, приземляйся мягко на носки.',
-    svgKey: 'wu_jacks',
-    patterns: [],
-    hard: true,
-  },
-  {
-    id: 'wu-high-knees',
-    joints: { hip: 1, knee: 1 },
-    phase: 'pulse',
-    name: 'Шаг с высоким коленом',
-    cue: 'Бодрый шаг на месте, колено до уровня таза, руки работают. Без прыжков, дыхание ровное.',
-    svgKey: 'wu_high_knees',
-    patterns: ['core'],
-  },
-  // ——— dynamic ———
-  {
-    id: 'wu-squat-reach',
-    joints: { knee: 2, hip: 1, shoulder: 1 },
-    phase: 'dynamic',
-    name: 'Присед с руками вверх',
-    cue: 'Медленный присед на удобную глубину, пятки на земле. На подъёме тянись руками вверх.',
-    svgKey: 'wu_squat_reach',
-    patterns: ['squat'],
-  },
-  {
-    id: 'wu-lunge-reach',
-    joints: { knee: 2, hip: 2, ankle: 1 },
-    phase: 'dynamic',
-    name: 'Выпад с руками вверх',
-    cue: 'Шаг вперёд в выпад, руки вверх, таз чуть вперёд. Вернись и смени ногу. Без спешки.',
-    svgKey: 'wu_lunge_reach',
-    patterns: ['lunge', 'squat'],
-  },
-  {
-    id: 'wu-hinge',
-    joints: { lower_back: 2, hip: 2 },
-    phase: 'dynamic',
-    name: 'Наклон с ровной спиной',
-    cue: 'Колени мягкие, таз уходит назад, спина ровная. Наклон до натяжения сзади бедра — и вверх.',
-    svgKey: 'wu_hinge',
-    patterns: ['hinge'],
-  },
-  {
-    id: 'wu-leg-swing',
-    joints: { hip: 2 },
-    phase: 'dynamic',
-    name: 'Махи ногами',
-    cue: 'Держись за опору. Свободные махи прямой ногой вперёд-назад, полминуты на каждую ногу.',
-    svgKey: 'wu_leg_swing',
-    patterns: ['hinge', 'lunge'],
-  },
-  {
-    id: 'wu-incline-pushup',
-    joints: { shoulder: 2, elbow_wrist: 2 },
-    phase: 'dynamic',
-    name: 'Лёгкие отжимания от опоры',
-    cue: 'Руки на перекладину, скамейку или стену. 8–10 медленных повторов вполсилы, корпус прямой.',
-    svgKey: 'wu_incline_pushup',
-    patterns: ['push_h', 'push_v'],
-  },
-  {
-    id: 'wu-pull-apart',
-    joints: { shoulder: 1 },
-    phase: 'dynamic',
-    name: 'Разведение рук назад',
-    cue: 'Прямые руки перед собой, своди лопатки и разводи руки назад. С резинкой — растягивай её.',
-    svgKey: 'wu_pull_apart',
-    patterns: ['pull_h', 'push_v'],
-  },
-  {
-    id: 'wu-scapula',
-    joints: { shoulder: 2, elbow_wrist: 2 },
-    phase: 'dynamic',
-    name: 'Лопатки в висе',
-    cue: 'Вис на прямых руках. Опускай плечи от ушей и снова расслабляй, 8–10 раз, локти прямые.',
-    svgKey: 'warmup_scapula',
-    patterns: ['pull_v'],
-    bar: true,
-  },
-  {
-    id: 'wu-wall-slide',
-    joints: { shoulder: 1, thoracic: 1 },
-    phase: 'dynamic',
-    name: 'Руки вверх у стены',
-    cue: 'Спиной к стене, локти и кисти касаются стены. Скользи руками вверх и вниз, поясница прижата.',
-    svgKey: 'scapular_wall_slides',
-    patterns: ['push_v', 'pull_v'],
-  },
-  {
-    id: 'wu-cross-crunch',
-    joints: { lower_back: 1, hip: 1 },
-    phase: 'dynamic',
-    name: 'Локоть к колену',
-    cue: 'Стоя, поднимай колено и тянись к нему противоположным локтем. Медленно, попеременно.',
-    svgKey: 'wu_cross_crunch',
-    patterns: ['core'],
-  },
-  {
-    id: 'wu-inchworm',
-    joints: { shoulder: 2, elbow_wrist: 2, lower_back: 2 },
-    phase: 'dynamic',
-    name: 'Гусеница',
-    cue: 'Наклонись, поставь ладони на землю и пройди руками в упор лёжа. Затем шагами ног к рукам — и встань.',
-    svgKey: 'wu_inchworm',
-    patterns: ['push_h', 'core', 'hinge'],
-    hard: true,
-  },
-  {
-    id: 'wu-worlds-greatest',
-    joints: { hip: 2, lower_back: 2, knee: 1 },
-    phase: 'dynamic',
-    name: 'Выпад с поворотом',
-    cue: 'Глубокий выпад, ладонь на землю у передней стопы. Разверни грудь к колену и вытяни руку вверх.',
-    svgKey: 'warmup_worlds_greatest_stretch',
-    patterns: ['lunge', 'hinge', 'core'],
-    hard: true,
-  },
+export const BASE_FLOW: WarmupMove[] = [
+  { id: 'wu-neck-half-circles', name: 'Шея: полукруги и повороты', seconds: 30, splitCueAt: 15, svgKey: 'wu_neck', joints: { neck: 1 }, cue: 'Плавные полукруги подбородком по груди от плеча к плечу и мягкие повороты: 15 секунд влево, 15 вправо. Без запрокидывания головы назад.' },
+  { id: 'wu-wrist-rotations', name: 'Кисти: вращения', seconds: 30, splitCueAt: 15, svgKey: 'wu_wrist_rot', joints: { elbow_wrist: 1 }, cue: 'Локти прижаты к корпусу, полная амплитуда кистей: 15 секунд наружу, 15 внутрь.' },
+  { id: 'wu-elbow-rotations', name: 'Локти: вращения предплечьями', seconds: 30, splitCueAt: 15, svgKey: 'wu_elbow_rot', joints: { elbow_wrist: 1 }, cue: 'Плечи параллельно земле, локти в одной точке: 15 секунд внутрь, 15 наружу.' },
+  { id: 'wu-shoulder-bent-arm', name: 'Плечи: круги согнутыми руками', seconds: 30, splitCueAt: 15, svgKey: 'wu_shoulder_bent', joints: { shoulder: 1 }, cue: 'Кисти на плечах, широкие круги локтями со сведением лопаток сзади: 15 секунд вперёд, 15 назад.' },
+  { id: 'wu-shoulder-straight-arm', name: 'Плечи: круги прямыми руками', seconds: 30, splitCueAt: 15, svgKey: 'wu_arm_circles', joints: { shoulder: 1 }, cue: 'Прямые руки скользят мимо ушей, без прогиба в пояснице: 15 секунд вперёд, 15 назад.' },
+  { id: 'wu-thoracic-twists', name: 'Грудной отдел: скручивания', seconds: 40, svgKey: 'wu_torso_twist', joints: { thoracic: 1, lower_back: 1 }, cue: 'Таз смотрит строго вперёд, плавные повороты грудной клетки влево и вправо с разведёнными руками.' },
+  { id: 'wu-pelvis-circles', name: 'Таз: круги', seconds: 40, splitCueAt: 20, svgKey: 'wu_hip_circles', joints: { hip: 1, lower_back: 1 }, cue: 'Руки на поясе, макушка на месте, таз описывает широкий круг: 20 секунд по часовой, 20 против.' },
+  { id: 'wu-hip-abduction-circles', name: 'Тазобедренный: отведения согнутого бедра', seconds: 40, splitCueAt: 20, svgKey: 'wu_hip_abduct', joints: { hip: 1 }, cue: 'При необходимости держись рукой за стойку: колено вперёд и отведение в сторону — 20 секунд правая, 20 левая.' },
+  { id: 'wu-knee-semi-squat-circles', name: 'Колени: круги в полуприседе', seconds: 30, splitCueAt: 15, svgKey: 'wu_knee_ankle', joints: { knee: 1 }, cue: 'Стопы вместе, ладони на коленях без давления сверху, мягкие круги: 15 секунд в одну сторону, 15 в другую.' },
+  { id: 'wu-ankle-toe-circles', name: 'Голеностоп и стопа: круги на носке', seconds: 40, splitCueAt: 20, svgKey: 'wu_ankle_toe', joints: { ankle: 1 }, cue: 'Носок на земле, пятка описывает круг, плюс 2–3 переката с пятки на носок: 20 секунд правая, 20 левая.' },
 ];
 
-/** After the workout patterns: what fills the remaining minutes. */
-const GENERAL_ORDER = [
-  'wu-lunge-reach',
-  'wu-squat-reach',
-  'wu-hinge',
-  'wu-pull-apart',
-  'wu-worlds-greatest',
-  'wu-leg-swing',
-  'wu-cross-crunch',
-  'wu-incline-pushup',
-  'wu-wall-slide',
-  'wu-inchworm',
+export const PULSE_FLOW: WarmupMove[] = [
+  { id: 'wu-marching-high-knees', name: 'Шаг с высоким коленом', seconds: 45, svgKey: 'wu_high_knees', joints: { hip: 1, knee: 1 }, cue: 'Бодрый шаг на месте: колено до уровня таза, противоположная рука вперёд. Плавно поднимаем пульс.' },
+  { id: 'wu-leg-swings-sagittal', name: 'Махи вперёд-назад у опоры', seconds: 40, splitCueAt: 20, svgKey: 'wu_leg_swing', joints: { hip: 2 }, cue: 'Лёгкая опора рукой за стойку, свободный мах прямой ногой без округления поясницы: 20 секунд правая, 20 левая.' },
+  { id: 'wu-leg-swings-lateral', name: 'Махи в сторону перед собой', seconds: 40, splitCueAt: 20, svgKey: 'wu_leg_swing_lat', joints: { hip: 2 }, cue: 'Лицом к стойке, контролируемый мах прямой ногой влево-вправо: 20 секунд правая, 20 левая.' },
+  { id: 'wu-scapular-ywt-swimmer', name: 'Лопатки стоя: Y — W', seconds: 40, svgKey: 'wu_scap_yw', joints: { shoulder: 1 }, cue: 'Руки вверх по диагонали (Y), локти вниз к рёбрам (W) со сведением лопаток. Готовим плечи к турнику.' },
+  { id: 'wu-squat-to-calf-raise', name: 'Присед с подъёмом на носки', seconds: 45, svgKey: 'wu_squat_reach', joints: { knee: 2, hip: 1, ankle: 1 }, cue: 'Неглубокий присед до параллели и энергичное вставание с выходом на носки и руками вверх.' },
+  { id: 'wu-jumping-jacks-adaptive', name: 'Прыжки «звёздочка»', seconds: 30, svgKey: 'wu_jacks', joints: { knee: 2, ankle: 2 }, cue: 'Финишный разогрев: лёгкие прыжки — ноги врозь, руки вверх.', cueMasters: 'Без прыжка: быстрый приставной шаг в сторону с хлопком над головой.' },
 ];
-const JOINT_ORDER = ['wu-arm-circles', 'wu-hip-circles', 'wu-knee-ankle', 'wu-neck', 'wu-torso-twist'];
+
+/** All warm-up movements (both flows). */
+export const WARMUP_MOVES: WarmupMove[] = [...BASE_FLOW, ...PULSE_FLOW];
+
+export const FLOW_SECONDS: Record<WarmupMode, number> = {
+  default: BASE_FLOW.reduce((s, m) => s + m.seconds, 0),
+  extended: WARMUP_MOVES.reduce((s, m) => s + m.seconds, 0),
+};
+
+/** The stored minutes (old data: 8 / 10 / 12 / 15) → a mode: up to 6 is the short flow. */
+export function warmupModeOf(minutes: number): WarmupMode {
+  return minutes <= 6 ? 'default' : 'extended';
+}
+/** The minutes the setting stores for a mode (used by estimates). */
+export const MODE_MINUTES: Record<WarmupMode, number> = { default: 5, extended: 10 };
+
+export const formatFlow = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
 export interface WarmupOptions {
-  /** Patterns of today's workout in their order. */
+  /** Kept for callers; the flows do not depend on the workout any more. */
   patterns?: MovementPattern[];
-  /** Patterns the accent left out: they come first. */
   dropped?: MovementPattern[];
   hasBar?: boolean;
   ageGroup?: AgeGroup;
   firstExerciseName?: string;
-  /** Joint levels: movements that load a protected joint are left out. */
+  /** Joint levels: a joint at 0 skips its link (levels 1–3 keep the light ones). */
   care?: CareRule[];
 }
 
 export interface WarmupPlan {
   label: string;
   steps: MobilityStep[];
+  mode: WarmupMode;
 }
-
-function movementsWord(n: number): string {
-  const d = n % 10;
-  const dd = n % 100;
-  if (d === 1 && dd !== 11) return 'движение';
-  if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return 'движения';
-  return 'движений';
-}
-
-const byId = new Map(WARMUP_MOVES.map((m) => [m.id, m]));
 
 export function buildWarmup(minutes: number, opts: WarmupOptions = {}): WarmupPlan {
-  const n = Math.max(3, Math.min(20, Math.round(minutes)));
-  const ok = (m: WarmupMove) =>
-    (!m.bar || opts.hasBar !== false) && !(opts.ageGroup === 'masters' && m.hard) && !blockedByLoad(m.joints, opts.care);
-  const chosen = new Set<string>();
-  const take = (m: WarmupMove | undefined) => {
-    if (!m || chosen.has(m.id) || !ok(m)) return undefined;
-    chosen.add(m.id);
-    return m;
-  };
-
-  const nJoint = n <= 5 ? 1 : n <= 10 ? 2 : 3;
-  const nPulse = n >= 12 ? 2 : 1;
-
-  const joints = JOINT_ORDER.map((id) => byId.get(id)).filter((m): m is WarmupMove => Boolean(m && ok(m))).slice(0, nJoint);
-  joints.forEach((m) => chosen.add(m.id));
-
-  const pulseOrder = opts.ageGroup === 'masters' ? ['wu-high-knees', 'wu-jacks'] : ['wu-jacks', 'wu-high-knees'];
-  const pulse = pulseOrder.map((id) => byId.get(id)).filter((m): m is WarmupMove => Boolean(m && ok(m))).slice(0, nPulse);
-  pulse.forEach((m) => chosen.add(m.id));
-  const nDyn = n - joints.length - pulse.length - 1;
-
-  // Dynamic: one movement per pattern, dropped ones first, round by round.
-  const dropped = new Set(opts.dropped ?? []);
-  const wanted = [...new Set([...(opts.dropped ?? []), ...(opts.patterns ?? [])])];
-  const dynamic: { move: WarmupMove; forDropped: boolean; again?: boolean }[] = [];
-  const dynMoves = WARMUP_MOVES.filter((m) => m.phase === 'dynamic');
-  for (const p of wanted) {
-    if (dynamic.length >= nDyn) break;
-    const m = take(dynMoves.find((d) => d.patterns.includes(p) && !chosen.has(d.id) && ok(d)));
-    if (m) dynamic.push({ move: m, forDropped: dropped.has(p) });
-  }
-  for (const id of GENERAL_ORDER) {
-    if (dynamic.length >= nDyn) break;
-    const m = take(byId.get(id));
-    if (m) dynamic.push({ move: m, forDropped: false });
-  }
-  // Very long warm-ups: the remaining joints, then the second pulse movement.
-  for (const id of [...JOINT_ORDER, ...pulseOrder, ...WARMUP_MOVES.map((w) => w.id)]) {
-    if (dynamic.length >= nDyn) break;
-    const m = take(byId.get(id));
-    if (m) dynamic.push({ move: m, forDropped: false });
-  }
-  // Still short (a 20-minute warm-up for 55+ without a bar): a second round.
-  const firstRound = dynamic.length;
-  for (let i = 0; dynamic.length < nDyn && firstRound > 0; i++) dynamic.push({ ...dynamic[i % firstRound], forDropped: false, again: true });
-
-  const step = (m: WarmupMove, subtitle?: string): MobilityStep => ({
+  const mode = warmupModeOf(minutes);
+  const moves = (mode === 'default' ? BASE_FLOW : WARMUP_MOVES).filter((m) => !blockedByLoad(m.joints, opts.care));
+  const masters = opts.ageGroup === 'masters';
+  const steps: MobilityStep[] = moves.map((m) => ({
     id: m.id,
-    name: m.name,
-    subtitle,
-    cue: m.cue,
-    durationHint: '1 мин',
-    durationSeconds: 60,
+    name: masters && m.cueMasters ? 'Приставной шаг с хлопком' : m.name,
+    cue: masters && m.cueMasters ? m.cueMasters : m.cue,
+    durationHint: `${m.seconds} с`,
+    durationSeconds: m.seconds,
     svgKey: m.svgKey,
-  });
-
-  const primer: MobilityStep = {
-    id: 'wu-primer',
-    name: 'Подводящий подход',
-    subtitle: opts.firstExerciseName ? `Первое упражнение вполсилы: ${opts.firstExerciseName}` : 'Первое упражнение вполсилы',
-    cue: 'Один-два спокойных подхода первого упражнения — примерно треть рабочего объёма. Чёткая техника, ровное дыхание, без усталости.',
-    durationHint: '1 мин',
-    durationSeconds: 60,
-    svgKey: 'warmup_primer',
+    ...(m.splitCueAt ? { splitCueAt: m.splitCueAt } : {}),
+  }));
+  const total = steps.reduce((s, x) => s + (x.durationSeconds ?? 0), 0);
+  return {
+    label: `${mode === 'default' ? 'Базовая' : 'Расширенная + пульс'} · ${formatFlow(total)} · поток`,
+    steps,
+    mode,
   };
-
-  const steps: MobilityStep[] = [
-    ...joints.map((m) => step(m, 'Суставы')),
-    ...pulse.map((m) => step(m, 'Пульс')),
-    ...dynamic.map(({ move, forDropped, again }, i) =>
-      again
-        ? { ...step(move, 'Второй круг'), id: `${move.id}-${i}` }
-        : step(move, forDropped ? 'Выпало из акцента — подвигаемся здесь' : undefined)
-    ),
-    primer,
-  ];
-  return { label: `${steps.length} ${movementsWord(steps.length)} по минуте`, steps };
 }
 
-/** Options for today's workout: its exercises' patterns, the accent's dropped ones, the person. */
+/** Options for today: only the person matters now (age, joint levels). */
 export function warmupOptionsFor(
-  exerciseIds: string[],
-  catalog: { id: string; pattern: MovementPattern }[],
+  _exerciseIds: string[],
+  _catalog: { id: string; pattern: MovementPattern }[],
   extra: { dropped?: MovementPattern[]; conditions?: Conditions; firstExerciseName?: string } = {}
 ): WarmupOptions {
-  const byCat = new Map(catalog.map((c) => [c.id, c.pattern]));
-  const patterns = exerciseIds.map((id) => byCat.get(id)).filter((p): p is MovementPattern => Boolean(p));
-  const eq = extra.conditions?.equipment;
-  return {
-    patterns,
-    dropped: extra.dropped,
-    hasBar: !eq || eq.includes('pullup_bars'),
-    ageGroup: extra.conditions?.ageGroup,
-    firstExerciseName: extra.firstExerciseName,
-    care: extra.conditions?.care,
-  };
+  return { ageGroup: extra.conditions?.ageGroup, care: extra.conditions?.care, firstExerciseName: extra.firstExerciseName };
 }
