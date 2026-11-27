@@ -142,7 +142,8 @@ describe('placing a new week (generator, wizard)', () => {
     const r = placeWeek(data, fresh, 'update', [0, 3], 'new', '2026-11-26');
     expect(r.cycles).toHaveLength(1);
     expect(plannedFor(r.cycles!, '2026-11-26')).toBe('gen-new-S-B');
-    expect(r.workouts.some((w) => w.id === 'gen-old-S-A')).toBe(false);
+    // v3.12: the old plans stay in the archive instead of being dropped.
+    expect(r.workouts.some((w) => w.id === 'gen-old-S-A')).toBe(true);
   });
   it('a single workout goes onto today if free, else the next free day', () => {
     const r = placeSingle(data, plan('own-1'), '2026-11-25');

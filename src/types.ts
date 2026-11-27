@@ -229,6 +229,10 @@ export interface FitnoteData {
   // (docs/BACKLOG.md, field test 26.11). Absent before v3.5.
   cycles?: import('./domain/schedule/schedule').Cycle[];
   dayOverrides?: import('./domain/schedule/schedule').DayOverrides;
+  /** The constructor's archive (v3.12): singles and series the person keeps. */
+  archive?: import('./domain/schedule/archive').ArchiveItem[];
+  /** A second (third…) single workout on a date. */
+  dayExtras?: Record<string, string[]>;
   // «Не сейчас» on the compensation cards: '<monday>:topup' / '<monday>:monday'.
   compensationDismissed?: string[];
   // «Позже» on the start wizard: a new person is not sent there again on launch.

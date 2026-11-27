@@ -66,6 +66,8 @@ import { loadFitnoteData, saveFitnoteData } from './utils/storage';
 import { APP_VERSION_LABEL } from './version';
 import { warmupOptionsFor } from './domain/warmup/warmup';
 import { applySwaps } from './domain/session/change';
+import { archiveOf, placeSeriesAt, placeSingleOn, removeFromArchive, weekPlans, WEEKDAY_SHORT } from './domain/schedule/archive';
+import { ArchivePanel } from './components/constructor/ArchivePanel';
 import { answerReview, blockedByCare, careToReview, JOINT_NAMES, LEVEL_INFO, normalizeCare, removeCare, setCare } from './domain/care/care';
 
 const PROTECTED_WORKOUT_IDS = new Set([
@@ -403,6 +405,20 @@ export default function App() {
     const p = planById.get(id);
     return p ? planKind(p) : undefined;
   };
+  // v3.12: the calendar (with the implicit cycle of older data) and the archive.
+  const calendarData = useMemo(() => ({ ...data, cycles }), [data, cycles]);
+  const archive = useMemo(() => archiveOf(calendarData), [calendarData]);
+  // First screen: only the workouts of the week shown above (field test 26.11).
+  const weekList = useMemo(() => weekPlans(calendarData, weekAnchor), [calendarData, weekAnchor]);
+  const weekPlanList = useMemo(() => {
+    const seen = new Set<string>();
+    return weekList.map((w) => planById.get(w.planId)).filter((p): p is WorkoutPlan => Boolean(p) && !seen.has(p!.id) && Boolean(seen.add(p!.id)));
+  }, [weekList, planById]);
+  const dayLabelOf = (planId: string) =>
+    weekList
+      .filter((w) => w.planId === planId)
+      .map((w) => WEEKDAY_SHORT[(new Date(`${w.date}T12:00:00`).getDay() + 6) % 7])
+      .join(', ');
   const weekLabel = (() => {
     const [mon, , , , , , sun] = weekDates(weekAnchor);
     const fmt = (d: string) => `${Number(d.slice(8, 10))}.${d.slice(5, 7)}`;
@@ -977,10 +993,29 @@ export default function App() {
             )}
           </div>
         )}
-        {!isFullscreen && activeTab === 'workout' && (
+        {!isFullscreen && activeTab === 'workout' && weekPlanList.length === 0 && !data.activeSession && (
+          <section className="mx-auto max-w-6xl px-5 pt-4">
+            <div className="rounded-2xl border border-dashed border-gray-300 p-5 text-center dark:border-[#334155]">
+              <p className="text-base font-bold text-[#111827] dark:text-[#F3F4F6]">На этой неделе тренировок нет</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Поставьте серию или разовую тренировку из архива.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('catalog');
+                  window.scrollTo(0, 0);
+                }}
+                className="tap-scale mt-3 min-h-[48px] rounded-xl bg-[#111827] px-4 text-sm font-bold text-white dark:bg-[#F3F4F6] dark:text-[#0B0F17]"
+              >
+                Открыть конструктор
+              </button>
+            </div>
+          </section>
+        )}
+        {!isFullscreen && activeTab === 'workout' && (weekPlanList.length > 0 || data.activeSession) && (
           <WorkoutPreviewTab
             exerciseNotes={data.exerciseNotes}
-            workouts={data.workouts}
+            workouts={weekPlanList.length ? weekPlanList : data.workouts}
+            chipLabel={weekPlanList.length ? dayLabelOf : undefined}
             exercises={exercises}
             selectedWorkoutId={data.selectedWorkoutId}
             readiness={data.readiness}
@@ -1048,6 +1083,45 @@ export default function App() {
           />
         )}
 
+        {!isFullscreen && activeTab === 'catalog' && (
+          <ArchivePanel
+            archive={archive}
+            calendarData={calendarData}
+            planById={planById}
+            kindOf={kindOf}
+            profileDays={data.profile?.days}
+            today={today}
+            onPlaceSeries={(item, start, days, weeks) =>
+              setData((prev) => placeSeriesAt({ ...prev, cycles: prev.cycles?.length ? prev.cycles : cycles }, item, start, days, weeks))
+            }
+            onPlaceSingle={(item, date) => setData((prev) => placeSingleOn({ ...prev, cycles: prev.cycles?.length ? prev.cycles : cycles }, item, date))}
+            onToday={(item) => {
+              setData((prev) => ({
+                ...placeSingleOn({ ...prev, cycles: prev.cycles?.length ? prev.cycles : cycles }, item, today),
+                selectedWorkoutId: item.planIds[0],
+              }));
+              setWeekAnchor(today);
+              setSelectedDate(today);
+              setActiveTab('workout');
+              window.scrollTo(0, 0);
+            }}
+            onRemove={(item) => {
+              if (removeFromArchive(calendarData, item, today) === 'in-use') return 'in-use';
+              setData((prev) => {
+                const r = removeFromArchive(prev, item, today);
+                return r === 'in-use' ? prev : r;
+              });
+            }}
+            onOpenDay={(date) => {
+              setWeekAnchor(date);
+              setSelectedDate(date);
+              const first = weekPlans(calendarData, date).find((w) => w.date === date);
+              if (first) setData((prev) => ({ ...prev, selectedWorkoutId: first.planId }));
+              setActiveTab('workout');
+              window.scrollTo(0, 0);
+            }}
+          />
+        )}
         {!isFullscreen && activeTab === 'catalog' && (
           <GeneratorPanel
             exercises={exercises}

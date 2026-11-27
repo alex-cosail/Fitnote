@@ -4,7 +4,7 @@ import { Dict } from './ru';
 export const tr: Dict = {
   'nav.workout': 'Antrenman',
   'nav.checkup': 'Ben',
-  'nav.catalog': 'Oluşturucu',
+  'nav.catalog': 'Kurucu',
   'nav.log': 'Kayıt',
   'nav.aria': 'Ana gezinme',
   'theme.day': 'Gündüz',

@@ -51,6 +51,8 @@ interface WorkoutPreviewTabProps {
   onChangeAccentMinutes: (minutes: number) => void;
   onShare?: (plan: WorkoutPlan) => void;
   exerciseNotes?: Record<string, string>;
+  /** The days of the week a plan is on (first screen, v3.12). */
+  chipLabel?: (planId: string) => string;
   onChangeWarmupMinutes: (mins: number) => void;
   onStartWorkout: () => void;
   onResumeWorkout: () => void;
@@ -79,6 +81,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   onChangeAccentMinutes,
   onShare,
   exerciseNotes,
+  chipLabel,
   onChangeWarmupMinutes,
   onStartWorkout,
   onResumeWorkout,
@@ -356,6 +359,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                 }`}
               >
                 <span className="w-full truncate text-xs font-bold lg:text-sm">
+                  {chipLabel ? `${chipLabel(plan.id)} · ` : ''}
                   {plan.title}
                 </span>
                 <span
@@ -378,7 +382,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                План тренировки ({workouts.length})
+                {chipLabel ? 'Тренировки недели' : 'План тренировки'} ({workouts.length})
               </span>
               <span className="font-mono-num text-xs text-gray-500 dark:text-gray-400">
                 Отдых: {todayPlan.restBetweenExercises}с /{' '}
@@ -400,6 +404,11 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                     }`}
                     title={plan.title}
                   >
+                    {chipLabel && (
+                      <span className={`text-[10px] font-semibold ${isSelected ? 'text-gray-300 dark:text-gray-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                        {chipLabel(plan.id)}
+                      </span>
+                    )}
                     <span className="line-clamp-2 w-full whitespace-normal break-words text-[12px] font-bold leading-tight">
                       {plan.title}
                     </span>

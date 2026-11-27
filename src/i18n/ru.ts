@@ -4,7 +4,7 @@
 export const ru = {
   'nav.workout': 'Workout',
   'nav.checkup': 'Я',
-  'nav.catalog': 'Генератор',
+  'nav.catalog': 'Конструктор',
   'nav.log': 'Sync / Log',
   'nav.aria': 'Основная навигация',
   'theme.day': 'День',

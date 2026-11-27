@@ -3,7 +3,7 @@ import { Dict } from './ru';
 export const en: Dict = {
   'nav.workout': 'Workout',
   'nav.checkup': 'Me',
-  'nav.catalog': 'Generator',
+  'nav.catalog': 'Builder',
   'nav.log': 'Sync / Log',
   'nav.aria': 'Main navigation',
   'theme.day': 'Day',

@@ -7,6 +7,7 @@ import {
 export type CycleChoice = StartMode | 'update';
 
 type WeekData = Pick<FitnoteData, 'workouts' | 'cycles' | 'dayOverrides' | 'profile' | 'selectedWorkoutId'>;
+// Since v3.12 nothing is dropped here: every workout stays in the archive.
 
 /** Real cycles, or the implicit one for users from before v3.5. */
 export function cyclesOf(data: WeekData, today: string): Cycle[] {
@@ -41,12 +42,8 @@ export function placeWeek<T extends WeekData>(
     const mode: StartMode = choice === 'update' ? 'today' : choice;
     ({ cycles, overrides } = startCycle(base, overrides, { title, planIds, days }, mode, today));
   }
-  const keep = new Set(cycles.filter((c) => !c.endDate || c.endDate >= mondayOf(today)).flatMap((c) => c.planIds));
   const newIds = new Set(planIds);
-  const workouts = [
-    ...plans,
-    ...data.workouts.filter((w) => !newIds.has(w.id) && (!w.id.startsWith('gen-') || keep.has(w.id))),
-  ];
+  const workouts = [...plans, ...data.workouts.filter((w) => !newIds.has(w.id))];
   return { ...data, cycles, dayOverrides: overrides, workouts, selectedWorkoutId: planIds[0] ?? data.selectedWorkoutId };
 }
 
