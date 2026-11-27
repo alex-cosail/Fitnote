@@ -103,6 +103,8 @@ export interface MobilityStep {
   svgKey: SvgKey;
   /** Second of the step when the side or direction changes (v3.15). */
   splitCueAt?: number;
+  /** The micro round (v3.15): pictures of the workout's first exercises. */
+  collage?: { svgKey: SvgKey; name: string }[];
 }
 
 export interface SetLog {

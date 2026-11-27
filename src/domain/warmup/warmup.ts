@@ -64,6 +64,8 @@ export function warmupModeOf(minutes: number): WarmupMode {
 /** The minutes the setting stores for a mode (used by estimates). */
 export const MODE_MINUTES: Record<WarmupMode, number> = { default: 5, extended: 10 };
 
+export const MICRO_ROUND_SECONDS = 60;
+
 export const formatFlow = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
 export interface WarmupOptions {
@@ -75,6 +77,8 @@ export interface WarmupOptions {
   firstExerciseName?: string;
   /** Joint levels: a joint at 0 skips its link (levels 1–3 keep the light ones). */
   care?: CareRule[];
+  /** Today's first exercises: the last minute is a micro round of them (customer, 28.11). */
+  round?: { svgKey: SvgKey; name: string }[];
 }
 
 export interface WarmupPlan {
@@ -96,6 +100,21 @@ export function buildWarmup(minutes: number, opts: WarmupOptions = {}): WarmupPl
     svgKey: m.svgKey,
     ...(m.splitCueAt ? { splitCueAt: m.splitCueAt } : {}),
   }));
+  // The last minute: a micro round of today's workout — 3–5 reps of each,
+  // half effort (customer, 28.11: «хороший разогревающий круг»).
+  const round = (opts.round ?? []).slice(0, 4);
+  if (round.length) {
+    steps.push({
+      id: 'wu-micro-round',
+      name: 'Пробный круг',
+      subtitle: 'По 3–5 повторов каждого — вполсилы',
+      cue: 'Один спокойный круг упражнений тренировки: 3–5 повторов каждого, чёткая техника и ровное дыхание, без усталости.',
+      durationHint: '60 с',
+      durationSeconds: MICRO_ROUND_SECONDS,
+      svgKey: round[0].svgKey,
+      collage: round,
+    });
+  }
   const total = steps.reduce((s, x) => s + (x.durationSeconds ?? 0), 0);
   return {
     label: `${mode === 'default' ? 'Базовая' : 'Расширенная + пульс'} · ${formatFlow(total)} · поток`,
@@ -108,7 +127,7 @@ export function buildWarmup(minutes: number, opts: WarmupOptions = {}): WarmupPl
 export function warmupOptionsFor(
   _exerciseIds: string[],
   _catalog: { id: string; pattern: MovementPattern }[],
-  extra: { dropped?: MovementPattern[]; conditions?: Conditions; firstExerciseName?: string } = {}
+  extra: { dropped?: MovementPattern[]; conditions?: Conditions; firstExerciseName?: string; round?: { svgKey: SvgKey; name: string }[] } = {}
 ): WarmupOptions {
-  return { ageGroup: extra.conditions?.ageGroup, care: extra.conditions?.care, firstExerciseName: extra.firstExerciseName };
+  return { ageGroup: extra.conditions?.ageGroup, care: extra.conditions?.care, firstExerciseName: extra.firstExerciseName, round: extra.round };
 }

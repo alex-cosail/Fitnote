@@ -227,6 +227,7 @@ export default function App() {
         dropped: day.dropped,
         conditions: genProfile.usualConditions,
         firstExerciseName: isRed ? undefined : exercises.find((e) => e.id === sessionItems[0]?.exerciseId)?.name,
+        round: isRed ? [] : roundOf(sessionItems.map((i) => i.exerciseId)),
       })
     ).steps;
     // The flow's own length (5:40 or 9:40, shorter when a joint skips a link).
@@ -262,6 +263,15 @@ export default function App() {
     setData((prev) => ({ ...prev, activeSession: newSession }));
     setIsPlayerVisible(true);
   };
+
+  // The warm-up's micro round: the first 4 different exercises of the workout.
+  function roundOf(ids: string[]) {
+    return [...new Set(ids)]
+      .slice(0, 4)
+      .map((id) => exercises.find((e) => e.id === id))
+      .filter((e): e is Exercise => Boolean(e))
+      .map((e) => ({ svgKey: e.svgKey, name: e.name }));
+  }
 
   // «Берегу»: is this catalog exercise protected now?
   function careBlocks(id: string) {

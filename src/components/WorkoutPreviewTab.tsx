@@ -32,7 +32,7 @@ import {
 } from '../types';
 import { ExerciseSvg } from './ExerciseSvg';
 import { LadderPicture } from './LadderPicture';
-import { warmupOptionsFor } from '../domain/warmup/warmup';
+import { FLOW_SECONDS, MICRO_ROUND_SECONDS, formatFlow, warmupOptionsFor } from '../domain/warmup/warmup';
 import { blockedByCare, JOINT_NAMES } from '../domain/care/care';
 
 interface WorkoutPreviewTabProps {
@@ -169,7 +169,8 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
 
   // Two flows (Addendum №6): the stored minutes 5 / 10 stand for 5:40 / 9:40.
   const warmupOptions = [5, 10];
-  const warmupLabel = (mins: number) => (mins <= 6 ? '5:40' : '9:40');
+  const roundSec = readiness === 'red' ? 0 : MICRO_ROUND_SECONDS;
+  const warmupLabel = (mins: number) => formatFlow(FLOW_SECONDS[mins <= 6 ? 'default' : 'extended'] + roundSec);
   const warmupChosen = (mins: number) => (mins <= 6) === (warmupMinutes <= 6);
   const firstExerciseName = displayedItems[0]
     ? getExercise(displayedItems[0].exerciseId)?.name
@@ -181,6 +182,13 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
       dropped: today.dropped,
       conditions: profile?.usualConditions,
       firstExerciseName: readiness === 'red' ? undefined : firstExerciseName,
+      round:
+        readiness === 'red'
+          ? []
+          : [...new Set(displayedItems.filter((d) => !d.unavailable).map((d) => d.exerciseId))]
+              .slice(0, 4)
+              .map((id) => getExercise(id))
+              .map((e) => ({ svgKey: e.svgKey, name: e.name })),
     })
   );
 
@@ -684,10 +692,18 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                   )}
 
                   <div className="mt-2.5 flex items-center justify-between gap-3 landscape:mt-1.5 landscape:justify-start landscape:gap-3">
-                    <ExerciseSvg
-                      svgKey={step.svgKey}
-                      className="h-16 w-24 shrink-0 landscape:h-11 landscape:w-16"
-                    />
+                    {step.collage ? (
+                      <div className="grid h-16 w-24 shrink-0 grid-cols-2 gap-0.5 landscape:h-11 landscape:w-16">
+                        {step.collage.map((c, i) => (
+                          <ExerciseSvg key={i} svgKey={c.svgKey} className="h-full w-full" />
+                        ))}
+                      </div>
+                    ) : (
+                      <ExerciseSvg
+                        svgKey={step.svgKey}
+                        className="h-16 w-24 shrink-0 landscape:h-11 landscape:w-16"
+                      />
+                    )}
                     <div className="flex items-baseline gap-1.5 text-right landscape:text-left">
                       <p className="font-mono-num text-2xl font-bold leading-none text-[#111827] dark:text-[#F3F4F6] landscape:text-xl">
                         {step.durationHint}

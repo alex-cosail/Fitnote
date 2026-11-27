@@ -57,4 +57,14 @@ describe('warm-up flows (Addendum №6)', () => {
       expect(known, m.svgKey).toBe(true);
     }
   });
+
+  it('the last minute is a micro round of the workout: 4 pictures, 3–5 reps each', () => {
+    const round = ['a', 'b', 'c', 'd', 'e'].map((n) => ({ svgKey: 'pushups' as const, name: n }));
+    const plan = buildWarmup(5, { round });
+    const last = plan.steps.at(-1)!;
+    expect(last).toMatchObject({ id: 'wu-micro-round', durationSeconds: 60 });
+    expect(last.collage!.map((c) => c.name)).toEqual(['a', 'b', 'c', 'd']);
+    expect(total(5, { round })).toBe(400); // 6:40
+    expect(buildWarmup(5).steps.some((s) => s.id === 'wu-micro-round')).toBe(false);
+  });
 });

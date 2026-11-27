@@ -136,10 +136,22 @@ export const WarmupPhase: React.FC = () => {
               </div>
 
               <div className="my-auto flex min-h-0 w-full items-center justify-center py-2">
-                <ExerciseSvg
-                  svgKey={currentWarmupStep.svgKey}
-                  className="h-36 w-52 max-h-full landscape:h-28 landscape:w-44 lg:landscape:h-40 lg:landscape:w-56"
-                />
+                {currentWarmupStep.collage ? (
+                  <div className="grid w-full max-w-xs grid-cols-2 gap-2">
+                    {currentWarmupStep.collage.map((c, i) => (
+                      <div key={i} className="flex flex-col items-center rounded-xl bg-white p-1 dark:bg-[#0F1520]">
+                        <ExerciseSvg svgKey={c.svgKey} className="h-16 w-full landscape:h-12" />
+                        <span className="line-clamp-1 text-[11px] font-semibold text-[#111827] dark:text-[#F3F4F6]">{c.name}</span>
+                        <span className="font-mono-num text-[11px] font-bold text-[#DC2626] dark:text-[#F87171]">3–5</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <ExerciseSvg
+                    svgKey={currentWarmupStep.svgKey}
+                    className="h-36 w-52 max-h-full landscape:h-28 landscape:w-44 lg:landscape:h-40 lg:landscape:w-56"
+                  />
+                )}
               </div>
 
               <p className="text-[11px] font-medium text-gray-400 dark:text-gray-500">
