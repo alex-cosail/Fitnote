@@ -43,6 +43,8 @@ export interface CatalogExercise {
   defaultMax: Record<FitnessLevel, number>;
   teenAllowed?: boolean; // false for ++ with high axial / joint load
   ladder?: { minus1?: string; plus1?: string }; // preferred neighbours
+  /** Step 0 (v3.14): a movement for this joint at levels ≥ this one (1–3); never picked otherwise. */
+  rehab?: { joint: import('./joints').Joint; level: 1 | 2 | 3 };
 }
 
 export interface CatalogText {

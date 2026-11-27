@@ -4,6 +4,7 @@ import { Conditions } from '../catalog/filter';
 import { pickForPattern } from '../catalog/ladder';
 import type { CatalogExercise } from '../catalog/types';
 import { swapTarget } from './change';
+import { rehabFor, rehabTarget } from '../care/rehab';
 import { startCooldown } from './transitions';
 
 // «Пауза: болит» during a workout (v3.9): the exercises of this session that
@@ -41,11 +42,13 @@ export function applyCareToSession(
     }
     const used = new Set(kept.map((k) => k.exerciseId));
     const pool = ctx.catalog.filter((c) => !force.has(c.id) && !used.has(c.id));
-    const alt = pickForPattern(pool, cat.pattern, cat.rank, cond, cat.family);
+    // nothing of the pattern: a step-0 movement for the protected joint (v3.14)
+    const rule = blockedByCare(cat, care) ?? care[care.length - 1];
+    const alt = pickForPattern(pool, cat.pattern, cat.rank, cond, cat.family) ?? (rule ? rehabFor(pool, rule.joint, rule.level, used) : undefined);
     const from = exById.get(it.exerciseId);
     const to = alt ? exById.get(alt.id) : undefined;
     if (alt && from && to) {
-      const target = swapTarget(it.target, from, to);
+      const target = alt.rehab ? rehabTarget(alt) : swapTarget(it.target, from, to);
       kept.push({ exerciseId: to.id, target, plannedTarget: target, swappedFromId: it.swappedFromId ?? it.exerciseId });
       replaced.push({ from: from.id, to: to.id });
     } else {

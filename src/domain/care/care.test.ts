@@ -7,6 +7,7 @@ import { pickForPattern } from '../catalog/ladder';
 import { resolveExercises } from '../catalog/resolve';
 import { buildWeek, DEFAULT_PROFILE } from '../generator';
 import { applyCareToSession } from '../session/careSession';
+import { resolveWorkout } from '../plan/resolveWorkout';
 import type { ActiveSession } from '../../types';
 import { answerReview, blockedByCare, careToReview, normalizeCare, setCare } from './care';
 
@@ -96,10 +97,35 @@ describe('«Пауза: болит» during a workout', () => {
     expect(r.replaced.length + r.dropped.length).toBe(2);
   });
 
-  it('a dropped last slot moves on to the next round (no vertical pull spares the shoulder)', () => {
-    const r = applyCareToSession(session(['air-squats', 'strict-pull-ups'], 1), [{ joint: 'shoulder', level: 2 }], { catalog: CATALOG, exercises }, 0);
+  it('level 0: a dropped last slot moves on to the next round (nothing moves the shoulder)', () => {
+    const r = applyCareToSession(session(['air-squats', 'strict-pull-ups'], 1), [{ joint: 'shoulder', level: 0 }], { catalog: CATALOG, exercises }, 0);
     expect(r.dropped).toEqual(['strict-pull-ups']);
     expect(r.session.items.map((i) => i.exerciseId)).toEqual(['air-squats']);
     expect(r.session).toMatchObject({ currentRound: 3, currentItemIndex: 0 });
   });
+
+  it('levels 1–3: the slot takes a step-0 movement for that joint at the allowed level', () => {
+    const r = applyCareToSession(session(['air-squats', 'strict-pull-ups'], 1), [{ joint: 'shoulder', level: 2 }], { catalog: CATALOG, exercises }, 0);
+    expect(r.session.items.map((i) => i.exerciseId)).toEqual(['air-squats', 'rehab-shoulder-pendulum']);
+    expect(r.session.items[1].target).toBe(8);
+  });
+});
+
+describe('step 0 at the start of a workout', () => {
+  it('knee at level 2: squats become «Встать со стула», 8 times; knee at 0 — no knee movement at all', () => {
+    const plan = { items: [{ exerciseId: 'bulgarian-split-squat', target: 12 }, { exerciseId: 'floor-push-ups', target: 15 }] };
+    const r = resolveWorkout(plan, { catalog: CATALOG, exercises, conditions: { care: [{ joint: 'knee', level: 2 }] } });
+    expect(r[0]).toMatchObject({ exerciseId: 'rehab-sit-to-stand', target: 8, rehab: true });
+    expect(r[1].exerciseId).toBe('floor-push-ups');
+    const zero = resolveWorkout(plan, { catalog: CATALOG, exercises, conditions: { care: [{ joint: 'knee', level: 0 }] } });
+    expect(zero[0].unavailable).toBe(true);
+  });
+
+  it('two blocked slots of one joint get two different movements', () => {
+    const plan = { items: [{ exerciseId: 'strict-pull-ups', target: 6 }, { exerciseId: 'pike-push-ups', target: 10 }] };
+    const r = resolveWorkout(plan, { catalog: CATALOG, exercises, conditions: { care: [{ joint: 'shoulder', level: 3 }] } });
+    expect(new Set(r.map((x) => x.exerciseId)).size).toBe(2);
+    for (const x of r) expect(CATALOG.find((c) => c.id === x.exerciseId)!.rehab?.joint ?? 'shoulder-safe').toBeTruthy();
+  });
+
 });

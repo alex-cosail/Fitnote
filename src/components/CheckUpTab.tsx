@@ -60,7 +60,9 @@ export const CheckUpTab: React.FC<CheckUpTabProps> = ({
   const [showAll, setShowAll] = useState(false);
   const baseSet = new Set(baseIds ?? exercises.map((e) => e.id));
   const baseList = (baseIds ?? []).map((id) => exercises.find((e) => e.id === id)).filter(Boolean) as Exercise[];
-  const others = baseIds ? exercises.filter((e) => !baseSet.has(e.id) && !e.isCustom) : [];
+  // step-0 movements (v3.14) have fixed gentle targets: no check-up for them
+  const rehabIds = new Set(CATALOG.filter((c) => c.rehab).map((c) => c.id));
+  const others = baseIds ? exercises.filter((e) => !baseSet.has(e.id) && !e.isCustom && !rehabIds.has(e.id)) : [];
   const custom = exercises.filter((e) => e.isCustom);
   const visible = baseIds ? [...baseList, ...custom, ...(showAll ? others : [])] : exercises;
   const [timerState, setTimerState] = useState<TimerState | null>(null);

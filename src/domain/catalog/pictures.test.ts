@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CATALOG } from '../../data/catalog';
 import { catalogTextsFor } from '../../data/catalogTexts';
 import { SCENE_KEYS } from '../../data/sceneKeys';
+import { REHAB_KEYS } from '../../data/rehabKeys';
 import { catalogPictureFor, resolveExercises } from './resolve';
 
 // The check-up showed several exercises with the same picture (28.11). The
@@ -14,7 +15,7 @@ describe('pictures', () => {
     const keys = CATALOG.map((c) => c.svgKey);
     expect(new Set(keys).size).toBe(keys.length);
     for (const k of keys) {
-      const drawn = (SCENE_KEYS as readonly string[]).includes(k) || fallback.includes(`case '${k}'`);
+      const drawn = (SCENE_KEYS as readonly string[]).includes(k) || (REHAB_KEYS as readonly string[]).includes(k) || fallback.includes(`case '${k}'`);
       expect(drawn, k).toBe(true);
       expect(k).not.toBe('generic_strength');
     }

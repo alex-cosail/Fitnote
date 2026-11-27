@@ -68,7 +68,8 @@ const OVERRIDES: Record<string, JointLoad> = {
   'swedish-wall-side-hold': { shoulder: 2, elbow_wrist: 2, lower_back: 1 },
 };
 
-export function jointLoad(c: Pick<CatalogExercise, 'id' | 'pattern'>): JointLoad {
+export function jointLoad(c: Pick<CatalogExercise, 'id' | 'pattern'> & { rehab?: CatalogExercise['rehab'] }): JointLoad {
+  if (c.rehab) return { [c.rehab.joint]: 1 };
   return OVERRIDES[c.id] ?? BY_PATTERN[c.pattern] ?? {};
 }
 

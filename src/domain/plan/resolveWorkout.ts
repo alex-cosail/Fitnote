@@ -1,4 +1,5 @@
 import { Exercise, TargetSpec, WorkoutItem, WorkoutPlan } from '../../types';
+import { blockingRule, rehabFor, rehabTarget } from '../care/rehab';
 import { Conditions, isAvailable } from '../catalog/filter';
 import { pickForPattern } from '../catalog/ladder';
 import { CatalogExercise } from '../catalog/types';
@@ -20,6 +21,8 @@ export interface ResolvedItem {
   // No exercise fits this slot under the conditions (the slot is kept
   // with its pinned exercise if it has one).
   unavailable?: boolean;
+  /** A step-0 movement for a protected joint (v3.14). */
+  rehab?: boolean;
 }
 
 // Fraction of the max for "leave N in the tank".
@@ -72,6 +75,12 @@ export function resolveWorkout(plan: Pick<WorkoutPlan, 'items' | 'useAgt30'>, ct
       // substitute pattern takes the slot — a band row (GENERATOR_RULES §11).
       const sub = pattern ? SUBSTITUTE[pattern] : undefined;
       if (!pick && sub) pick = pickForPattern(ctx.catalog, sub, rank, cond);
+      // A joint at level 1–3 blocks it: a movement for that joint (v3.14).
+      if (!pick) {
+        const rule = blockingRule(ctx.catalog, cond.care, pinnedCat, pattern);
+        const used = new Set(resolved.map((r) => r.exerciseId));
+        if (rule) pick = rehabFor(ctx.catalog, rule.joint, rule.level, used);
+      }
       if (pick) {
         chosen = exById.get(pick.id);
         if (item.exerciseId && item.exerciseId !== pick.id) substitutedFrom = item.exerciseId;
@@ -86,8 +95,11 @@ export function resolveWorkout(plan: Pick<WorkoutPlan, 'items' | 'useAgt30'>, ct
       return;
     }
 
+    const chosenCat = catalogById.get(chosen.id);
     let target: number;
-    if (plan.useAgt30) {
+    if (chosenCat?.rehab) {
+      target = rehabTarget(chosenCat);
+    } else if (plan.useAgt30) {
       target = calcAgt30(chosen);
     } else if (item.spec) {
       target = targetFromSpec(item.spec, chosen);
@@ -99,7 +111,7 @@ export function resolveWorkout(plan: Pick<WorkoutPlan, 'items' | 'useAgt30'>, ct
       target = item.target;
     }
 
-    resolved.push({ slotIndex, exerciseId: chosen.id, target, substitutedFrom });
+    resolved.push({ slotIndex, exerciseId: chosen.id, target, substitutedFrom, ...(chosenCat?.rehab ? { rehab: true } : {}) });
   });
   return resolved;
 }

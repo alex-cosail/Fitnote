@@ -12,8 +12,11 @@ const ex = (id: string) => INITIAL_EXERCISES.find((e) => e.id === id)!;
 const ctx = { catalog: CATALOG, exercises: INITIAL_EXERCISES };
 
 describe('conditions filter', () => {
-  it('no conditions = everything available', () => {
-    expect(CATALOG.every((c) => isAvailable(c))).toBe(true);
+  it('no conditions = everything available, except step 0 (only for a protected joint)', () => {
+    expect(CATALOG.filter((c) => !c.rehab).every((c) => isAvailable(c))).toBe(true);
+    expect(CATALOG.filter((c) => c.rehab).some((c) => isAvailable(c))).toBe(false);
+    expect(isAvailable(cat('rehab-sit-to-stand'), { care: [{ joint: 'knee', level: 2 }] })).toBe(true);
+    expect(isAvailable(cat('rehab-mini-squat'), { care: [{ joint: 'knee', level: 2 }] })).toBe(false); // level 3 move
   });
 
   it('home excludes bar-only exercises', () => {

@@ -14,6 +14,8 @@ export const MUSCLE_LABELS: Record<string, string> = {
   core: 'Кор',
   lower_back: 'Поясница',
   forearms: 'Предплечья',
+  neck: 'Шея',
+  calves: 'Икры',
   spine_decompression: 'Декомпрессия позвоночника',
   shoulder_press: 'Плечи (жим)',
 };

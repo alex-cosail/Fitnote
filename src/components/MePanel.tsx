@@ -6,6 +6,8 @@ import type { Joint } from '../domain/catalog/joints';
 import type { Zone, ZoneMark } from '../domain/generator/types';
 import { BodySkeleton } from './care/BodySkeleton';
 import { JointLevelPicker } from './care/JointLevelPicker';
+import { CATALOG } from '../data/catalog';
+import { ExerciseSvg } from './ExerciseSvg';
 import { UserProfile, ZONES } from '../domain/profile/profile';
 import { useT } from '../i18n';
 import type { TranslationKey } from '../i18n/ru';
@@ -161,6 +163,23 @@ export const MePanel: React.FC<MePanelProps> = ({ profile, exercises, favorites,
                 <X className="h-5 w-5" />
               </button>
             </div>
+            {(() => {
+              const lv = levelOf.get(joint);
+              const moves = lv !== undefined && lv >= 1 && lv <= 3 ? CATALOG.filter((c) => c.rehab?.joint === joint && c.rehab.level <= lv) : [];
+              return moves.length ? (
+                <div className="mb-3 rounded-xl bg-[#F0F7E6] p-2.5 dark:bg-[#173404]/50">
+                  <p className="text-xs font-semibold text-[#3B6D11] dark:text-[#97C459]">Вместо упражнений на этот сустав — такие движения:</p>
+                  <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                    {moves.map((c) => (
+                      <div key={c.id} className="flex flex-col items-center rounded-lg bg-white p-1 text-center dark:bg-[#0F1520]">
+                        <ExerciseSvg svgKey={c.svgKey} className="h-12 w-full" />
+                        <span className="line-clamp-2 text-[10px] leading-tight text-gray-700 dark:text-gray-300">{exercises.find((e) => e.id === c.id)?.name ?? c.id}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })()}
             <JointLevelPicker
               value={levelOf.get(joint)}
               onPick={(lv) => {

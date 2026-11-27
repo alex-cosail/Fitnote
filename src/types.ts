@@ -15,6 +15,7 @@ export type AppTab = 'workout' | 'checkup' | 'catalog' | 'sync';
 export type SvgKey =
   | import('./data/sceneKeys').SceneKey
   | import('./data/warmupKeys').WarmupKey
+  | import('./data/rehabKeys').RehabKey
   | 'pullups'
   | 'dips'
   | 'australian_pullups'

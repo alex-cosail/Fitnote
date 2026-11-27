@@ -26,5 +26,8 @@ export function isAvailable(c: CatalogExercise, cond: Conditions = {}): boolean 
   if (cond.cleanFloor === false && c.posture.includes('floor_contact')) return false;
   if (cond.ageGroup === 'teen' && (c.teenAllowed === false || c.rank === 5)) return false;
   if (blockedByCare(c, cond.care)) return false;
+  // Step 0 (v3.14) is never picked for a free joint: only for its joint at
+  // levels 1–3, and not above that level.
+  if (c.rehab && !cond.care?.some((r) => r.joint === c.rehab!.joint && r.level >= c.rehab!.level && r.level <= 3)) return false;
   return true;
 }

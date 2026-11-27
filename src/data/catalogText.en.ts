@@ -332,4 +332,100 @@ export const CATALOG_TEXT_EN: Record<string, CatalogText> = {
     details:
       "Grip a chest-high bar overhand at shoulder width and walk your feet forward so your body forms a straight line at about 45°. Exhale and pull your chest to the bar, squeezing the shoulder blades and driving the elbows back; inhale and lower with control. The lower the bar and the flatter the body, the harder it gets — the next step is regular Australian pull-ups.",
   },
+  "rehab-neck-isometric": {
+    name: "Neck Isometric Press",
+    cue: "Palm on your forehead: press your head into it gently for 5 seconds without moving, then from the side. Breathe evenly.",
+  },
+  "rehab-neck-turns": {
+    name: "Head Turns",
+    cue: "Standing tall, slowly turn your head right to a light stretch, come back, then left. No jerks.",
+  },
+  "rehab-neck-tilts": {
+    name: "Head Tilts",
+    cue: "Shoulders down: slowly tilt your ear to the shoulder and in a half circle over the chest to the other side.",
+  },
+  "rehab-shoulder-isometric": {
+    name: "Shoulder Wall Isometric",
+    cue: "Side to the wall, elbow bent at 90°: press the back of your hand into the wall gently for 5–10 seconds without moving.",
+  },
+  "rehab-shoulder-pendulum": {
+    name: "Supported Pendulum",
+    cue: "Lean on a bench with your free hand: let the other arm hang and swing it forward and back, then in small circles.",
+  },
+  "rehab-shoulder-wall-crawl": {
+    name: "Wall Crawl",
+    cue: "Facing the wall, walk your fingers up to a comfortable height and slowly down. Keep the shoulders away from the ears.",
+  },
+  "rehab-fist-squeeze": {
+    name: "Fist Squeeze",
+    cue: "Squeeze a soft ball or a rolled towel for 5 seconds and relax. Elbow supported.",
+  },
+  "rehab-wrist-circles": {
+    name: "Wrist Circles",
+    cue: "Elbows by your sides: slow wrist circles both ways, then bend and straighten the wrist.",
+  },
+  "rehab-wall-push-ups": {
+    name: "Wall Push-Ups",
+    cue: "Hands on the wall at shoulder height, step back: bend the arms slowly and push away, body straight.",
+  },
+  "rehab-rib-breathing": {
+    name: "Rib Breathing",
+    cue: "Sitting tall, hands on the ribs: breathe in slowly sideways into the hands, breathe out long.",
+  },
+  "rehab-seated-twist": {
+    name: "Seated Twist",
+    cue: "Sitting on a bench, arms across the chest: slowly turn the chest right and left, hips still.",
+  },
+  "rehab-standing-cat": {
+    name: "Standing Cat",
+    cue: "Hands on a bench or bars, feet back: round the back as you breathe out, arch gently as you breathe in.",
+  },
+  "rehab-standing-brace": {
+    name: "Standing Brace",
+    cue: "Standing by a support: gently draw the lower belly in for 5–10 seconds, keep breathing, back still.",
+  },
+  "rehab-wall-pelvic-tilt": {
+    name: "Wall Pelvic Tilt",
+    cue: "Back to the wall, knees soft: press the lower back into the wall by tilting the pelvis, then release.",
+  },
+  "rehab-supported-hinge": {
+    name: "Supported Hip Hinge",
+    cue: "Hands on a bench or rail: push the hips back with a flat back a third of the way, and come back.",
+  },
+  "rehab-glute-squeeze": {
+    name: "Standing Glute Squeeze",
+    cue: "Standing by a support: squeeze the glutes for 5 seconds without moving the pelvis, then relax.",
+  },
+  "rehab-side-leg-raise": {
+    name: "Supported Side Leg Raise",
+    cue: "Holding a support, slowly lift the straight leg 20–30 cm to the side and back. Body upright.",
+  },
+  "rehab-supported-split": {
+    name: "Supported Split Squat",
+    cue: "Holding a support, step back: lower a little — the back knee stays off the ground — and come up.",
+  },
+  "rehab-quad-set": {
+    name: "Quad Set",
+    cue: "Sitting, leg straight on the bench: press the knee down by tightening the front of the thigh for 5 seconds.",
+  },
+  "rehab-sit-to-stand": {
+    name: "Sit to Stand",
+    cue: "With your hands on your knees or armrests, stand up from the bench and sit back down slowly.",
+  },
+  "rehab-mini-squat": {
+    name: "Supported Mini Squat",
+    cue: "Holding a support, squat a third of the way, knees over the toes, and stand up.",
+  },
+  "rehab-ankle-pumps": {
+    name: "Ankle Pumps",
+    cue: "Sitting, slowly point and flex the foot, then circle it both ways.",
+  },
+  "rehab-calf-raise": {
+    name: "Supported Calf Raise",
+    cue: "Holding a support with both hands, rise slowly onto the toes and lower.",
+  },
+  "rehab-single-leg-balance": {
+    name: "Supported Single-Leg Balance",
+    cue: "Next to a support, stand on one leg, touching it with your fingers if needed: 15–30 seconds each.",
+  },
 };

@@ -11,18 +11,18 @@ const RED = '#DC2626';
 const FLOOR = '#E5E7EB';
 const GEAR = '#9CA3AF';
 
-type Pt = [number, number];
+export type Pt = [number, number];
 const pts = (p: Pt[]) => p.map((q) => q.join(',')).join(' ');
 
-const Line = ({ p, c = INK, w = 3 }: { p: Pt[]; c?: string; w?: number }) => (
+export const Line = ({ p, c = INK, w = 3 }: { p: Pt[]; c?: string; w?: number }) => (
   <polyline points={pts(p)} fill="none" stroke={c} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" />
 );
-const Head = ({ x, y }: { x: number; y: number }) => <circle cx={x} cy={y} r="6.5" fill="none" stroke={INK} strokeWidth="2.6" />;
-const Floor = () => <line x1="16" y1="104" x2="144" y2="104" stroke={FLOOR} strokeWidth="2" />;
-const Dashed = ({ d }: { d: string }) => <path d={d} fill="none" stroke={RED} strokeWidth="2" strokeDasharray="4 3" strokeLinecap="round" />;
+export const Head = ({ x, y }: { x: number; y: number }) => <circle cx={x} cy={y} r="6.5" fill="none" stroke={INK} strokeWidth="2.6" />;
+export const Floor = () => <line x1="16" y1="104" x2="144" y2="104" stroke={FLOOR} strokeWidth="2" />;
+export const Dashed = ({ d }: { d: string }) => <path d={d} fill="none" stroke={RED} strokeWidth="2" strokeDasharray="4 3" strokeLinecap="round" />;
 
 /** Frames shown one after another, a sharp change (steps). */
-const Frames = ({ frames, t = 1.6, keyIndex = 0 }: { frames: React.ReactNode[]; t?: number; keyIndex?: number }) => {
+export const Frames = ({ frames, t = 1.6, keyIndex = 0 }: { frames: React.ReactNode[]; t?: number; keyIndex?: number }) => {
   const n = frames.length;
   return (
     <>
@@ -40,7 +40,7 @@ const Frames = ({ frames, t = 1.6, keyIndex = 0 }: { frames: React.ReactNode[]; 
 };
 
 /** A segment rotating around a joint: full circles or a swing between two angles. */
-const Turn = ({ o, children, swing, t = 2 }: { o: Pt; children: React.ReactNode; swing?: [number, number]; t?: number }) => (
+export const Turn = ({ o, children, swing, t = 2 }: { o: Pt; children: React.ReactNode; swing?: [number, number]; t?: number }) => (
   <g
     className="spin"
     style={
