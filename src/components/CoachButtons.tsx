@@ -8,9 +8,9 @@ interface Props {
 }
 
 /**
- * «Обсудить с моим ИИ-тренером» and «Обсудить с персональным тренером»
+ * «Обсудить с моим ИИ-тренером» and «Обсудить с персональным тренером» (our paid AI)
  * (v3.19). The first copies a request for any AI; the answer is pasted on
- * the Sync/Log tab. The second is a subscription service, coming later.
+ * the Sync/Log tab. The second is our tuned AI by subscription (on-the-fly answers, new catalog exercises), coming later.
  */
 export const CoachButtons: React.FC<Props> = ({ buildPrompt, onOpenSync }) => {
   const [copied, setCopied] = useState(false);
@@ -61,7 +61,7 @@ export const CoachButtons: React.FC<Props> = ({ buildPrompt, onOpenSync }) => {
       </button>
       {personal && (
         <p className="rounded-xl bg-gray-50 p-3 text-sm text-gray-600 dark:bg-[#1A2333] dark:text-gray-300" role="status">
-          Скоро: живой тренер посмотрит вашу тренировку или серию и ответит в приложении. Будет доступно по подписке.
+          Скоро: ваш персональный тренер посмотрит вашу тренировку или серию и ответит в приложении. Будет доступно по подписке.
         </p>
       )}
     </div>
