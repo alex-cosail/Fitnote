@@ -43,6 +43,8 @@ interface SyncLogTabProps {
   onImportPlan: (payload: {
     workouts?: WorkoutPlan[];
     exercises?: Exercise[];
+    title?: string;
+    weeks?: number;
   }) => { addedWorkouts: number; addedExercises: number };
 }
 
@@ -329,6 +331,20 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
     }
   };
 
+  // The whole AI answer may be pasted: take the JSON block inside it (v3.19).
+  const parseLoose = (raw: string) => {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      const fence = /```(?:json)?\s*([\s\S]*?)```/i.exec(raw);
+      if (fence) return JSON.parse(fence[1]);
+      const a = raw.indexOf('{');
+      const b = raw.lastIndexOf('}');
+      if (a >= 0 && b > a) return JSON.parse(raw.slice(a, b + 1));
+      throw new Error('no json');
+    }
+  };
+
   const processJsonImport = (rawJson: string) => {
     setImportStatus(null);
     if (!rawJson.trim()) {
@@ -339,7 +355,7 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
       return;
     }
     try {
-      const parsed = JSON.parse(rawJson);
+      const parsed = parseLoose(rawJson);
       const workoutsInput: WorkoutPlan[] = Array.isArray(parsed)
         ? parsed
         : Array.isArray(parsed.workouts)
@@ -363,11 +379,13 @@ export const SyncLogTab: React.FC<SyncLogTabProps> = ({
       const res = onImportPlan({
         workouts: workoutsInput,
         exercises: exercisesInput,
+        ...(typeof parsed.title === 'string' ? { title: parsed.title } : {}),
+        ...(typeof parsed.weeks === 'number' ? { weeks: parsed.weeks } : {}),
       });
       setImportText('');
       setImportStatus({
         type: 'ok',
-        message: `Импортировано планов: ${res.addedWorkouts}, упражнений: ${res.addedExercises}. История тренировок сохранена.`,
+        message: `Импортировано планов: ${res.addedWorkouts}, упражнений: ${res.addedExercises}. ${res.addedWorkouts > 1 ? 'Серия' : 'Тренировка'} — в архиве конструктора, оттуда её можно поставить в календарь. История тренировок сохранена.`,
       });
     } catch {
       setImportStatus({

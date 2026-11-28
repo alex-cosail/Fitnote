@@ -307,6 +307,17 @@ export function renameItem<T extends Data>(data: T, item: ArchiveItem, title: st
   return { ...data, archive, workouts, cycles };
 }
 
+/** A pasted plan (v3.19): several workouts are one series, one is a single. */
+export function archiveImport<T extends Data>(data: T, ids: string[], title: string | undefined, weeks: number | undefined, stamp: string): T {
+  const list = archiveOf(data).filter((it) => !(it.kind === 'single' && ids.includes(it.planIds[0])));
+  if (ids.length === 0) return data;
+  const item: ArchiveItem =
+    ids.length > 1
+      ? { id: `arch-import-${stamp}`, kind: 'series', title: title?.trim() || 'План от ИИ-тренера', planIds: ids, weeks: Math.max(1, Math.min(8, weeks ?? 4)), days: daysFor(ids.length, data.profile?.days) }
+      : { id: `arch-import-${stamp}`, kind: 'single', title: title?.trim() || data.workouts.find((w) => w.id === ids[0])?.title || 'Тренировка от ИИ', planIds: ids, weeks: 1 };
+  return { ...data, archive: [...list, item] };
+}
+
 export const WEEKDAY_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
 export { cycleAt, weekdayOf };

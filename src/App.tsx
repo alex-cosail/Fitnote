@@ -44,7 +44,7 @@ import { dayPlan, dayTimes, runGenerator, toWorkoutPlans } from './domain/genera
 import { UserProfile, requestFor, toGeneratorProfile } from './domain/profile/profile';
 import { recordMax } from './domain/catalog/userMaxes';
 import { resolveWorkout } from './domain/plan/resolveWorkout';
-import { applyImport, ImportPayload } from './domain/plan/importPlan';
+import { applyImport, ImportPayload, importedIds } from './domain/plan/importPlan';
 import { calcAgt30, getEffectiveRounds } from './domain/plan/targets';
 import { useWakeLock } from './hooks/useWakeLock';
 import { I18nProvider, Locale, makeT } from './i18n';
@@ -68,9 +68,10 @@ import { warmupOptionsFor } from './domain/warmup/warmup';
 import { buildCooldown } from './domain/cooldown/cooldown';
 import { applySwaps } from './domain/session/change';
 import type { Conditions } from './domain/catalog/filter';
-import { archiveOf, buildSeries, renameItem, clearFrom, copyToSingles, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, unschedule, weekPlans, WEEKDAY_SHORT } from './domain/schedule/archive';
+import { archiveImport, archiveOf, buildSeries, renameItem, clearFrom, copyToSingles, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, unschedule, weekPlans, WEEKDAY_SHORT } from './domain/schedule/archive';
 import { ArchivePanel } from './components/constructor/ArchivePanel';
 import { answerReview, blockedByCare, careToReview, JOINT_NAMES, LEVEL_INFO, normalizeCare, removeCare, setCare } from './domain/care/care';
+import { buildAiCoachPrompt } from './domain/coach/aiPrompt';
 
 const PROTECTED_WORKOUT_IDS = new Set([
   'workout-a',
@@ -701,6 +702,7 @@ export default function App() {
   // Counts come from the same pure merge that updates the state, so the
   // "Imported N plans" message is always right.
   const handleImportPlan = (payload: ImportPayload) => {
+    const seed = Date.now();
     const result = applyImport(
       {
         maxes: data.maxes,
@@ -708,14 +710,20 @@ export default function App() {
         workouts: data.workouts,
       },
       payload,
-      CATALOG_IDS
+      CATALOG_IDS,
+      seed
     );
-    setData((prev) => ({
-      ...prev,
-      maxes: result.maxes,
-      customExercises: result.customExercises,
-      workouts: result.workouts,
-    }));
+    // v3.19: the plan from the AI coach lands in the archive (a series or a single)
+    const ids = importedIds(payload, seed);
+    setData((prev) =>
+      archiveImport(
+        withCycles({ ...prev, maxes: result.maxes, customExercises: result.customExercises, workouts: result.workouts }),
+        ids,
+        payload.title,
+        payload.weeks,
+        seed.toString(36)
+      )
+    );
     return {
       addedWorkouts: result.addedWorkouts,
       addedExercises: result.addedExercises,
@@ -911,6 +919,22 @@ export default function App() {
             onChoice={handleReadyChoice}
             onCalendar={handleCycleToCalendar}
             onCoach={() => readyPlans && setShareOf({ plans: readyPlans, title: t('ready.shareHeader'), days: ready?.days })}
+            buildAiPrompt={() =>
+              buildAiCoachPrompt({
+                profile: data.profile,
+                care: normalizeCare(data.care),
+                conditions: genProfile.usualConditions,
+                plans: readyPlans ?? [],
+                kind: 'series',
+                catalog: CATALOG,
+                exercises,
+              })
+            }
+            onOpenSync={() => {
+              setReady(null);
+              setActiveTab('sync');
+              window.scrollTo(0, 0);
+            }}
             onStart={() => {
               setReady(null);
               setActiveTab('workout');
@@ -1187,6 +1211,11 @@ export default function App() {
             onAdd={handleAddGenerated}
             onSaveOwn={handleSaveOwn}
             hasActiveCycle={hasActiveCycle}
+            care={normalizeCare(data.care)}
+            onOpenSync={() => {
+              setActiveTab('sync');
+              window.scrollTo(0, 0);
+            }}
           />
         )}
         {!isFullscreen && activeTab === 'catalog' && (

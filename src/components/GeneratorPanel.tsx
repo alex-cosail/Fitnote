@@ -14,6 +14,9 @@ import { CreateOwnPanel } from './CreateOwnPanel';
 import { CycleChoice } from '../domain/schedule/place';
 import { UserProfile, requestFor, toGeneratorProfile } from '../domain/profile/profile';
 import { ExerciseStepCard } from './ExerciseStepCard';
+import type { Care } from '../domain/care/care';
+import { buildAiCoachPrompt } from '../domain/coach/aiPrompt';
+import { CoachButtons } from './CoachButtons';
 
 interface GeneratorPanelProps {
   exercises: Exercise[];
@@ -25,6 +28,9 @@ interface GeneratorPanelProps {
   /** A real cycle is running (offers «После текущего цикла»). */
   hasActiveCycle?: boolean;
   onSaveOwn: (plan: WorkoutPlan) => void;
+  /** Joint levels (v3.19: the generator respects them too). */
+  care?: Care[];
+  onOpenSync?: () => void;
 }
 
 const PERIODS: GenPeriod[] = ['single', 'week', 'month'];
@@ -50,14 +56,18 @@ export const iconBtn =
  * "Done — add to Workouts".
  */
 export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
-  exercises, profile, logs, favorites, onToggleFavorite, onAdd, onSaveOwn, hasActiveCycle,
+  exercises, profile, logs, favorites, onToggleFavorite, onAdd, onSaveOwn, hasActiveCycle, care, onOpenSync,
 }) => {
   const [choice, setChoice] = useState<CycleChoice>(hasActiveCycle ? 'nextWeek' : 'today');
   const { t } = useT();
   const [tab, setTab] = useState<'base' | 'own'>('base');
   // The questions' defaults come from the person's profile.
   const [req, setReq] = useState<GenRequest>(() => requestFor(profile));
-  const genProfile = useMemo(() => toGeneratorProfile(profile, favorites), [profile, favorites]);
+  const genProfile = useMemo(() => {
+    const g = toGeneratorProfile(profile, favorites);
+    const rules = (care ?? []).map((c) => ({ joint: c.joint, level: c.level }));
+    return rules.length ? { ...g, usualConditions: { ...(g.usualConditions ?? {}), care: rules } } : g;
+  }, [profile, favorites, care]);
   const [openWeeks, setOpenWeeks] = useState<Set<number>>(new Set([0]));
   const [draft, setDraft] = useState<WorkoutPlan[] | null>(null); // editing the base
   const date = todayIso();
@@ -327,6 +337,22 @@ export const GeneratorPanel: React.FC<GeneratorPanelProps> = ({
               {t('gen.add')}
             </button>
             <p className="text-xs text-gray-500 dark:text-gray-400">{t('gen.replaceNote')}</p>
+          </div>
+          <div className="mt-3 max-w-md">
+            <CoachButtons
+              onOpenSync={onOpenSync}
+              buildPrompt={() =>
+                buildAiCoachPrompt({
+                  profile,
+                  care,
+                  conditions: genProfile.usualConditions,
+                  plans,
+                  kind: req.period === 'single' ? 'single' : 'series',
+                  catalog: CATALOG,
+                  exercises,
+                })
+              }
+            />
           </div>
         </>
       )}

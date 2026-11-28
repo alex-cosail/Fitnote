@@ -6,6 +6,7 @@ import { weekText } from '../domain/plan/shareText';
 import { useT } from '../i18n';
 import { Exercise, WorkoutPlan } from '../types';
 import { CycleChoice } from '../domain/schedule/place';
+import { CoachButtons } from './CoachButtons';
 
 interface WeekReadyPanelProps {
   plans: WorkoutPlan[];
@@ -17,6 +18,9 @@ interface WeekReadyPanelProps {
   onChoice: (c: CycleChoice) => void;
   onCalendar: () => void;
   onCoach?: () => void;
+  /** «Обсудить с моим ИИ-тренером» (v3.19). */
+  buildAiPrompt?: () => string;
+  onOpenSync?: () => void;
 }
 
 /**
@@ -25,7 +29,7 @@ interface WeekReadyPanelProps {
  * coach; the calendar comes with weekdays (v3.5), the personal coach is a
  * paid service for later.
  */
-export const WeekReadyPanel: React.FC<WeekReadyPanelProps> = ({ plans, exercises, onStart, onEdit, choices, choice, onChoice, onCalendar, onCoach }) => {
+export const WeekReadyPanel: React.FC<WeekReadyPanelProps> = ({ plans, exercises, onStart, onEdit, choices, choice, onChoice, onCalendar, onCoach, buildAiPrompt, onOpenSync }) => {
   const { t } = useT();
   const [sent, setSent] = useState<'' | 'shared' | 'copied'>('');
   const catalogById = useMemo(() => new Map(CATALOG.map((c) => [c.id, c])), []);
@@ -130,11 +134,15 @@ export const WeekReadyPanel: React.FC<WeekReadyPanelProps> = ({ plans, exercises
           <span className="flex-1">{t('ready.calendar')}</span>
           <span className="text-xs font-semibold text-gray-500">{t('ready.calendarHint')}</span>
         </button>
-        <div className={`${secondary} cursor-default opacity-60`}>
-          <UserRoundCheck className="h-4 w-4 shrink-0" />
-          <span className="flex-1">{t('ready.personal')}</span>
-          <span className="text-xs font-semibold text-gray-500">{t('ready.soon')}</span>
-        </div>
+        {buildAiPrompt ? (
+          <CoachButtons buildPrompt={buildAiPrompt} onOpenSync={onOpenSync} />
+        ) : (
+          <div className={`${secondary} cursor-default opacity-60`}>
+            <UserRoundCheck className="h-4 w-4 shrink-0" />
+            <span className="flex-1">{t('ready.personal')}</span>
+            <span className="text-xs font-semibold text-gray-500">{t('ready.soon')}</span>
+          </div>
+        )}
       </div>
     </section>
   );

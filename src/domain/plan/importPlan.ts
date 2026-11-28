@@ -2,8 +2,18 @@ import { Exercise, WorkoutPlan } from '../../types';
 import { MaxEntry } from '../catalog/types';
 
 export interface ImportPayload {
+  /** v3.19: a name for the set (the AI coach gives one) and how many weeks a series runs. */
+  title?: string;
+  weeks?: number;
   workouts?: WorkoutPlan[];
   exercises?: Exercise[];
+}
+
+/** The ids the import gives the plans (the same rule as applyImport). */
+export function importedIds(payload: ImportPayload, idSeed: number): string[] {
+  return (payload.workouts ?? [])
+    .filter((w) => w.title && Array.isArray(w.items))
+    .map((w, i) => w.id || `plan-${idSeed}-${i}`);
 }
 
 export interface ImportState {
