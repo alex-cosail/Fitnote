@@ -281,10 +281,30 @@ export function copyToSingles<T extends Data>(data: T, planId: string, stamp: st
   return { ...data, workouts: [copy, ...data.workouts], archive };
 }
 
-/** «Собрать в неделю»: chosen singles become a series; the singles stay in the archive. */
+/**
+ * «Собрать в неделю»: the chosen singles move into a new series (customer,
+ * 29.11) — «В разовые» brings a copy back when needed.
+ */
 export function buildSeries<T extends Data>(data: T, planIds: string[], title: string, days: Weekday[], weeks: number, stamp: string): T & { builtId: string } {
   const item: ArchiveItem = { id: `arch-week-${stamp}`, kind: 'series', title, planIds, weeks, days };
-  return { ...data, archive: [...archiveOf(data), item], builtId: item.id };
+  const moved = new Set(planIds);
+  const rest = archiveOf(data).filter((it) => !(it.kind === 'single' && moved.has(it.planIds[0])));
+  return { ...data, archive: [...rest, item], builtId: item.id };
+}
+
+/** «Переименовать» (v3.18): the archive item, a single's workout and the series' cycles. */
+export function renameItem<T extends Data>(data: T, item: ArchiveItem, title: string): T {
+  const name = title.trim();
+  if (!name) return data;
+  const ids = new Set(item.planIds);
+  const list = archiveOf(data);
+  const archive = list.some((it) => it.id === item.id)
+    ? list.map((it) => (it.id === item.id ? { ...it, title: name } : it))
+    : [...list, { ...item, title: name }];
+  const workouts = item.kind === 'single' ? data.workouts.map((w) => (ids.has(w.id) ? { ...w, title: name } : w)) : data.workouts;
+  const same = (c: Cycle) => c.planIds.length === item.planIds.length && c.planIds.every((id) => ids.has(id));
+  const cycles = item.kind === 'series' ? (data.cycles ?? []).map((c) => (same(c) ? { ...c, title: name } : c)) : data.cycles;
+  return { ...data, archive, workouts, cycles };
 }
 
 export const WEEKDAY_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];

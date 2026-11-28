@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowLeftRight,
   ArrowUp,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Minus,
   Play,
@@ -253,7 +255,10 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   // Manual tuning of the coach's numbers ("couch tuning"): hidden for the red
   // mobility block and for AGT plans, where targets come from the Check-Up.
   // Hidden for the accent too: its rounds and order differ from the plan.
-  const canTune = (readiness === 'green' || readiness === 'yellow') && !selectedPlan.useAgt30;
+  // Any workout can be edited (customer, 29.11) in the standard and short
+  // modes; AGT targets are 30% of the max, so their numbers are not edited.
+  const canTune = readiness === 'green' || readiness === 'yellow';
+  const canTarget = canTune && !selectedPlan.useAgt30;
   const MAX_ROUNDS = 20;
 
   const withOriginal = (plan: WorkoutPlan): WorkoutPlan =>
@@ -308,6 +313,15 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
     const base = withOriginal(selectedPlan);
     const next = swapExercise(base, idx, CATALOG, exercises, cond);
     if (next !== base) onUpdateWorkout(next);
+  };
+
+  // ↑ / ↓: swap with the neighbour shown above / below (v3.18).
+  const handleMove = (fromSlot: number, toSlot: number | undefined) => {
+    if (toSlot === undefined || fromSlot === toSlot) return;
+    const base = withOriginal(selectedPlan);
+    const items = [...base.items];
+    [items[fromSlot], items[toSlot]] = [items[toSlot], items[fromSlot]];
+    onUpdateWorkout({ ...base, items });
   };
 
   const isTuned = Boolean(
@@ -744,6 +758,9 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
               )}
             </h2>
 
+            {readiness === 'accent' && (
+              <p className="text-xs text-gray-500 dark:text-gray-400">Править тренировку — в режиме «Стандарт» или «Короткая»</p>
+            )}
             {canTune && (
               <div className="flex items-center gap-1.5">
                 {isTuned && (
@@ -820,9 +837,31 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                       <span className="font-mono-num shrink-0 text-sm font-bold text-[#DC2626] dark:text-[#F87171] landscape:text-xs">
                         {String(idx + 1).padStart(2, '0')}
                       </span>
-                      <h3 className="min-w-0 break-words text-lg font-bold leading-snug text-[#111827] dark:text-[#F3F4F6] landscape:text-base landscape:leading-tight">
+                      <h3 className="min-w-0 flex-1 break-words text-lg font-bold leading-snug text-[#111827] dark:text-[#F3F4F6] landscape:text-base landscape:leading-tight">
                         {ex.name}
                       </h3>
+                      {canTune && (
+                        <span className="flex shrink-0 gap-0.5 self-center">
+                          <button
+                            type="button"
+                            onClick={() => handleMove(item.slotIndex, displayedItems[idx - 1]?.slotIndex)}
+                            disabled={idx === 0}
+                            className="tap-scale flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:text-[#111827] disabled:opacity-30 dark:hover:text-[#F3F4F6]"
+                            aria-label={`Выше: ${ex.name}`}
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMove(item.slotIndex, displayedItems[idx + 1]?.slotIndex)}
+                            disabled={idx === displayedItems.length - 1}
+                            className="tap-scale flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:text-[#111827] disabled:opacity-30 dark:hover:text-[#F3F4F6]"
+                            aria-label={`Ниже: ${ex.name}`}
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </button>
+                        </span>
+                      )}
                     </div>
 
                     <p className="mt-1 break-words text-xs text-gray-500 dark:text-gray-400 landscape:hidden">
@@ -858,7 +897,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                         />
                       )}
                       <div className="flex items-center gap-1.5 text-right landscape:text-left">
-                        {canTune && (
+                        {canTarget && (
                           <button
                             type="button"
                             onClick={() => handleChangeTarget(item.slotIndex, ex, -1)}
@@ -881,7 +920,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                             </span>
                           )}
                         </div>
-                        {canTune && (
+                        {canTarget && (
                           <button
                             type="button"
                             onClick={() => handleChangeTarget(item.slotIndex, ex, 1)}

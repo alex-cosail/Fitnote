@@ -68,7 +68,7 @@ import { warmupOptionsFor } from './domain/warmup/warmup';
 import { buildCooldown } from './domain/cooldown/cooldown';
 import { applySwaps } from './domain/session/change';
 import type { Conditions } from './domain/catalog/filter';
-import { archiveOf, buildSeries, clearFrom, copyToSingles, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, unschedule, weekPlans, WEEKDAY_SHORT } from './domain/schedule/archive';
+import { archiveOf, buildSeries, renameItem, clearFrom, copyToSingles, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, unschedule, weekPlans, WEEKDAY_SHORT } from './domain/schedule/archive';
 import { ArchivePanel } from './components/constructor/ArchivePanel';
 import { answerReview, blockedByCare, careToReview, JOINT_NAMES, LEVEL_INFO, normalizeCare, removeCare, setCare } from './domain/care/care';
 
@@ -1152,17 +1152,18 @@ export default function App() {
             onRemove={(item) => {
               if (removeFromArchive(calendarData, item, today) === 'in-use') return 'in-use';
               setData((prev) => {
-                const r = removeFromArchive(prev, item, today);
+                const r = removeFromArchive(withCycles(prev), item, today);
                 return r === 'in-use' ? prev : r;
               });
             }}
             onUnschedule={(item) => setData((prev) => unschedule(withCycles(prev), item, today))}
             onRemoveFromDate={(planId, date) => setData((prev) => removeFromDate(withCycles(prev), planId, date))}
             onClearFrom={(date) => setData((prev) => clearFrom(withCycles(prev), date))}
-            onCopyToSingles={(planId) => setData((prev) => copyToSingles(prev, planId, Date.now().toString(36)))}
+            onCopyToSingles={(planId) => setData((prev) => copyToSingles(withCycles(prev), planId, Date.now().toString(36)))}
+            onRename={(item, title) => setData((prev) => renameItem(withCycles(prev), item, title))}
             onBuildSeries={(planIds, title, days, weeks) =>
               setData((prev) => {
-                const { builtId: _built, ...next } = buildSeries(prev, planIds, title, days, weeks, Date.now().toString(36));
+                const { builtId: _built, ...next } = buildSeries(withCycles(prev), planIds, title, days, weeks, Date.now().toString(36));
                 return next;
               })
             }

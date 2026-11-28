@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FitnoteData, WorkoutPlan } from '../../types';
-import { archiveOf, buildSeries, clearFrom, copyToSingles, fourWeeks, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, setSessionDay, unschedule, weekPlans } from './archive';
+import { archiveOf, buildSeries, renameItem, clearFrom, copyToSingles, fourWeeks, placeRepeat, placeSeriesAt, placeSingleOn, plansOnDate, removeFromArchive, removeFromDate, setSessionDay, unschedule, weekPlans } from './archive';
 import { plannedFor, type Cycle } from './schedule';
 
 const plan = (id: string, title = id): WorkoutPlan => ({
@@ -94,7 +94,7 @@ describe('archive', () => {
     expect(unschedule(placeRepeat(base, single, '2026-12-01'), single, '2026-12-01').repeats).toEqual([]);
   });
 
-  it('v3.13: copy a session to singles; build a week from singles — the singles stay', () => {
+  it('v3.13 / v3.18: copy a session to singles; build a week — the singles move into it', () => {
     const series = archiveOf(base).find((x) => x.kind === 'series')!;
     const copied = copyToSingles(base, series.planIds[2], 'abc');
     expect(archiveOf(copied).find((x) => x.planIds[0].startsWith('own-copy-abc'))).toMatchObject({ kind: 'single', title: 'S-B' });
@@ -103,10 +103,22 @@ describe('archive', () => {
     const built = buildSeries(base, ['workout-a', 'own-core'], 'Моя неделя', [1, 4], 2, 'w1');
     const a = archiveOf(built);
     expect(a.find((x) => x.id === built.builtId)).toMatchObject({ kind: 'series', planIds: ['workout-a', 'own-core'], days: [1, 4], weeks: 2 });
-    expect(a.filter((x) => x.kind === 'single').map((x) => x.title)).toEqual(['Workout A', 'Акцент кор 20 мин']);
-    // removing the single keeps the workout the week still needs
-    const single = a.find((x) => x.kind === 'single' && x.title === 'Workout A')!;
-    const r = removeFromArchive(built, single, '2026-12-01');
-    expect(r === 'in-use' ? [] : r.workouts.map((w) => w.id)).toContain('workout-a');
+    expect(a.filter((x) => x.kind === 'single')).toEqual([]);
+    expect(built.workouts.map((w) => w.id)).toContain('workout-a'); // the workout itself stays
+    // a copy back to the singles when needed
+    const back = copyToSingles(built, 'workout-a', 'k1');
+    expect(archiveOf(back).filter((x) => x.kind === 'single').map((x) => x.title)).toEqual(['Workout A']);
+  });
+
+  it('v3.18: rename a single (its workout too) and a series (its cycle too)', () => {
+    const single = archiveOf(base).find((x) => x.title === 'Workout A')!;
+    const r = renameItem(base, single, '  Утро у моря  ');
+    expect(archiveOf(r).find((x) => x.id === single.id)!.title).toBe('Утро у моря');
+    expect(r.workouts.find((w) => w.id === 'workout-a')!.title).toBe('Утро у моря');
+    const series = archiveOf(base).find((x) => x.kind === 'series')!;
+    const placed = placeSeriesAt(base, series, '2026-11-30', series.days!, 1);
+    const r2 = renameItem(placed, series, 'Неделя: выход на две');
+    expect(r2.cycles!.find((c) => c.startDate === '2026-11-30')!.title).toBe('Неделя: выход на две');
+    expect(renameItem(base, single, '   ')).toBe(base);
   });
 });

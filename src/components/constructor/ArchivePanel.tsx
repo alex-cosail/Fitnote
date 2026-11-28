@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { CalendarMinus, CalendarPlus, Check, Copy, Eraser, Play, Plus, Trash2, X } from 'lucide-react';
+import { CalendarMinus, CalendarPlus, Check, Copy, Eraser, Pencil, Play, Plus, Trash2, X } from 'lucide-react';
 import { ArchiveItem, WEEKDAY_SHORT, daysFor, fourWeeks, plural, setSessionDay } from '../../domain/schedule/archive';
 import type { PlanKind } from '../../domain/schedule/kind';
 import { addDays, mondayOf, weekdayOf, type Weekday } from '../../domain/schedule/schedule';
@@ -25,6 +25,7 @@ interface Props {
   onClearFrom: (date: string) => void;
   onCopyToSingles: (planId: string) => void;
   onBuildSeries: (planIds: string[], title: string, days: Weekday[], weeks: number) => void;
+  onRename: (item: ArchiveItem, title: string) => void;
   onOpenDay: (date: string) => void;
 }
 
@@ -100,6 +101,7 @@ export const ArchivePanel: React.FC<Props> = (props) => {
   const [building, setBuilding] = useState(false);
   const [buildTitle, setBuildTitle] = useState('Моя неделя');
   const [notice, setNotice] = useState('');
+  const [renaming, setRenaming] = useState<string | null>(null);
   const pressTimer = useRef<number | null>(null);
   const longPressed = useRef(false);
 
@@ -353,7 +355,38 @@ export const ArchivePanel: React.FC<Props> = (props) => {
 
       {/* an item */}
       {open && (
-        <Sheet eyebrow={open.kind === 'series' ? 'Серия' : 'Разовая'} title={open.title} onClose={() => setOpen(null)}>
+        <Sheet eyebrow={open.kind === 'series' ? 'Серия' : 'Разовая'} title={open.title} onClose={() => { setOpen(null); setRenaming(null); }}>
+          {renaming !== null ? (
+            <form
+              className="mt-2 flex gap-1.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const name = renaming.trim();
+                if (name) {
+                  props.onRename(open, name);
+                  setOpen({ ...open, title: name });
+                }
+                setRenaming(null);
+              }}
+            >
+              <input
+                autoFocus
+                value={renaming}
+                onChange={(e) => setRenaming(e.target.value)}
+                maxLength={40}
+                aria-label="Новое название"
+                className="min-h-[44px] min-w-0 flex-1 rounded-xl border border-gray-300 bg-white px-3 text-sm dark:border-[#334155] dark:bg-[#1A2333] dark:text-[#F3F4F6]"
+              />
+              <button type="submit" className="tap-scale min-h-[44px] rounded-xl bg-[#111827] px-3 text-sm font-bold text-white dark:bg-[#F3F4F6] dark:text-[#0B0F17]">
+                OK
+              </button>
+            </form>
+          ) : (
+            <button type="button" onClick={() => setRenaming(open.title)} className="tap-scale mt-1 flex min-h-[32px] items-center gap-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+              <Pencil className="h-3.5 w-3.5" />
+              Переименовать
+            </button>
+          )}
           <div className="mt-3 space-y-2">
             {open.planIds.map((id, i) => {
               const p = planById.get(id);
