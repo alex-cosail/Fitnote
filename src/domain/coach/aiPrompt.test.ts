@@ -49,6 +49,22 @@ describe('«Обсудить с моим ИИ-тренером»', () => {
   });
 });
 
+describe('any workout: the own words and the day mode', () => {
+  it('the request comes first, the day mode is named', () => {
+    const p = buildAiCoachPrompt({
+      plans: INITIAL_WORKOUTS.slice(0, 1),
+      kind: 'single',
+      catalog: CATALOG,
+      exercises,
+      request: 'уровень для акцента оказался выше моего — нужны подводящие',
+      dayNote: 'Акцент 20 мин',
+    });
+    expect(p).toContain('Что я хочу изменить (начни с этого): уровень для акцента оказался выше моего');
+    expect(p).toMatch(/Режим дня, в котором я открыл тренировку: Акцент 20 мин/);
+    expect(p.indexOf('Что я хочу изменить')).toBeLessThan(p.indexOf('Шаг 1'));
+  });
+});
+
 describe('the pasted plan goes to the archive', () => {
   const base = { workouts: INITIAL_WORKOUTS, cycles: [], dayOverrides: {}, maxes: {}, customExercises: [] };
   const payload = {

@@ -19,6 +19,10 @@ export interface AiCoachInput {
   kind: 'single' | 'series';
   catalog: CatalogExercise[];
   exercises: Exercise[];
+  /** The person's own words: what to change (v3.19.1). */
+  request?: string;
+  /** The day mode the workout was opened in, e.g. «Акцент 20 мин». */
+  dayNote?: string;
 }
 
 const ZONE_RU: Record<string, string> = {
@@ -36,7 +40,7 @@ const LEVEL_RU: Record<string, string> = { low: 'начальный', medium: '�
 export const PASTE_LINE = 'Скопируйте этот блок и вставьте его в поле ввода на вкладке Sync/Log в Fitnote — план появится в архиве конструктора.';
 
 export function buildAiCoachPrompt(input: AiCoachInput): string {
-  const { profile, care = [], conditions, plans, kind, catalog, exercises } = input;
+  const { profile, care = [], conditions, plans, kind, catalog, exercises, request, dayNote } = input;
   const exName = new Map(exercises.map((e) => [e.id, e.name]));
 
   const person: string[] = [];
@@ -83,6 +87,8 @@ export function buildAiCoachPrompt(input: AiCoachInput): string {
   return [
     'Ты — мой тренер по функциональным тренировкам (уличная площадка, дом). Работаем как на живой консультации: сначала разговор, план — только после него. Не выдавай план в первом ответе.',
     '',
+    ...(request?.trim() ? [`Что я хочу изменить (начни с этого): ${request.trim()}`, ''] : []),
+    ...(dayNote ? [`Режим дня, в котором я открыл тренировку: ${dayNote}.`, ''] : []),
     `Шаг 1. Посмотри мой черновик (${kind === 'series' ? 'серия тренировок на неделю' : 'одна тренировка'}) и данные обо мне ниже. Задай 5–7 коротких вопросов и дождись ответов: что болит или ограничивает, что поберечь, что усилить и к какому сроку, сон и самочувствие, сколько времени реально есть, где и с чем тренируюсь, если это расходится с данными.`,
     '',
     'Шаг 2. Коротко, словами: что видишь в черновике, какие риски, что предлагаешь изменить и почему. Спроси, согласен ли я.',

@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { CalendarMinus, CalendarPlus, Check, Copy, Eraser, Pencil, Play, Plus, Trash2, X } from 'lucide-react';
+import { Bot, CalendarMinus, CalendarPlus, Check, Copy, Eraser, Pencil, Play, Plus, Trash2, X } from 'lucide-react';
 import { ArchiveItem, WEEKDAY_SHORT, daysFor, fourWeeks, plural, setSessionDay } from '../../domain/schedule/archive';
 import type { PlanKind } from '../../domain/schedule/kind';
 import { addDays, mondayOf, weekdayOf, type Weekday } from '../../domain/schedule/schedule';
@@ -26,6 +26,8 @@ interface Props {
   onCopyToSingles: (planId: string) => void;
   onBuildSeries: (planIds: string[], title: string, days: Weekday[], weeks: number) => void;
   onRename: (item: ArchiveItem, title: string) => void;
+  /** «Обсудить с ИИ-тренером» for this series or single (v3.19.1). */
+  onAskAi: (item: ArchiveItem) => void;
   onOpenDay: (date: string) => void;
 }
 
@@ -454,6 +456,20 @@ export const ArchivePanel: React.FC<Props> = (props) => {
             <RepeatPicker value={repeat} onChange={setRepeat} />
           )}
 
+          {!fixedStart && (
+            <button
+              type="button"
+              onClick={() => {
+                const item = open;
+                setOpen(null);
+                props.onAskAi(item);
+              }}
+              className="tap-scale mt-3 flex min-h-[48px] w-full items-center justify-center gap-1.5 rounded-xl border border-gray-200 text-sm font-semibold text-[#0B5F73] dark:border-[#2A3548] dark:text-[#5EC4D8]"
+            >
+              <Bot className="h-4 w-4" />
+              Обсудить с ИИ-тренером
+            </button>
+          )}
           <div className="mt-4 grid grid-cols-2 gap-2">
             {open.kind === 'single' && !fixedStart && (
               <button

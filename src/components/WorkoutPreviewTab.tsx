@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowLeftRight,
   ArrowUp,
+  Bot,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -53,6 +54,8 @@ interface WorkoutPreviewTabProps {
   onChangeReadiness: (level: ReadinessLevel) => void;
   onChangeAccentMinutes: (minutes: number) => void;
   onShare?: (plan: WorkoutPlan) => void;
+  /** «Обсудить с ИИ-тренером» for this workout (v3.19.1). */
+  onAskAi?: (plan: WorkoutPlan) => void;
   exerciseNotes?: Record<string, string>;
   /** The days of the week a plan is on (first screen, v3.12). */
   chipLabel?: (planId: string) => string;
@@ -86,6 +89,7 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
   onChangeReadiness,
   onChangeAccentMinutes,
   onShare,
+  onAskAi,
   exerciseNotes,
   chipLabel,
   removeLabel,
@@ -513,6 +517,17 @@ export const WorkoutPreviewTab: React.FC<WorkoutPreviewTabProps> = ({
                   {readiness === 'red' ? 45 : todayPlan.restBetweenRounds}с
                 </span>
 
+                {onAskAi && (
+                  <button
+                    type="button"
+                    onClick={() => onAskAi(selectedPlan)}
+                    aria-label="Обсудить с ИИ-тренером"
+                    title="Обсудить с ИИ-тренером"
+                    className="tap-scale flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#0B5F73] hover:text-[#111827] dark:border-[#2A3548] dark:bg-[#1A2333] dark:text-[#5EC4D8]"
+                  >
+                    <Bot className="h-3.5 w-3.5" />
+                  </button>
+                )}
                 {onShare && readiness !== 'red' && (
                   <button
                     type="button"

@@ -72,6 +72,7 @@ import { archiveImport, archiveOf, buildSeries, renameItem, clearFrom, copyToSin
 import { ArchivePanel } from './components/constructor/ArchivePanel';
 import { answerReview, blockedByCare, careToReview, JOINT_NAMES, LEVEL_INFO, normalizeCare, removeCare, setCare } from './domain/care/care';
 import { buildAiCoachPrompt } from './domain/coach/aiPrompt';
+import { AiCoachSheet } from './components/AiCoachSheet';
 
 const PROTECTED_WORKOUT_IDS = new Set([
   'workout-a',
@@ -614,6 +615,11 @@ export default function App() {
     }));
   };
 
+  // ——— «Обсудить с ИИ-тренером» for any workout or series (v3.19.1) ———
+  const [aiAsk, setAiAsk] = useState<{ title: string; plans: WorkoutPlan[]; kind: 'single' | 'series'; dayNote?: string } | null>(null);
+  const dayNoteOf = (r: ReadinessLevel) =>
+    r === 'yellow' ? 'Короткая (⅔ кругов)' : r === 'accent' ? `Акцент ${data.accentMinutes ?? 20} мин` : r === 'red' ? 'Нет сил (мобильность)' : undefined;
+
   // ——— Sharing (v3.6) ———
   const [shareOf, setShareOf] = useState<{ plans: WorkoutPlan[]; title: string; days?: import('./domain/schedule/schedule').Weekday[] } | null>(null);
   const shareCycle = () => {
@@ -901,6 +907,30 @@ export default function App() {
             onClose={afterShared}
           />
         )}
+        {aiAsk && (
+          <AiCoachSheet
+            title={aiAsk.title}
+            onClose={() => setAiAsk(null)}
+            onOpenSync={() => {
+              setAiAsk(null);
+              setActiveTab('sync');
+              window.scrollTo(0, 0);
+            }}
+            buildPrompt={(request) =>
+              buildAiCoachPrompt({
+                profile: data.profile,
+                care: normalizeCare(data.care),
+                conditions: genProfile.usualConditions,
+                plans: aiAsk.plans,
+                kind: aiAsk.kind,
+                catalog: CATALOG,
+                exercises,
+                request,
+                dayNote: aiAsk.dayNote,
+              })
+            }
+          />
+        )}
         {shareOf && (
           <ShareSheet
             plans={shareOf.plans}
@@ -1102,6 +1132,7 @@ export default function App() {
               }))
             }
             onShare={(plan) => setShareOf({ plans: [plan], title: plan.title })}
+            onAskAi={(plan) => setAiAsk({ title: plan.title, plans: [plan], kind: 'single', dayNote: dayNoteOf(data.readiness) })}
             onChangeAccentMinutes={(accentMinutes) =>
               setData((prev) => ({ ...prev, accentMinutes }))
             }
@@ -1185,6 +1216,13 @@ export default function App() {
             onClearFrom={(date) => setData((prev) => clearFrom(withCycles(prev), date))}
             onCopyToSingles={(planId) => setData((prev) => copyToSingles(withCycles(prev), planId, Date.now().toString(36)))}
             onRename={(item, title) => setData((prev) => renameItem(withCycles(prev), item, title))}
+            onAskAi={(item) =>
+              setAiAsk({
+                title: item.title,
+                plans: item.planIds.map((id) => planById.get(id)).filter((p): p is WorkoutPlan => Boolean(p)),
+                kind: item.kind,
+              })
+            }
             onBuildSeries={(planIds, title, days, weeks) =>
               setData((prev) => {
                 const { builtId: _built, ...next } = buildSeries(withCycles(prev), planIds, title, days, weeks, Date.now().toString(36));
